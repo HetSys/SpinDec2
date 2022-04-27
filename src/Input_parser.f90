@@ -4,6 +4,7 @@ module input_params
 
     implicit none
 contains
+    !A function that reads a string of comma seperated values into an array
     function read_poly(var,err) result(coeffs)
         character(*), intent(in) :: var
         integer, intent(inout) :: err
@@ -73,14 +74,27 @@ contains
         real(kind=real64), intent(out),dimension(:),allocatable :: coeffs
         logical :: f_exists
 
+        !Setting deafault values for optional params
         err = 0
         random_seed = -1
         delta_t = -1
         t = -1
-        open(unit=infile, file=fn,status='old',action="read")
+        !reading file
+        !There is a large amount of  if statements below to ensure values are
+        !sensisble (no negative max time etc)
+        open(unit=infile, file=fn,status='old',action="read",iostat=ierr)
+        if(ierr /= 0) then
+            print*, "An error occured when reading the input file&
+              (It may be missing). Please check and try again."
+             err = -1
+        end if
         do
+            if(err == -1) then
+                exit
+            end if
+
             read(infile,"(a)",iostat=iostat) name
-            if(iostat<0 .or. err == -1) then
+            if(iostat<0) then
                 exit
             end if
 
