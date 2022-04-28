@@ -79,6 +79,8 @@ contains
         random_seed = -1
         delta_t = -1
         t = -1
+        cpi = ""
+        cpo = "Default"
         !reading file
         !There is a large amount of  if statements below to ensure values are
         !sensisble (no negative max time etc)

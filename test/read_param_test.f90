@@ -13,7 +13,7 @@ program main
     !You must put all of the possible variables as an input. Optional ones will
     !default to -1 except the polynomial coeffs which will be an uninitialsed array
     !It will also require an intger that represents if an error has occured
-    call read_params("../test/isnput_test.txt",initial_conc,conc_std,coeffs,nx,&
+    call read_params("../test/input_test.txt",initial_conc,conc_std,coeffs,nx,&
         ny,m1,m2,k,bfe,cint,cpi,cpo,t,delta_t,df_tol,random_seed,err)
 
 
