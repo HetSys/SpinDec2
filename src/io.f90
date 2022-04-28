@@ -41,7 +41,7 @@ module io
     !!@param kappa : gradient term coefficient
     !************************************************************************
     !
-    subroutine write_netcdf(filename, c, F_tot, coeffs, N_c, N_x, N_y, N_t, dt, c_0, M_A, M_B, kappa)
+    subroutine write_netcdf(c, F_tot, coeffs, N_c, N_x, N_y, N_t, dt, c_0, M_A, M_B, kappa)
 
         integer, intent(in) :: N_x, N_y, N_t, N_c
         real(kind=real64), dimension(N_x, N_y, N_t), intent(in) :: c
@@ -54,7 +54,7 @@ module io
         integer :: c_var_id, F_tot_var_id, coeffs_var_id
         character(len=*), dimension(3), parameter :: c_dims=(/"c_x", "c_y", "c_t"/)
         character(len=*), parameter :: F_tot_dims = "F_t", coeffs_dims = "C_i"
-        character(len=*), intent(in) :: filename
+        character(len=*), parameter :: filename = 'Visualise/test_netcdf.nc'
         real(kind=real64), intent(in) :: dt, M_A, M_B, kappa, c_0
         integer :: k, file_id
         
