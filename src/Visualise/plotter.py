@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import netCDF4 as NC
 import matplotlib.pyplot as plt
 import numpy as np
