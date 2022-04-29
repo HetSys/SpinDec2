@@ -2,4 +2,3 @@
 # install.sh
 # Compilation/install script for SpinDec
 
-
