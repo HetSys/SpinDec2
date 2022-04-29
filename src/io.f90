@@ -20,8 +20,8 @@ module io
         integer, intent (in) :: status
 
         if(status /= nf90_noerr) then 
-          print *, trim(nf90_strerror(status))
-          stop ""
+            print *, trim(nf90_strerror(status))
+            stop ""
         end if
 
     end subroutine check  
@@ -60,38 +60,27 @@ module io
         real(kind=real64), intent(in) :: dt, M_A, M_B, kappa, c_0
         integer :: k, file_id
         
-    
         !define size of arrays
         size_c = shape(c)
         size_F_tot = size(F_tot)
         size_coeffs = size(coeffs)
-      
 
         !Create the file, overwriting if it exists
         call check(nf90_create(filename, NF90_CLOBBER, file_id))
     
-   
         !write in the dimensions for the variables
         do k = 1, 3
-          
-          call check(nf90_def_dim(file_id, c_dims(k), size_c(k), c_dim_ids(k)))
-        
+            call check(nf90_def_dim(file_id, c_dims(k), size_c(k), c_dim_ids(k)))
         end do
 
         call check(nf90_def_dim(file_id, F_tot_dims, size_F_tot, F_tot_dim_ids))
-
         call check(nf90_def_dim(file_id, coeffs_dims, size_coeffs, coeffs_dim_ids))
-  
         print *, "Dimensions Written"
-
 
         !Define variable type, matching the arrays
         call check (nf90_def_var(file_id, "c", NF90_DOUBLE, c_dim_ids, c_var_id))
-        
         call check (nf90_def_var(file_id, "F_tot", NF90_DOUBLE, F_tot_dim_ids, F_tot_var_id))
-
         call check (nf90_def_var(file_id, "coeffs", NF90_DOUBLE, coeffs_dim_ids, coeffs_var_id))
-       
         print *, "Variable types defined"
   
         ! Setting up meta variables of simulation
@@ -125,7 +114,6 @@ module io
   
         print*, "SUCESSFULLY WRITTEN NETCDF FILE"
        
-    
       end subroutine write_netcdf
     
 end module io
