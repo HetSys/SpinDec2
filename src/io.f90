@@ -56,7 +56,7 @@ module io
         integer :: c_var_id, F_tot_var_id, coeffs_var_id
         character(len=*), dimension(3), parameter :: c_dims=(/"c_x", "c_y", "c_t"/)
         character(len=*), parameter :: F_tot_dims = "F_t", coeffs_dims = "C_i"
-        character(len=*), parameter :: filename = 'Visualise/test_netcdf.nc'
+        character(len=*), parameter :: filename = 'CH_output.nc'
         real(kind=real64), intent(in) :: dt, M_A, M_B, kappa, c_0
         integer :: k, file_id
         
