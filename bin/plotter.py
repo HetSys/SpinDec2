@@ -52,6 +52,8 @@ class Vis_CH:
         #concentration order parameter c(t, y, x)
         self.c = [data.variables['c'][:]][0]
 
+        #### Issue/needs checking - does c need to be transposed?
+        
         #free energy over time
         self.F_tot = [data.variables['F_tot'][:]][0]
 
@@ -266,8 +268,10 @@ class Vis_CH:
             plt.show()
     
 
+#run visualisation
 
-res_CH = Vis_CH(file = 'test_netcdf.nc', av_period=10)
+#perhaps need to change to get the file from whatever dir we choose
+res_CH = Vis_CH(file = 'CH_output.nc', av_period=10)
 
 res_CH.read_netcdf(verbose=True)
 
