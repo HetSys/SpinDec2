@@ -7,7 +7,7 @@ program main
 
     integer  :: nx,ny,cint,random_seed,err
     character(len=128) :: cpi,cpo
-    real(kind=REAL64) :: initial_conc, conc_std,m1,m2,k,bfe,t,delta_t,df_tol
+    real(kind=REAL64) :: initial_conc, conc_std,m1,m2,k,bfe,t,delta_t,df_tol,current_time
     real(kind=real64),dimension(:),allocatable :: coeffs
     real(kind=real64), dimension(:,:,:), allocatable :: data
 
@@ -31,7 +31,7 @@ program main
         return
     end if
 
-    
+
     run_data%initial_conc = initial_conc
     run_data%conc_std = conc_std
     run_data%nx = nx
@@ -48,6 +48,9 @@ program main
     run_data%current_time = 0
 
     call write_checkpoint_file(data,coeffs,cpo,run_data)
+
+    call read_checkpoint_in(data, cpi,initial_conc,conc_std,coeffs,nx,&
+        ny,m1,m2,k,bfe,cint,cpo,t,delta_t,df_tol,current_time,random_seed)
 
 
     print*,random_seed
