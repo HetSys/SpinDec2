@@ -257,6 +257,8 @@ MODULE checkpointing
 
 
             if(use_input == 0) then
+                deallocate(coeffs)
+                allocate(coeffs(sizes(4)))
                 ierr = nf90_inq_varid(file_id,"coeffs",var_ids(2))
                 IF (ierr /= nf90_noerr) THEN
                     PRINT*, TRIM(nf90_strerror(ierr))
