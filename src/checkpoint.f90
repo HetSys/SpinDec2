@@ -350,7 +350,7 @@ MODULE checkpointing
                 RETURN
             END IF
 
-            print*, current_time
+            !print*, current_time
 
 
 
