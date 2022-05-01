@@ -74,7 +74,6 @@ module test_potentials
             print *, 'Unit test for total potential succeeded.'
         else
             print *, 'Unit test for total potential failed.'
-            print *, Q
         end if
 
         deallocate(Q)
@@ -93,6 +92,9 @@ program main
     real(real64),dimension(3,3) :: c_1
     real(real64),dimension(3,3) :: expected_bulk_1,expected_total_1
     real(real64) :: dx,dy,kappa 
+    real(real64),dimension(5) :: a_2
+    real(real64),dimension(4,4) :: c_2
+    real(real64),dimension(4,4) :: expected_bulk_2,expected_total_2
 
     print *, 'Started testing.'
 
@@ -103,7 +105,11 @@ program main
     call test_bulk_potential(c_1,a_1,expected_bulk_1)
 
     !Test 2 for bulk potential
-    !call test_bulk_potential(c_2,a_2,expected_bulk_2)
+    a_2 = (/0.2,0.5,0.3,1.4,1.6/)
+    c_2 = reshape((/0.16,0.23,0.32,0.45,0.35,0.42,0.71,0.12,0.24,0.45,0.64,0.83,0.22,0.42,0.18,0.71/),shape(c_2))
+    expected_bulk_2 = reshape((/0.7297,0.9380,1.3317,2.2037,1.4989,1.9670,5.3338,0.6435,0.9743,2.2037, &
+            4.2820,7.5508,0.9034,1.9670,0.7814,5.3338/),shape(c_2))
+    call test_bulk_potential(c_2,a_2,expected_bulk_2)
     !Test 3 for bulk potential
     !call test_bulk_potential(c_3,a_3,expeceted_bulk_3)
 
@@ -115,13 +121,10 @@ program main
     call test_total_potential(expected_bulk_1,c_1,dx,dx,kappa,expected_total_1)
 
     !Test 2 for total potential
-    !call test_total_potential(mu_2,c_2,dx,dx,kappa,expected_total_2)
+    expected_total_2 = reshape((/-0.4902,0.1380,0.7517,3.1837,2.4189,1.8470,8.0138,-3.0764,-0.8056,2.3637, &
+            5.0620,10.7708,-0.3965,3.1670,-1.9585,7.6538/),shape(c_2)) 
+    call test_total_potential(expected_bulk_2,c_2,dx,dx,kappa,expected_total_2)
     !Test 3 for total potential
     !call test_total_potential(mu_3,c_3,dx,dx,kappa,expected_total_3)
- 
-
 
 end program
-
-
-
