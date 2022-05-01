@@ -318,6 +318,11 @@ contains
                      Please check you input file and try again"
                     err = -1
                 end if
+                if(use_input == 0) then
+                    if(.not. allocated(coeffs)) then
+                        allocate(coeffs(1))
+                    end if
+                end if
             end if
 
             !print*, name,var
