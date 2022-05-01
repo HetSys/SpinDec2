@@ -71,9 +71,10 @@ module test_potentials
 
 
         if (res) then
-            print *, 'Unit test for bulk potential succeeded.'
+            print *, 'Unit test for total potential succeeded.'
         else
-            print *, 'Unit test for bulk potential failed.'
+            print *, 'Unit test for total potential failed.'
+            print *, Q
         end if
 
         deallocate(Q)
@@ -90,7 +91,8 @@ program main
 
     real(real64),dimension(3) :: a_1
     real(real64),dimension(3,3) :: c_1
-    real(real64),dimension(3,3) :: expected_bulk_1
+    real(real64),dimension(3,3) :: expected_bulk_1,expected_total_1
+    real(real64) :: dx,dy,kappa 
 
     print *, 'Started testing.'
 
@@ -106,7 +108,12 @@ program main
     !call test_bulk_potential(c_3,a_3,expeceted_bulk_3)
 
     !Test 1 for total potential
-    !call test_total_potential(mu_1,c_1,dx,dx,kappa,expected_total_1)
+    dx = 1.0
+    dy = 1.0
+    kappa = 2.0
+    expected_total_1 = reshape((/0.0,12.0,18.0,8.0,20.0,62.0,-2.0,10.0,34.0/),shape(c_1))
+    call test_total_potential(expected_bulk_1,c_1,dx,dx,kappa,expected_total_1)
+
     !Test 2 for total potential
     !call test_total_potential(mu_2,c_2,dx,dx,kappa,expected_total_2)
     !Test 3 for total potential

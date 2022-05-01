@@ -42,10 +42,10 @@ module potentials
     ! @param Kappa: Free energy gradient paramater
     subroutine total_potential(Q,mu,c,dx,dy,Kappa)
 
-        real(real64), intent(in) :: mu(:,:)
-        real(real64), intent(in) :: c(:,:)
+        real(real64), intent(in) :: mu(0:,0:)
+        real(real64), intent(in) :: c(0:,0:)
         real(real64), intent(in) :: dx,dy,Kappa
-        real(real64) :: Q(:,:)
+        real(real64) :: Q(0:,0:)
         real(real64) :: x_lap,y_lap
         integer :: nx,ny,i,j
 
@@ -54,12 +54,12 @@ module potentials
         ny = size(Q,2)
 
         !Loop filling the Q array
-        do j=1,ny
-            do i=1,nx
+        do j=0,ny-1
+            do i=0,nx-1
                 !X and Y double derivatives using finite differences
                 !Peridic boundary conditions are taken care using mod function
-                x_lap = (c(mod(i+1,nx),j)-2*c(i,j)+c(mod(i-1,nx),j))/(dx*dx)
-                y_lap = (c(i,mod(j+1,ny))-2*c(i,j)+c(i,mod(j-1,ny)))/(dy*dy)
+                x_lap = (c(modulo(i+1,nx),j)-2*c(i,j)+c(modulo(i-1,nx),j))/(dx*dx)
+                y_lap = (c(i,modulo(j+1,ny))-2*c(i,j)+c(i,modulo(j-1,ny)))/(dy*dy)
                 Q(i,j) = mu(i,j) - Kappa*(x_lap + y_lap)
             end do
         end do
