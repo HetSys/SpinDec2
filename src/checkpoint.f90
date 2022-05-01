@@ -25,18 +25,23 @@ MODULE checkpointing
 
     CONTAINS
         ! This subroutine was apdated from the example provided in the assignment brief
-        SUBROUTINE write_checkpoint_file(arr3dim, coeffs,cpo,run_data)
+        SUBROUTINE write_checkpoint_file(arr3dim, coeffs,cpo,initial_conc,conc_std&
+            ,nx,ny,m1,m2,k,bfe,Cint,t,time_step,current_time,df_tol,random_seed,ierr)
             real(kind=real64), INTENT(IN), DIMENSION(:,:,:) :: arr3dim
             real(kind=real64), INTENT(IN), DIMENSION(:) :: coeffs
-            TYPE(run_data_type), INTENT(IN) :: run_data
-            character(len = *) :: cpo
+            integer , intent(in) :: nx,ny,cint,random_seed
+            real(kind=REAL64), intent(in) :: initial_conc, conc_std,m1,m2,k,bfe,t,time_step&
+                ,df_tol,current_time
+            !TYPE(run_data_type), INTENT(IN) :: run_data
+            character(len = *),intent(in) :: cpo
             CHARACTER(LEN=1), DIMENSION(4) :: dims = (/"x", "y", "t","c"/)
             CHARACTER(LEN=12), DIMENSION(15) :: comp_names = (/"initial_conc",&
             "conc_std    ", "nx          ","ny          ","m1          ",&
             "m2          ","k           ","bfe         ","cint        "&
             ,"max_t       ","time_step   ","current_time","df_tol      "&
             ,"random_seed ","cpo         "/)
-            INTEGER :: ierr, file_id, i
+            INTEGER :: file_id, i
+            INTEGER,intent(out) :: ierr
             INTEGER :: ndims = 4
             INTEGER, DIMENSION(4) :: sizes, dim_ids
             INTEGER, DIMENSION(2) :: var_ids
@@ -76,72 +81,72 @@ MODULE checkpointing
             END IF
 
             ! Adding global attributes (run data)
-            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(1)),run_data%initial_conc)
+            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(1)),initial_conc)
             IF (ierr /= nf90_noerr) THEN
                 PRINT*, TRIM(nf90_strerror(ierr))
                 RETURN
             END IF
-            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(2)),run_data%conc_std)
+            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(2)),conc_std)
             IF (ierr /= nf90_noerr) THEN
                 PRINT*, TRIM(nf90_strerror(ierr))
                 RETURN
             END IF
-            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(3)),run_data%nx)
+            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(3)),nx)
             IF (ierr /= nf90_noerr) THEN
                 PRINT*, TRIM(nf90_strerror(ierr))
                 RETURN
             END IF
-            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(4)),run_data%ny)
+            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(4)),ny)
             IF (ierr /= nf90_noerr) THEN
                 PRINT*, TRIM(nf90_strerror(ierr))
                 RETURN
             END IF
-            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(5)),run_data%m1)
+            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(5)),m1)
             IF (ierr /= nf90_noerr) THEN
                 PRINT*, TRIM(nf90_strerror(ierr))
                 RETURN
             END IF
-            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(6)),run_data%m2)
+            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(6)),m2)
             IF (ierr /= nf90_noerr) THEN
                 PRINT*, TRIM(nf90_strerror(ierr))
                 RETURN
             END IF
-            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(7)),run_data%k)
+            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(7)),k)
             IF (ierr /= nf90_noerr) THEN
                 PRINT*, TRIM(nf90_strerror(ierr))
                 RETURN
             END IF
-            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(8)),run_data%bfe)
+            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(8)),bfe)
             IF (ierr /= nf90_noerr) THEN
                 PRINT*, TRIM(nf90_strerror(ierr))
                 RETURN
             END IF
-            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(9)),run_data%cint)
+            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(9)),cint)
             IF (ierr /= nf90_noerr) THEN
                 PRINT*, TRIM(nf90_strerror(ierr))
                 RETURN
             END IF
-            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(10)),run_data%t)
+            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(10)),t)
             IF (ierr /= nf90_noerr) THEN
                 PRINT*, TRIM(nf90_strerror(ierr))
                 RETURN
             END IF
-            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(11)),run_data%time_step)
+            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(11)),time_step)
             IF (ierr /= nf90_noerr) THEN
                 PRINT*, TRIM(nf90_strerror(ierr))
                 RETURN
             END IF
-            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(12)),run_data%current_time)
+            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(12)),current_time)
             IF (ierr /= nf90_noerr) THEN
                 PRINT*, TRIM(nf90_strerror(ierr))
                 RETURN
             END IF
-            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(13)),run_data%df_tol)
+            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(13)),df_tol)
             IF (ierr /= nf90_noerr) THEN
                 PRINT*, TRIM(nf90_strerror(ierr))
                 RETURN
             END IF
-            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(14)),run_data%random_seed)
+            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(14)),random_seed)
             IF (ierr /= nf90_noerr) THEN
                 PRINT*, TRIM(nf90_strerror(ierr))
                 RETURN
@@ -187,13 +192,14 @@ MODULE checkpointing
 
 
         SUBROUTINE read_checkpoint_in(arr3dim, fn, initial_conc,conc_std,coeffs&
-            ,Nx,Ny,M1,M2,k,bfe,Cint,cpo,t,delta_t,current_time,df_tol,random_seed)
-            integer , intent(out) :: nx,ny,cint,random_seed
-            character(len=128),intent(out) :: cpo
+            ,Nx,Ny,M1,M2,k,bfe,Cint,cpo,t,delta_t,df_tol,current_time,random_seed,use_input,ierr)
+            integer , intent(inout) :: nx,ny,cint,random_seed
+            integer,intent(in) :: use_input
+            character(len=128),intent(inout) :: cpo
             character(len=*),intent(in) :: fn
-            real(kind=REAL64), intent(out) :: initial_conc, conc_std,m1,m2,k,bfe,t,delta_t&
+            real(kind=REAL64), intent(inout) :: initial_conc, conc_std,m1,m2,k,bfe,t,delta_t&
                 ,df_tol,current_time
-            real(kind=real64), intent(out),dimension(:),allocatable :: coeffs
+            real(kind=real64), intent(inout),dimension(:),allocatable :: coeffs
             real(kind=real64), intent(out),dimension(:,:,:),allocatable :: arr3dim
             CHARACTER(LEN=1), DIMENSION(4) :: dims = (/"x", "y", "t","c"/)
             CHARACTER(LEN=12), DIMENSION(15) :: comp_names = (/"initial_conc",&
@@ -201,7 +207,8 @@ MODULE checkpointing
             "m2          ","k           ","bfe         ","cint        "&
             ,"max_t       ","time_step   ","current_time","df_tol      "&
             ,"random_seed ","cpo         "/)
-            INTEGER :: ierr, file_id, i
+            INTEGER ::  file_id, i
+            INTEGER,intent(out) :: ierr
             INTEGER :: ndims = 4
             INTEGER, DIMENSION(4) :: sizes, dim_ids
             INTEGER, DIMENSION(2) :: var_ids
@@ -233,111 +240,115 @@ MODULE checkpointing
 
             !allocate
             allocate(arr3dim(sizes(1),sizes(2),sizes(3)))
-            allocate(coeffs(sizes(4)))
 
-            !get var ids
+
+            !get var ids and read data
             ierr = nf90_inq_varid(file_id,"data",var_ids(1))
             IF (ierr /= nf90_noerr) THEN
                 PRINT*, TRIM(nf90_strerror(ierr))
                 RETURN
             END IF
 
-            ierr = nf90_inq_varid(file_id,"coeffs",var_ids(2))
-            IF (ierr /= nf90_noerr) THEN
-                PRINT*, TRIM(nf90_strerror(ierr))
-                RETURN
-            END IF
-
-            !read data
             ierr = nf90_get_var(file_id,var_ids(1),arr3dim)
             IF (ierr /= nf90_noerr) THEN
                 PRINT*, TRIM(nf90_strerror(ierr))
                 RETURN
             END IF
 
-            ierr = nf90_get_var(file_id,var_ids(2),coeffs)
-            IF (ierr /= nf90_noerr) THEN
-                PRINT*, TRIM(nf90_strerror(ierr))
-                RETURN
-            END IF
+
+            if(use_input == 0) then
+                ierr = nf90_inq_varid(file_id,"coeffs",var_ids(2))
+                IF (ierr /= nf90_noerr) THEN
+                    PRINT*, TRIM(nf90_strerror(ierr))
+                    RETURN
+                END IF
+
+                ierr = nf90_get_var(file_id,var_ids(2),coeffs)
+                IF (ierr /= nf90_noerr) THEN
+                    PRINT*, TRIM(nf90_strerror(ierr))
+                    RETURN
+                END IF
 
 
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(1)),initial_conc)
-            IF (ierr /= nf90_noerr) THEN
-                PRINT*, TRIM(nf90_strerror(ierr))
-                RETURN
-            END IF
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(2)),conc_std)
-            IF (ierr /= nf90_noerr) THEN
-                PRINT*, TRIM(nf90_strerror(ierr))
-                RETURN
-            END IF
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(3)),nx)
-            IF (ierr /= nf90_noerr) THEN
-                PRINT*, TRIM(nf90_strerror(ierr))
-                RETURN
-            END IF
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(4)),ny)
-            IF (ierr /= nf90_noerr) THEN
-                PRINT*, TRIM(nf90_strerror(ierr))
-                RETURN
-            END IF
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(5)),m1)
-            IF (ierr /= nf90_noerr) THEN
-                PRINT*, TRIM(nf90_strerror(ierr))
-                RETURN
-            END IF
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(6)),m2)
-            IF (ierr /= nf90_noerr) THEN
-                PRINT*, TRIM(nf90_strerror(ierr))
-                RETURN
-            END IF
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(7)),k)
-            IF (ierr /= nf90_noerr) THEN
-                PRINT*, TRIM(nf90_strerror(ierr))
-                RETURN
-            END IF
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(8)),bfe)
-            IF (ierr /= nf90_noerr) THEN
-                PRINT*, TRIM(nf90_strerror(ierr))
-                RETURN
-            END IF
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(9)),cint)
-            IF (ierr /= nf90_noerr) THEN
-                PRINT*, TRIM(nf90_strerror(ierr))
-                RETURN
-            END IF
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(10)),t)
-            IF (ierr /= nf90_noerr) THEN
-                PRINT*, TRIM(nf90_strerror(ierr))
-                RETURN
-            END IF
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(11)),delta_t)
-            IF (ierr /= nf90_noerr) THEN
-                PRINT*, TRIM(nf90_strerror(ierr))
-                RETURN
-            END IF
+                ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(1)),initial_conc)
+                IF (ierr /= nf90_noerr) THEN
+                    PRINT*, TRIM(nf90_strerror(ierr))
+                    RETURN
+                END IF
+                ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(2)),conc_std)
+                IF (ierr /= nf90_noerr) THEN
+                    PRINT*, TRIM(nf90_strerror(ierr))
+                    RETURN
+                END IF
+                ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(3)),nx)
+                IF (ierr /= nf90_noerr) THEN
+                    PRINT*, TRIM(nf90_strerror(ierr))
+                    RETURN
+                END IF
+                ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(4)),ny)
+                IF (ierr /= nf90_noerr) THEN
+                    PRINT*, TRIM(nf90_strerror(ierr))
+                    RETURN
+                END IF
+                ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(5)),m1)
+                IF (ierr /= nf90_noerr) THEN
+                    PRINT*, TRIM(nf90_strerror(ierr))
+                    RETURN
+                END IF
+                ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(6)),m2)
+                IF (ierr /= nf90_noerr) THEN
+                    PRINT*, TRIM(nf90_strerror(ierr))
+                    RETURN
+                END IF
+                ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(7)),k)
+                IF (ierr /= nf90_noerr) THEN
+                    PRINT*, TRIM(nf90_strerror(ierr))
+                    RETURN
+                END IF
+                ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(8)),bfe)
+                IF (ierr /= nf90_noerr) THEN
+                    PRINT*, TRIM(nf90_strerror(ierr))
+                    RETURN
+                END IF
+                ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(9)),cint)
+                IF (ierr /= nf90_noerr) THEN
+                    PRINT*, TRIM(nf90_strerror(ierr))
+                    RETURN
+                END IF
+                ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(10)),t)
+                IF (ierr /= nf90_noerr) THEN
+                    PRINT*, TRIM(nf90_strerror(ierr))
+                    RETURN
+                END IF
+                ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(11)),delta_t)
+                IF (ierr /= nf90_noerr) THEN
+                    PRINT*, TRIM(nf90_strerror(ierr))
+                    RETURN
+                END IF
+                ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(13)),df_tol)
+                IF (ierr /= nf90_noerr) THEN
+                    PRINT*, TRIM(nf90_strerror(ierr))
+                    RETURN
+                END IF
+                ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(14)),random_seed)
+                IF (ierr /= nf90_noerr) THEN
+                    PRINT*, TRIM(nf90_strerror(ierr))
+                    RETURN
+                END IF
+                ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(15)),cpo)
+                IF (ierr /= nf90_noerr) THEN
+                    PRINT*, TRIM(nf90_strerror(ierr))
+                    RETURN
+                END IF
+            end if
+
             ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(12)),current_time)
             IF (ierr /= nf90_noerr) THEN
                 PRINT*, TRIM(nf90_strerror(ierr))
                 RETURN
             END IF
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(13)),df_tol)
-            IF (ierr /= nf90_noerr) THEN
-                PRINT*, TRIM(nf90_strerror(ierr))
-                RETURN
-            END IF
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(14)),random_seed)
-            IF (ierr /= nf90_noerr) THEN
-                PRINT*, TRIM(nf90_strerror(ierr))
-                RETURN
-            END IF
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(15)),cpo)
-            IF (ierr /= nf90_noerr) THEN
-                PRINT*, TRIM(nf90_strerror(ierr))
-                RETURN
-            END IF
 
+            print*, current_time
 
 
 
@@ -351,6 +362,7 @@ MODULE checkpointing
 
 
         END subroutine read_checkpoint_in
+
 
 
     END MODULE checkpointing
