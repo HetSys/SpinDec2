@@ -61,13 +61,14 @@ contains
 
     end function read_poly
 
-    subroutine read_params(fn, initial_conc,conc_std,coeffs,Nx,Ny,M1,M2,k,bfe,Cint,cpi,cpo,t,delta_t,df_tol,random_seed,err)
+    subroutine read_params(fn, initial_conc,conc_std,coeffs,Nx,Ny,M1,M2,k,bfe,&
+        Cint,cpi,cpo,t,delta_t,df_tol,random_seed,use_input,err)
 
         integer, parameter :: infile = 15
         character(len=128) :: name,var
         character(*), intent(in) :: fn
         integer :: read_counter,i,iostat,ierr
-        integer , intent(out) :: nx,ny,cint,random_seed
+        integer , intent(out) :: nx,ny,cint,random_seed,use_input
         integer, intent(out) :: err
         character(len=128),intent(out) :: cpi,cpo
         real(kind=REAL64), intent(out) :: initial_conc, conc_std,m1,m2,k,bfe,t,delta_t,df_tol
@@ -80,7 +81,8 @@ contains
         delta_t = -1
         t = -1
         cpi = ""
-        cpo = "Default"
+        cpo = "Checkpoint.cpf"
+        use_input = 0
         !reading file
         !There is a large amount of  if statements below to ensure values are
         !sensisble (no negative max time etc)
@@ -224,8 +226,8 @@ contains
                     err = -1
                     exit
                 end if
-                if (cint < -1) then
-                    print*, "Checkpointing_interval must be >= -1.&
+                if (cint < 1) then
+                    print*, "Checkpointing_interval must be >= 1.&
                      Please check you input file and try again"
                     err = -1
                 end if
@@ -300,6 +302,19 @@ contains
                 end if
                 if (random_seed < 0) then
                     print*, "Random_seed must be >= 0.&
+                     Please check you input file and try again"
+                    err = -1
+                end if
+            else if(name == "Use_input") then
+                read(var,*,iostat=ierr) use_input
+                if(ierr /= 0) then
+                    print*,"An error occured reading Random_seed. &
+                    Please check input file and try again"
+                    err = -1
+                    exit
+                end if
+                if (use_input /= 0 .and. use_input /=1) then
+                    print*, "use_input must be 1(True) or 0(False).&
                      Please check you input file and try again"
                     err = -1
                 end if
