@@ -32,7 +32,7 @@ compile () {
     echo -e "Compile line: $comp_line\n"
 
     # Compile
-    # $comp_line $fflags $prog_files $flibs -o $compd_file
+    $comp_line $fflags $prog_files $flibs -o $compd_file
 
     # Add binary to $PATH (with some checks)
     while true; do
