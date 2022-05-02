@@ -1,39 +1,43 @@
 #!/bin/bash 
 # install.sh
 # Compilation/install script for SpinDec
-# Author: Dylan Morgan
-# email: dylan.morgan@warwick.ac.uk
+
+# Exit if something fails
+set -e
 
 ### Compilation ###
 compile () {
     # Option for choosing the compiler
-    if [[ $2 == "d" ]] || [[ $2 == "debug" ]]; then
-        debug=true
-        comp_line="gfortran -g -std=2008 -Wall -fimplicit-none -fcheck=all " \
-            "-Wextra -pedantic -fbacktrace"
-    elif [[ -z $2 ]]; then
+    if [[ $1 == "d" ]] || [[ $1 == "debug" ]]; then
+        comp_line="gfortran -g -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
+    elif [[ -z $1 ]]; then
         comp_line="gfortran -g"
     else
-        echo "Not a valid option for -d/--debug"
+        echo -e "Not a valid option for -c/--compile\n"
+        help_message
         exit 2
     fi
 
     # Add program files from prog_files.txt
     input_file="./prog_files.txt"
     prog_files=()
-    while IFS= read -r line; do
+    while read -r line; do
         prog_files+=("$line")
     done < "$input_file"
+
+    echo "prog file: $prog_files"
 
     # Binary name and location
     compd_file="./bin/spindec"
 
     # NetCDF flags
-    # flibs=`nf-config --flibs`
-    # fflags=`nf-config --fflags`
+    flibs=`nf-config --flibs`
+    fflags=`nf-config --fflags`
+
+    echo -e "Compile line: $comp_line\n"
 
     # Compile
-    # $comp_line $fflags $prog_files $flibs -o $compd_file
+    $comp_line $fflags $prog_files $flibs -o $compd_file
 
     # Add binary to $PATH (with some checks)
     while true; do
@@ -74,7 +78,7 @@ example () {
     example_dir="./test/"
 }
 
-help_message () {
+ascii_art () {
     echo
     echo -E '  %%%%%%\          %%\        %%%%%%\                    %%%%%%\'
     echo -E ' %%  __%%\         \__|       %%   %%\                        %%\'
@@ -90,6 +94,10 @@ help_message () {
     echo
 }
 
+help_message () {
+    echo "Haha good luck"
+}
+
 ### Argument Parser ###
 # Requires util-linux
 options=$(getopt -o c::te::h -l compile::,test,example::,help -- "$@")
@@ -102,7 +110,7 @@ eval set -- "$options"
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -c | --compile)
-            compile
+            compile $2
             shift 2
             ;;
         -t | --test)
@@ -114,6 +122,7 @@ while [[ $# -gt 0 ]]; do
             shift 2
             ;;
         -h | --help)
+            ascii_art
             help_message
             break
             ;;
