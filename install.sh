@@ -23,6 +23,7 @@ compile () {
     readarray -t prog_files < "$input_file"
 
     # Binary name and location
+    mod_files="./bin"
     compd_file="./bin/spindec"
 
     # NetCDF flags
@@ -31,8 +32,8 @@ compile () {
 
     echo -e "Compile line: $comp_line\n"
 
-    # Compile
-    $comp_line $fflags $prog_files $flibs -o $compd_file
+    # Compile TODO check that these flags are correct
+    $comp_line $fflags -c $prog_files -J$mod_files $flibs -o $compd_file
 
     # Add binary to $PATH (with some checks)
     while true; do
