@@ -89,6 +89,7 @@ clean () {
     	  ls */* | grep -E 'bin/*.mod|bin/*.o|bin/spindec'
 	      echo
 
+        # Ask for confirmation before removing if option provided
         if [[ "$1" == "c" ]] || [[ "$1" == "confirm" ]]; then
 	          read -p 'Proceed? [Y/n] ' confirmation
         elif [[ -z "$1" ]]; then
@@ -115,9 +116,15 @@ clean () {
     done
 }
 
-auto_test () {
+unit_test_compile () {
+    ### Compile unit tests ###
+
     # Tests directory
-    tests_dir="./test/"
+    tests=(./test/*)
+}
+
+unit_test_run () {
+   ### Run unit tests ###
 }
 
 example () {
@@ -145,16 +152,17 @@ help_message () {
     echo "usage: spindec [-h]"
     echo "               [-c DEBUG]"
     echo "               [-C CONFIRM]"
-    echo "               [-t]"
+    echo "               [-t OPTIONS]"
     echo "               [-e]"
     echo
     echo "options:"
     echo "  -h, --help              show this help message and exit"
     echo "  -c, --compile DEBUG     compile the code with optional debug option"
-    echo "                          (default=none)"
+    echo "                          DEBUG options: none,d/debug (default=none)"
     echo "  -C, --clean CONFIRM     remove compiled binaries from repository"
-    echo "                          (default=none)"
-    echo "  -t, --test              run automated unit tests"
+    echo "                          CONFIRM options: none,c/confirm (default=none)"
+    echo "  -t, --test RUN          run automated unit tests"
+    echo "                          RUN options: c/compile,r/run,b/both (default=both)"
     echo "  -e, --example           run with example initialisation states"
 }
 
@@ -195,7 +203,18 @@ while [[ $# -gt 0 ]]; do
             break
 	          ;;
         -t | --test)
-            auto_test
+            if [[ "$2" == "b" ]] || [[ "$2" == "both" ]]; then
+                unit_test_compile
+                unit_test_run
+            elif [[ "$2" == "c" ]] || [[ "$2" == "compile" ]]; then
+                unit_test_compile
+            elif [[ "$2" == "r" ]] || [[ "$2" == "run" ]]; then
+                unit_test_run
+            else
+                echo -e "$2 is not a valid option for -t/--test\n"
+                help_message
+                exit 2
+            fi
             break
             ;;
         -e | --example)
