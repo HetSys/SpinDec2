@@ -40,7 +40,7 @@ program main
     Kappa = 1.6
 
     !Take constant M to be average estimate of Darken's Equation
-    M = MA*(1-c0) + MB*c0
+    M = (MA*(1-c0) + MB*c0)*c0*(1-c0)
 
     c0 = 0.7
     c_std = 0.1
