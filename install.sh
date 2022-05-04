@@ -18,9 +18,8 @@ compile () {
         exit 2
     fi
 
-    # Add program files from prog_files.txt
-    input_file="./prog_files.txt"
-    readarray -t prog_files < "$input_file"
+    # Add program files from src 
+    prog_files=(./src/*)
 
     # Binary name and location
     mod_files="./bin"
@@ -33,7 +32,7 @@ compile () {
     echo -e "Compile line: $comp_line\n"
 
     # Compile
-    $comp_line $fflags -c $prog_files -J$flibs -o $compd_file
+    $comp_line $fflags ${prog_files[@]} -J$flibs -o $compd_file
 
     # Add binary to $PATH (with some checks)
     while true; do
