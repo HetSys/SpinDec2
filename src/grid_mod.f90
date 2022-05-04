@@ -49,11 +49,11 @@ module grid_modules
         ! C_std is the standard deviation of the distribution
 
         implicit none
-
-        integer :: Nx, Ny
-        real(real64), dimension(Nx,Ny) :: grid
+        
+        integer, intent(in) :: Nx, Ny
+        real(real64), intent(in) :: C, C_std
+        real(real64), dimension(Nx,Ny), intent(out) :: grid
         real(real64) :: x ! dummy variable for concnetration
-        real(real64) :: C, C_std
         integer :: i,j ! counters
 
         do i = 1, Nx
