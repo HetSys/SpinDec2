@@ -1,3 +1,6 @@
+!gfortran -std=f2018 -fbounds-check src/Input_parser.f90 src/checkpoint.f90 src/free_energy.f90 src/grid_mod.f90 src/potentials.f90 src/io.f90 src/cahn_hilliard.f90 src/main.f90 `nf-config --fflags --flibs`
+
+
 program main
     use input_params
     use checkpointing
