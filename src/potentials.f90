@@ -22,27 +22,15 @@ module potentials
         ny = size(mu,2)
         n = size(a)
 
-        !Loop filling the mu array
-        !! original way that Anas did it
-        ! do j=1,ny
-        !     do i=1,nx
-        !         do k=1,n-1
-        !             mu(i,j) = mu(i,j) + k*a(k+1)*c(i,j)**(k-1)
-        !         end do
-        !     end do
-        ! end do
-
-        !Loop filling the mu array
-        !! The way i think it should be as array is form 1 to N, and math sum in doc 
-        !! is 0 to N-1
-        !! Can remove which ever turns out to be wrong and keep the true one
+        ! Loop filling the mu array
         do j=1,ny
             do i=1,nx
-                do k=1,n
-                    mu(i,j) = mu(i,j) + (k-1)*a(k)*c(i,j)**(k-2)
+                do k=1,n-1
+                    mu(i,j) = mu(i,j) + k*a(k+1)*c(i,j)**(k-1)
                 end do
             end do
         end do
+
 
     end subroutine
 
