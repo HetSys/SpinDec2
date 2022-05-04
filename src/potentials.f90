@@ -32,7 +32,7 @@ module potentials
         end do
 
 
-    end subroutine
+    end subroutine bulk_potential
 
     ! Subroutine to calculate total chemical potential 
     ! @param Q: 2D grid to store total chemical potential
@@ -65,6 +65,6 @@ module potentials
             end do
         end do
 
-    end subroutine
+    end subroutine total_potential
 
-end module
+end module potentials
