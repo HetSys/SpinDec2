@@ -18,23 +18,25 @@ MODULE checkpointing
         integer :: Cint
         real(kind=real64) :: t
         real(kind=real64) :: time_step
-        real(kind=real64) :: current_time
+        integer :: current_iter
         real(kind=real64) :: df_tol
         integer :: random_seed
     END TYPE
 
     CONTAINS
         ! This subroutine was apdated from the example provided in the assignment brief
-        SUBROUTINE write_checkpoint_file(arr3dim, coeffs,cpo,initial_conc,conc_std&
-            ,nx,ny,m1,m2,k,bfe,Cint,t,time_step,current_time,df_tol,random_seed,ierr)
+        SUBROUTINE write_checkpoint_file(arr3dim, arr2dim,arr1dim, coeffs,cpo,initial_conc,conc_std&
+            ,nx,ny,m1,m2,k,bfe,Cint,t,time_step,current_iter,df_tol,random_seed,ierr)
             real(kind=real64), INTENT(IN), DIMENSION(:,:,:) :: arr3dim
+            real(kind=real64), INTENT(IN), DIMENSION(:,:) :: arr2dim
+            real(kind=real64), INTENT(IN), DIMENSION(:) :: arr1dim
             real(kind=real64), INTENT(IN), DIMENSION(:) :: coeffs
-            integer , intent(in) :: nx,ny,cint,random_seed
+            integer, intent(in) :: nx,ny,cint,random_seed,current_iter
             real(kind=REAL64), intent(in) :: initial_conc, conc_std,m1,m2,k,bfe,t,time_step&
-                ,df_tol,current_time
+                ,df_tol
             !TYPE(run_data_type), INTENT(IN) :: run_data
             character(len = *),intent(in) :: cpo
-            CHARACTER(LEN=1), DIMENSION(4) :: dims = (/"x", "y", "t","c"/)
+            CHARACTER(LEN=1), DIMENSION(7) :: dims = (/"x", "y", "t","c","a","b","f"/)
             CHARACTER(LEN=12), DIMENSION(15) :: comp_names = (/"initial_conc",&
             "conc_std    ", "nx          ","ny          ","m1          ",&
             "m2          ","k           ","bfe         ","cint        "&
@@ -42,14 +44,15 @@ MODULE checkpointing
             ,"random_seed ","cpo         "/)
             INTEGER :: file_id, i
             INTEGER,intent(out) :: ierr
-            INTEGER :: ndims = 4
-            INTEGER, DIMENSION(4) :: sizes, dim_ids
-            INTEGER, DIMENSION(2) :: var_ids
+            INTEGER :: ndims = 7
+            INTEGER, DIMENSION(7) :: sizes, dim_ids
+            INTEGER, DIMENSION(4) :: var_ids
 
             ! Acquiring the size of the dimensions
             sizes(1:3) = SHAPE(arr3dim)
             sizes(4) = size(coeffs)
-
+            sizes(5:6) = shape(arr2dim)
+            sizes(7) = size(arr1dim)
 
             ! Opening a file
             ierr = nf90_create(cpo, NF90_CLOBBER, file_id)
@@ -75,6 +78,18 @@ MODULE checkpointing
             END IF
 
             ierr = nf90_def_var(file_id, "coeffs", NF90_REAL, dim_ids(4), var_ids(2))
+            IF (ierr /= nf90_noerr) THEN
+                PRINT*, TRIM(nf90_strerror(ierr))
+                RETURN
+            END IF
+
+            ierr = nf90_def_var(file_id, "mu", NF90_REAL, dim_ids(5:6), var_ids(3))
+            IF (ierr /= nf90_noerr) THEN
+                PRINT*, TRIM(nf90_strerror(ierr))
+                RETURN
+            END IF
+
+            ierr = nf90_def_var(file_id, "ftot", NF90_REAL, dim_ids(7), var_ids(4))
             IF (ierr /= nf90_noerr) THEN
                 PRINT*, TRIM(nf90_strerror(ierr))
                 RETURN
@@ -136,7 +151,7 @@ MODULE checkpointing
                 PRINT*, TRIM(nf90_strerror(ierr))
                 RETURN
             END IF
-            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(12)),current_time)
+            ierr = nf90_put_att(file_id, NF90_GLOBAL, TRIM(comp_names(12)),current_iter)
             IF (ierr /= nf90_noerr) THEN
                 PRINT*, TRIM(nf90_strerror(ierr))
                 RETURN
@@ -177,6 +192,17 @@ MODULE checkpointing
                 RETURN
             END IF
 
+            ierr = nf90_put_var(file_id, var_ids(3), arr2dim)
+            IF (ierr /= nf90_noerr) THEN
+                PRINT*, TRIM(nf90_strerror(ierr))
+                RETURN
+            END IF
+            ierr = nf90_put_var(file_id, var_ids(4), arr1dim)
+            IF (ierr /= nf90_noerr) THEN
+                PRINT*, TRIM(nf90_strerror(ierr))
+                RETURN
+            END IF
+
 
             ! Closeing the file
             ierr = nf90_close(file_id)
@@ -185,23 +211,26 @@ MODULE checkpointing
                 RETURN
             END IF
 
-            PRINT*, "Writing checkpoint successful"
+            PRINT*, "Writing checkpoint successful at iter", current_iter
 
 
         END SUBROUTINE write_checkpoint_file
 
 
-        SUBROUTINE read_checkpoint_in(arr3dim, fn, initial_conc,conc_std,coeffs&
-            ,Nx,Ny,M1,M2,k,bfe,Cint,cpo,t,delta_t,df_tol,current_time,random_seed,use_input,ierr)
+        SUBROUTINE read_checkpoint_in(arr3dim,arr2dim,arr1dim, fn, initial_conc,conc_std,coeffs&
+            ,Nx,Ny,M1,M2,k,bfe,Cint,cpo,t,delta_t,df_tol,current_iter,random_seed,use_input,ierr)
             integer , intent(inout) :: nx,ny,cint,random_seed
             integer,intent(in) :: use_input
-            character(len=128),intent(inout) :: cpo
+            character(len=*),intent(inout) :: cpo
             character(len=*),intent(in) :: fn
             real(kind=REAL64), intent(inout) :: initial_conc, conc_std,m1,m2,k,bfe,t,delta_t&
-                ,df_tol,current_time
+                ,df_tol
+            integer, intent(inout) :: current_iter
             real(kind=real64), intent(inout),dimension(:),allocatable :: coeffs
             real(kind=real64), intent(out),dimension(:,:,:),allocatable :: arr3dim
-            CHARACTER(LEN=1), DIMENSION(4) :: dims = (/"x", "y", "t","c"/)
+            real(kind=real64), intent(out),dimension(:,:),allocatable :: arr2dim
+            real(kind=real64), intent(out),dimension(:),allocatable :: arr1dim
+            CHARACTER(LEN=1), DIMENSION(7) :: dims = (/"x", "y", "t","c","a","b","f"/)
             CHARACTER(LEN=12), DIMENSION(15) :: comp_names = (/"initial_conc",&
             "conc_std    ", "nx          ","ny          ","m1          ",&
             "m2          ","k           ","bfe         ","cint        "&
@@ -209,9 +238,9 @@ MODULE checkpointing
             ,"random_seed ","cpo         "/)
             INTEGER ::  file_id, i
             INTEGER,intent(out) :: ierr
-            INTEGER :: ndims = 4
-            INTEGER, DIMENSION(4) :: sizes, dim_ids
-            INTEGER, DIMENSION(2) :: var_ids
+            INTEGER :: ndims = 7
+            INTEGER, DIMENSION(7) :: sizes, dim_ids
+            INTEGER, DIMENSION(4) :: var_ids
 
             !Open file
             ierr = nf90_open(fn, NF90_NOWRITE, file_id)
@@ -240,7 +269,8 @@ MODULE checkpointing
 
             !allocate
             allocate(arr3dim(sizes(1),sizes(2),sizes(3)))
-
+            allocate(arr2dim(sizes(5),sizes(6)))
+            allocate(arr1dim(sizes(7)))
 
             !get var ids and read data
             ierr = nf90_inq_varid(file_id,"data",var_ids(1))
@@ -250,6 +280,30 @@ MODULE checkpointing
             END IF
 
             ierr = nf90_get_var(file_id,var_ids(1),arr3dim)
+            IF (ierr /= nf90_noerr) THEN
+                PRINT*, TRIM(nf90_strerror(ierr))
+                RETURN
+            END IF
+
+            ierr = nf90_inq_varid(file_id,"mu",var_ids(3))
+            IF (ierr /= nf90_noerr) THEN
+                PRINT*, TRIM(nf90_strerror(ierr))
+                RETURN
+            END IF
+
+            ierr = nf90_get_var(file_id,var_ids(3),arr2dim)
+            IF (ierr /= nf90_noerr) THEN
+                PRINT*, TRIM(nf90_strerror(ierr))
+                RETURN
+            END IF
+
+            ierr = nf90_inq_varid(file_id,"ftot",var_ids(4))
+            IF (ierr /= nf90_noerr) THEN
+                PRINT*, TRIM(nf90_strerror(ierr))
+                RETURN
+            END IF
+
+            ierr = nf90_get_var(file_id,var_ids(4),arr1dim)
             IF (ierr /= nf90_noerr) THEN
                 PRINT*, TRIM(nf90_strerror(ierr))
                 RETURN
@@ -344,7 +398,7 @@ MODULE checkpointing
                 END IF
             end if
 
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(12)),current_time)
+            ierr = nf90_get_att(file_id, NF90_GLOBAL, TRIM(comp_names(12)),current_iter)
             IF (ierr /= nf90_noerr) THEN
                 PRINT*, TRIM(nf90_strerror(ierr))
                 RETURN

@@ -6,18 +6,24 @@ program main
 
     implicit none
 
-    integer  :: nx,ny,cint,random_seed,err,i,count,ncerr,use_input
+    integer  :: nx,ny,cint,random_seed,err,i,count,ncerr,use_input,current_time
     character(len=128) :: cpi,cpo
-    real(kind=REAL64) :: initial_conc, conc_std,m1,m2,k,bfe,t,delta_t,df_tol,current_time
+    real(kind=REAL64) :: initial_conc, conc_std,m1,m2,k,bfe,t,delta_t,df_tol
     real(kind=real64),dimension(:),allocatable :: coeffs
-    real(kind=real64), dimension(:,:,:), allocatable :: data
+    real(kind=real64), dimension(:,:,:), allocatable :: datas
+    real(kind=real64), dimension(:,:), allocatable :: mu
+    real(kind=real64), dimension(:), allocatable :: ftot
 
     TYPE(run_data_type) :: run_data
 
-    allocate(data(1,1,1))
+    allocate(datas(1,1,1))
+    allocate(mu(1,1))
+    allocate(ftot(1))
 
 
-    data(1,1,1) = 1
+    datas(1,1,1) = 1
+    mu(1,1) = 1
+    ftot(1) = 1
     current_time = 0
     count = 0
 
@@ -31,17 +37,17 @@ program main
     !If err is -1 then the input file was not read properly and the code needs to exit
     if(err == -1) then
         print*, "There was an issue with the input file please check and try again"
-        return
+        stop
     end if
 
     !!This will be how the checkpoint input file will be read. IF it cannot be read the code will stop
     !!There is a flag use_input which will indicate whether to overwrite input or not
     if(cpi /= "") then
-        call read_checkpoint_in(data, cpi,initial_conc,conc_std,coeffs,nx,&
+        call read_checkpoint_in(datas,mu,ftot, cpi,initial_conc,conc_std,coeffs,nx,&
             ny,m1,m2,k,bfe,cint,cpo,t,delta_t,df_tol,current_time,random_seed,use_input,ncerr)
         if(ncerr /= nf90_noerr) then
             print*, "There was an error reading the checkpoint file."
-            return
+            stop
         end if
     end if
 
@@ -65,20 +71,20 @@ program main
 
     !!This will be the format in which the checkpointing system will work
 
-    do while(current_time < t)
+    do while(current_time < t/delta_t)
         if(count >= cint) then
-            call write_checkpoint_file(data,coeffs,cpo,initial_conc,conc_std&
+            call write_checkpoint_file(datas,mu,ftot,coeffs,cpo,initial_conc,conc_std&
                 ,nx,ny,m1,m2,k,bfe,Cint,t,delta_t,current_time,df_tol,random_seed,ncerr)
             if(ncerr /= nf90_noerr) then
                 print*, "There was an error writing the checkpoint file."
-                return
+                stop
             end if
             count = 0
         end if
         count = count +1
-        current_time = current_time+delta_t
-        data(1,1,1) = data(1,1,1)+1
-        print*, data(1,1,1)
+        current_time = current_time+1
+        datas(1,1,1) = datas(1,1,1)+1
+        print*, datas(1,1,1)
 
     end do
 
