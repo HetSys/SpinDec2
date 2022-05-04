@@ -1,22 +1,22 @@
 #!/bin/bash 
 # install.sh
-# Compilation/install script for SpinDec
+# Compilation/install script for SpinDec2
 
 # Exit if something fails
 set -e
 
 # Enable recursive globbing 
-shopt -s globstar
+# shopt -s globstar
 
 compile () {
     ### Compilation ###
     # Option for choosing the compiler
-    if [[ $1 == "d" ]] || [[ $1 == "debug" ]]; then
+    if [[ "$1" == "d" ]] || [[ "$1" == "debug" ]]; then
         comp_line="gfortran -g -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
-    elif [[ -z $1 ]]; then
+    elif [[ -z "$1" ]]; then
         comp_line="gfortran -g"
     else
-        echo -e "Not a valid option for -c/--compile\n"
+        echo -e "$1 is not a valid option for -c/--compile\n"
         help_message
         exit 2
     fi
@@ -40,7 +40,7 @@ compile () {
     while true; do
         read -p 'Add binary to $PATH? [Y/n] ' confirmation
 
-        if [[ "$confirmation" =~ ^[Yy]$ ]] || "[[ $confirmation" == '' ]]; then
+        if [[ "$confirmation" =~ ^[Yy]$ ]] || [[ "$confirmation" == '' ]]; then
             if grep -Fq "spindec" $HOME/.bashrc; then
                 echo 'The binary is already in your $PATH'
                 break
@@ -48,7 +48,8 @@ compile () {
                 if [[ "$SHELL" == *"bash"* ]]; then
                     working_dir=`pwd`
                     echo "export PATH=`pwd`/bin/spindec:$PATH" >> $HOME/.bashrc
-                    echo 'Binary added to $PATH'
+                    echo 'Binary added to $PATH and written to ~/.bashrc'
+                    echo "You will need to restart your shell with 'source ~/.bashrc'"
                     break
                 else
                     echo 'Unable to add to $PATH as bash is not your default shell'
@@ -56,7 +57,7 @@ compile () {
                 fi
             fi
 
-        elif [[ $confirmation =~ ^[Nn]$ ]]; then
+        elif [[ "$confirmation" =~ ^[Nn]$ ]]; then
             echo 'Not added to $PATH'
             break
         else
@@ -67,41 +68,50 @@ compile () {
 
 clean () {
     ### Remove compiled binaries ###
-    bins=("*/*.mod" "*/*.o" "*/spindec")
+    bins=("bin/*.mod" "bin/*.o" "bin/*spindec")
 
     # Check for binaries
-    if [[ `echo ${bins[@]}` == "*/*.mod */*.o */spindec" ]]; then 
-	echo "No binaries found"
-	exit 0
-    fi
+    if [[ `ls */* | grep -E 'bin/*.mod|bin/*.o|bin/spindec'` == '' ]]; then
+	      echo "No binaries found"
+        exit 1
+    fi 
 
     # Remove globs from $bins if they aren't found
     for glob in ${bins[@]}; do 
-	if [[ "$glob" == *'*'* ]]; then
-	    # Write thing to remove from array
-	fi 
+        if [[ "$glob" == *'*'* ]]; then
+            bins=("${bins[@]/$glob}")
+	      fi 
     done     
-
-    exit 0
 
     # Remove binaries
     while true; do
-	echo -e "Removing the following compiled binaries:\n"
-    	ls */* | grep -E 'bin/*.mod|bin/*.o|bin/spindec'
-	echo
-	read -p 'Proceed? [Y/n] ' confirmation
-	
-        if [[ $confirmation =~ ^[Yy]$ ]] || [[ $confirmation == '' ]]; then
-	    for i in ${bins[@]}; do 
-		rm $i
-	    done
-	    break 
-        elif [[ $confirmation =~ ^[Nn]$ ]]; then
+	      echo -e "Removing the following compiled binaries:\n"
+    	  ls */* | grep -E 'bin/*.mod|bin/*.o|bin/spindec'
+	      echo
+
+        if [[ "$1" == "c" ]] || [[ "$1" == "confirm" ]]; then
+	          read -p 'Proceed? [Y/n] ' confirmation
+        elif [[ -z "$1" ]]; then
+            confirmation="y"
+        else 
+            echo -e "$1 is not a valid option for -C/--clean\n"
+            help_message
+            exit 2
+        fi
+      
+        if [[ "$confirmation" =~ ^[Yy]$ ]] || [[ "$confirmation" == '' ]]; then
+            for i in ${bins[@]}; do 
+                rm "$i"
+            done
+            echo "Cleaned successfully"
+            break 
+        elif [[ "$confirmation" =~ ^[Nn]$ ]]; then
             echo 'Binaries not removed'
             break
         else
             echo -e 'Not a valid option\n'
         fi
+
     done
 }
 
@@ -134,6 +144,7 @@ ascii_art () {
 help_message () {
     echo "usage: spindec [-h]"
     echo "               [-c DEBUG]"
+    echo "               [-C CONFIRM]"
     echo "               [-t]"
     echo "               [-e]"
     echo
@@ -141,25 +152,31 @@ help_message () {
     echo "  -h, --help              show this help message and exit"
     echo "  -c, --compile DEBUG     compile the code with optional debug option"
     echo "                          (default=none)"
-    echo "  -C, --clean 	    remove compiled binaries from repository"
+    echo "  -C, --clean CONFIRM     remove compiled binaries from repository"
+    echo "                          (default=none)"
     echo "  -t, --test              run automated unit tests"
     echo "  -e, --example           run with example initialisation states"
 }
 
 ### Argument Parser ###
-# Requires util-linux
+# Requires util-linux (which should be installed with netcdf)
 # getopt options list
-options=$(getopt -o c::Cte::h -l compile::,clean,test,example::,help -- "$@")
+options=$(getopt -o c::C::te::h -l compile::,clean::,test,example::,help -- "$@")
 
 # Exit if error code
 if [[ $? -ne 0 ]]; then
     exit 1;
 fi
 
-# Help and exit if no options given
+# Help and exit if incorrect args given
 if [[ $# -lt 1 ]]; then
     ascii_art
     help_message
+    exit 0
+elif [[ $# -gt 1 ]]; then
+    echo -e "Only 1 argument may be specified\n"
+    help_message
+    exit 2
 fi
 
 eval set -- "$options"
@@ -170,15 +187,20 @@ while [[ $# -gt 0 ]]; do
         -c | --compile)
             compile $2
             shift 2
+            break
             ;;
-	-C | --clean)
-	    clean
-	    ;;
+	      -C | --clean)
+	          clean $2
+            shift 2
+            break
+	          ;;
         -t | --test)
             auto_test
+            break
             ;;
         -e | --example)
             example
+            break
             ;;
         -h | --help)
             ascii_art
