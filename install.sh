@@ -12,9 +12,9 @@ compile () {
     ### Compilation ###
     # Option for choosing the compiler
     if [[ "$1" == "d" ]] || [[ "$1" == "debug" ]]; then
-        comp_line="gfortran -g -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
+        comp_line="gfortran -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
     elif [[ -z "$1" ]]; then
-        comp_line="gfortran -g"
+        comp_line="gfortran"
     else
         echo -e "$1 is not a valid option for -c/--compile\n"
         help_message
@@ -22,19 +22,19 @@ compile () {
     fi
 
     # Add program files from src 
-    prog_files=(./src/*)
+    prog_files=(src/*)
 
     # Binary name and location
-    mod_files="./bin"
-    compd_file="./bin/spindec"
+    mod_files="bin/"
+    compd_file="bin/spindec"
 
     # NetCDF flags
     flibs=`nf-config --flibs`
     fflags=`nf-config --fflags`
 
     # Compile
-    echo -e "Compile line: $comp_line $fflags ${prog_files[@]} -J$flibs -o $compd_file\n"
-    $comp_line $fflags ${prog_files[@]} -J$flibs -o $compd_file
+    echo -e "Compile line: $comp_line $fflags ${prog_files[@]} $flibs -J$mod_files -I$mod_files -o $compd_file\n"
+    $comp_line $fflags ${prog_files[@]} $flibs -J$mod_files -I$mod_files -o $compd_file
 
     # Add binary to $PATH (with some checks)
     while true; do
@@ -68,30 +68,30 @@ compile () {
 
 clean () {
     ### Remove compiled binaries ###
-    bins=("bin/*.mod" "bin/*.o" "bin/*spindec")
+    bins=("bin/*.mod" "bin/*spindec")
 
     # Check for binaries
-    if [[ `ls */* | grep -E 'bin/*.mod|bin/*.o|bin/spindec'` == '' ]]; then
-	      echo "No binaries found"
+    if [[ `ls */* | grep -E 'mod|spindec'` == '' ]]; then
+        echo "No binaries found"
         exit 1
-    fi 
+    fi
 
     # Remove globs from $bins if they aren't found
     for glob in ${bins[@]}; do 
         if [[ "$glob" == *'*'* ]]; then
             bins=("${bins[@]/$glob}")
-	      fi 
+        fi
     done     
 
     # Remove binaries
     while true; do
-	      echo -e "Removing the following compiled binaries:\n"
-    	  ls */* | grep -E 'bin/*.mod|bin/*.o|bin/spindec'
-	      echo
+        echo -e "Removing the following files:\n"
+        ls */* | grep -E 'mod|spindec'
+        echo
 
         # Ask for confirmation before removing if option provided
         if [[ "$1" == "c" ]] || [[ "$1" == "confirm" ]]; then
-	          read -p 'Proceed? [Y/n] ' confirmation
+            read -p 'Proceed? [Y/n] ' confirmation
         elif [[ -z "$1" ]]; then
             confirmation="y"
         else 
@@ -101,16 +101,16 @@ clean () {
         fi
       
         if [[ "$confirmation" =~ ^[Yy]$ ]] || [[ "$confirmation" == '' ]]; then
-            for i in ${bins[@]}; do 
-                rm "$i"
+            for file in ${bins[@]}; do
+                rm "$file"
             done
             echo "Cleaned successfully"
             break 
         elif [[ "$confirmation" =~ ^[Nn]$ ]]; then
-            echo 'Binaries not removed'
+            echo 'Files not removed'
             break
         else
-            echo -e 'Not a valid option\n'
+            echo -e '\nNot a valid option'
         fi
 
     done
@@ -124,7 +124,8 @@ unit_test_compile () {
 }
 
 unit_test_run () {
-   ### Run unit tests ###
+    ### Run unit tests ###
+    placeholder="placeholder"
 }
 
 example () {
@@ -145,7 +146,8 @@ ascii_art () {
     echo -E '          %% |'
     echo -E '          \__|'
     echo
-    echo -e ' Modelling the Phase Field of Spinoidal Decomposition\n'
+    echo -e ' Modelling the Phase Field of Spinoidal Decomposition'
+    echo -e ' _________________________________________________________________\n'
 }
 
 help_message () {
@@ -158,11 +160,14 @@ help_message () {
     echo "options:"
     echo "  -h, --help              show this help message and exit"
     echo "  -c, --compile DEBUG     compile the code with optional debug option"
-    echo "                          DEBUG options: none,d/debug (default=none)"
+    echo "                          DEBUG options: [ none | d/debug ] (default=none)"
+    echo
     echo "  -C, --clean CONFIRM     remove compiled binaries from repository"
-    echo "                          CONFIRM options: none,c/confirm (default=none)"
+    echo "                          CONFIRM options: [ none | c/confirm ] (default=none)"
+    echo
     echo "  -t, --test RUN          run automated unit tests"
-    echo "                          RUN options: c/compile,r/run,b/both (default=both)"
+    echo "                          RUN options: [ c/compile | r/run | b/both ] (default=both)"
+    echo
     echo "  -e, --example           run with example initialisation states"
 }
 
@@ -197,11 +202,11 @@ while [[ $# -gt 0 ]]; do
             shift 2
             break
             ;;
-	      -C | --clean)
-	          clean $2
+        -C | --clean)
+            clean $2
             shift 2
             break
-	          ;;
+            ;;
         -t | --test)
             if [[ "$2" == "b" ]] || [[ "$2" == "both" ]]; then
                 unit_test_compile
