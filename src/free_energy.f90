@@ -35,7 +35,7 @@ module free_energy
         !Loop filling the f_b array
         do j=1,Ny
             do i=1,Nx
-                do k=1,n-1
+                do k=1,n
                     f_b(i,j) = f_b(i,j) + a(k)*c(i,j)**(k-1)
                 end do
             end do
