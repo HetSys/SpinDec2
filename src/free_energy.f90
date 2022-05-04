@@ -25,18 +25,18 @@ module free_energy
         integer :: nx,ny,n
         integer :: i,j,k
 
-        !Get mu grid size and number of user input coefficients
+        !Get f_b grid size and number of user input coefficients
         Nx = size(c,1)
         Ny = size(c,2)
         n = size(a)
 
         f_b = 0
 
-        !Loop filling the mu array
+        !Loop filling the f_b array
         do j=1,Ny
             do i=1,Nx
                 do k=1,n-1
-                    f_b(i,j) = f_b(i,j) + k*a(k+1)*c(i,j)**(k-1)
+                    f_b(i,j) = f_b(i,j) + a(k)*c(i,j)**(k-1)
                 end do
             end do
         end do
