@@ -43,7 +43,6 @@ module free_energy
 
     end subroutine
 
-
     !******************************************************************************
     !> total_free_energy
     !!
