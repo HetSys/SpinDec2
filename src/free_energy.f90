@@ -13,13 +13,13 @@ module free_energy
     !!
     !!@param f_b: bulk free energy array at time t
     !!@param c: 2D concentration grid - c(x,y)
-    !!@param a: 1D array storing coefficients provided by user  
+    !!@param a: 1D array storing coefficients provided by user
     !!@param kappa : gradient term coefficient
     !*****************************************************************************
 
     subroutine bulk_free_energy(f_b,c,a)
 
-        real(real64), intent(out) :: f_b(:,:)
+        real(real64), intent(out), allocatable :: f_b(:,:)
         real(real64), intent(in) :: c(:,:)
         real(real64), intent(in) :: a(:)
         integer :: nx,ny,n
@@ -29,6 +29,8 @@ module free_energy
         Nx = size(c,1)
         Ny = size(c,2)
         n = size(a)
+
+        allocate(f_b(Nx,Ny))
 
         f_b = 0
 
@@ -53,7 +55,7 @@ module free_energy
     !!@param dx,dy: spatial step sizes in x and y
     !!@param kappa : gradient term coefficient
     !*****************************************************************************
-      
+
     subroutine total_free_energy(F, c, f_b, dx, dy, kappa)
 
         real(real64), intent(in) :: c(0:,0:)
@@ -70,7 +72,7 @@ module free_energy
         Ny = size(c,2)
 
         F = 0.0
-    
+
         !Loop filling the mu array
         do j=0,ny-1
              do i=0,nx-1
@@ -78,14 +80,14 @@ module free_energy
                 xlap = (c(modulo(i+1,nx),j)-2*c(i,j)+c(modulo(i-1,nx),j))/(dx*dx)
                 ylap = (c(i,modulo(j+1,ny))-2*c(i,j)+c(i,modulo(j-1,ny)))/(dy*dy)
                 P = xlap + ylap
-                    
+
                 F = F + (f_b(i,j) + 0.5*kappa*P*P)*dx*dy
-                    
+
                 end do
             end do
 
     end subroutine
 
-   
+
 
 end module free_energy
