@@ -6,6 +6,8 @@ program main
     use potentials
     use io
     use free_energy
+    use input_params
+    use checkpointing
 
     implicit none
 
@@ -22,29 +24,57 @@ program main
     real(real64) :: Kappa ! free energy gradient parameter
     real(real64) :: t_end !end time
     real(real64) :: M, MA, MB ! Mobility's
+    real(real64) :: bfe ,df_tol!PLaceholder
     integer :: Nx, Ny, Nt, Nc
     integer :: t_max ! number of timesteps
-    integer :: k ! counters
+    integer :: k,count ! counters
+    integer :: cint,random_seed,err,use_input,current_iter,ncerr !checkpointing_interval, random seed,error var
+    character(len=128) :: cpi,cpo ! checkpointing files
 
 
-    Nx = 50
-    Ny = 50
+
+    call read_params("../test/input_test.txt",c0,c_std,a,nx,&
+        ny,ma,mb,kappa,bfe,cint,cpi,cpo,t_end,dt,df_tol,random_seed,use_input,err)
+
+    if(err == -1) then
+        print*, "There was an issue with the input file please check and try again"
+        stop
+    end if
+
+
+    current_iter = 2
+    Nt = floor(t_end/dt)
+
+
+
+
+    if(cpi /= "") then
+        call read_checkpoint_in(c,mu,F_tot, cpi,c0,c_std,a,nx,&
+            ny,ma,mb,kappa,bfe,cint,cpo,t_end,dt,df_tol,current_iter,random_seed,use_input,ncerr)
+        if(ncerr /= nf90_noerr) then
+            print*, "There was an error reading the checkpoint file."
+            stop
+        end if
+    end if
+
+    !Nx = 50
+    !Ny = 50
 
     dx = 0.01
     dy = 0.01
-    dt = 1e-12 ! 1 picosecond timestep
-    t_end = 1e-7
+    !dt = 1e-12 ! 1 picosecond timestep
+    !t_end = 1e-7
 
-    Nt = floor(t_end/dt)
+
 
     !t_max = 10000
 
-    Kappa = 1.6
+    !Kappa = 1.6
 
-    c0 = 0.7
-    c_std = 0.1
-    MA = 1
-    MB = 1
+    !c0 = 0.7
+    !c_std = 0.1
+    !MA = 1
+    !MB = 1
 
     !Take constant M to be average estimate of Darken's Equation
     M = (MA*(1-c0) + MB*c0)*c0*(1-c0)
@@ -52,23 +82,27 @@ program main
 
 
     ! Try a 4th order polynomial
-    allocate(a(6))
+    !allocate(a(6))
+    Nc=size(a)
 
-    a = (/5.0,2.1,2.2,2.3,2.4,2.5/)
+    !a = (/5.0,2.1,2.2,2.3,2.4,2.5/)
 
-    Nc = size(a)
 
     ! Allocate grid
-    allocate(c(Nx,Ny,Nt))
-
-    ! Initialize grid
-    call grid_init(c(:,:,1),Nx,Ny,c0,c_std)
-
-
-
+    if(.not. allocated(c)) then
+        allocate(c(Nx,Ny,Nt))
+        c = 0
+    end if
     ! Allocate mu
-    allocate(mu(Nx,Ny))
-    mu = 0.0
+    if(.not. allocated(mu)) then
+        allocate(mu(Nx,Ny))
+        mu = 0.0
+    end if
+    ! Allocate F_tot
+    if(.not. allocated(F_tot)) then
+        allocate(F_tot(Nt))
+        F_tot = 0
+    end if
     ! Allocate Q
     allocate(Q(Nx,Ny))
     Q = 0.0
@@ -79,9 +113,17 @@ program main
     allocate(c_new(Nx,Ny))
     c_new = 0.0
 
-    ! Allocate F_tot
-    allocate(F_tot(Nt))
-    F_tot = 0
+
+    ! Initialize grid
+    call grid_init(c(:,:,1),Nx,Ny,c0,c_std)
+
+
+
+
+
+
+
+
 
     ! Get Initial Bulk Free Energy over space
     call bulk_free_energy(f_b,c(:,:,1),a)
@@ -91,8 +133,9 @@ program main
 
     deallocate(f_b)
 
+    count = 0
     ! Grid evolution
-    do k = 2, Nt
+    do k = current_iter, Nt
 
         ! Get bulk chemical potentials
         call bulk_potential(mu,c(:,:,k-1),a)
@@ -117,6 +160,19 @@ program main
         call total_free_energy(F_tot(k), c_new, f_b, dx, dy, kappa)
 
         deallocate(f_b)
+
+        if(count >= cint) then
+            call write_checkpoint_file(c,mu,F_tot,a,cpo,c0,c_std&
+                ,nx,ny,ma,mb,kappa,bfe,Cint,t_end,dt,k,df_tol,random_seed,ncerr)
+            if(ncerr /= nf90_noerr) then
+                print*, "There was an error writing the checkpoint file."
+                stop
+            end if
+            count = 0
+        end if
+
+        count = count + 1
+
 
     end do
 
