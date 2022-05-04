@@ -5,12 +5,15 @@
 # Exit if something fails
 set -e
 
-### Compilation ###
+# Enable recursive globbing 
+shopt -s globstar
+
 compile () {
+    ### Compilation ###
     # Option for choosing the compiler
-    if [[ $1 == "t" ]] || [[ $1 == "true" ]]; then
+    if [[ $1 == "d" ]] || [[ $1 == "debug" ]]; then
         comp_line="gfortran -g -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
-    elif [[ -z $1 ]] || [[ $1 == "f" ]] || [[ $1 == "false" ]]; then
+    elif [[ -z $1 ]]; then
         comp_line="gfortran -g"
     else
         echo -e "Not a valid option for -c/--compile\n"
@@ -29,16 +32,15 @@ compile () {
     flibs=`nf-config --flibs`
     fflags=`nf-config --fflags`
 
-    echo -e "Compile line: $comp_line\n"
-
     # Compile
+    echo -e "Compile line: $comp_line $fflags ${prog_files[@]} -J$flibs -o $compd_file\n"
     $comp_line $fflags ${prog_files[@]} -J$flibs -o $compd_file
 
     # Add binary to $PATH (with some checks)
     while true; do
         read -p 'Add binary to $PATH? [Y/n] ' confirmation
 
-        if [[ $confirmation =~ ^[Yy]$ ]] || [[ $confirmation == '' ]]; then
+        if [[ "$confirmation" =~ ^[Yy]$ ]] || "[[ $confirmation" == '' ]]; then
             if grep -Fq "spindec" $HOME/.bashrc; then
                 echo 'The binary is already in your $PATH'
                 break
@@ -58,7 +60,47 @@ compile () {
             echo 'Not added to $PATH'
             break
         else
-            echo 'Not a valid option'
+            echo -e 'Not a valid option\n'
+        fi
+    done
+}
+
+clean () {
+    ### Remove compiled binaries ###
+    bins=("*/*.mod" "*/*.o" "*/spindec")
+
+    # Check for binaries
+    if [[ `echo ${bins[@]}` == "*/*.mod */*.o */spindec" ]]; then 
+	echo "No binaries found"
+	exit 0
+    fi
+
+    # Remove globs from $bins if they aren't found
+    for glob in ${bins[@]}; do 
+	if [[ "$glob" == *'*'* ]]; then
+	    # Write thing to remove from array
+	fi 
+    done     
+
+    exit 0
+
+    # Remove binaries
+    while true; do
+	echo -e "Removing the following compiled binaries:\n"
+    	ls */* | grep -E 'bin/*.mod|bin/*.o|bin/spindec'
+	echo
+	read -p 'Proceed? [Y/n] ' confirmation
+	
+        if [[ $confirmation =~ ^[Yy]$ ]] || [[ $confirmation == '' ]]; then
+	    for i in ${bins[@]}; do 
+		rm $i
+	    done
+	    break 
+        elif [[ $confirmation =~ ^[Nn]$ ]]; then
+            echo 'Binaries not removed'
+            break
+        else
+            echo -e 'Not a valid option\n'
         fi
     done
 }
@@ -98,7 +140,8 @@ help_message () {
     echo "options:"
     echo "  -h, --help              show this help message and exit"
     echo "  -c, --compile DEBUG     compile the code with optional debug option"
-    echo "                          (default=false)"
+    echo "                          (default=none)"
+    echo "  -C, --clean 	    remove compiled binaries from repository"
     echo "  -t, --test              run automated unit tests"
     echo "  -e, --example           run with example initialisation states"
 }
@@ -106,7 +149,7 @@ help_message () {
 ### Argument Parser ###
 # Requires util-linux
 # getopt options list
-options=$(getopt -o c::te::h -l compile::,test,example::,help -- "$@")
+options=$(getopt -o c::Cte::h -l compile::,clean,test,example::,help -- "$@")
 
 # Exit if error code
 if [[ $? -ne 0 ]]; then
@@ -128,13 +171,14 @@ while [[ $# -gt 0 ]]; do
             compile $2
             shift 2
             ;;
+	-C | --clean)
+	    clean
+	    ;;
         -t | --test)
             auto_test
-            shift
             ;;
         -e | --example)
             example
-            shift 2
             ;;
         -h | --help)
             ascii_art
