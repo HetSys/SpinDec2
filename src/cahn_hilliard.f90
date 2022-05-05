@@ -6,7 +6,7 @@ module cahn_hilliard
 
     contains
 
-    subroutine del_Q(dQ,Q,M,dx,dy)
+    subroutine del_Q(dQ,Q,M,dx,dy,Nx,Ny)
         ! Subroutine to perform spatial dervative of Q
         ! dQ is a 2D grid to store the derivatives of Q
         ! Q is the 2D grid of total chemical potentials
@@ -15,19 +15,19 @@ module cahn_hilliard
 
         implicit none
 
-        real(real64), dimension(:,:) :: dQ, Q
-        real(real64) :: M
-        real(real64) :: dx, dy, dx2, dy2
+        integer, intent(in) :: Nx, Ny
+        real(real64), dimension(Nx,Ny), intent(in) :: Q
+        real(real64), dimension(Nx,Ny), intent(out) :: dQ
+        real(real64), intent(in) :: M, dx, dy
+        real(real64) :: dx2, dy2
         real(real64) :: der_x, der_y
-        integer :: Nx, Ny
         integer :: i,j ! counters
 
-        Nx = size(Q,1)
-        Ny = size(Q,2)
-
+        ! Pre-compute 1.0/(dx^2) and 1.0/(dy^2)
         dx2 = 1.0/(dx*dx)
         dy2 = 1.0/(dy*dy)
 
+        ! Start computing derivatives
         ! Corner nodes
         ! Top-left
         der_x = (Q(2,1)-2.0*Q(1,1)+Q(Nx,1))*dx2
@@ -89,20 +89,21 @@ module cahn_hilliard
     
     end subroutine del_Q
 
-    subroutine time_evolution(c,c_new,dQ,dt,Nx,Ny)
+    subroutine time_evolution(grid,grid_new,dQ,dt,Nx,Ny)
         ! Subroutine to perform the time evolution in accordance with
         ! the Cahn-Hilliard equation
 
         implicit none
 
-        real(real64), dimension(:,:) :: c, c_new, dQ
-        integer :: Nx, Ny
-        real(real64) :: dt
+        integer, intent(in) :: Nx, Ny
+        real(real64), dimension(Nx,Ny), intent(in) :: grid, dQ
+        real(real64), intent(in) :: dt
+        real(real64), dimension(Nx,Ny), intent(out) :: grid_new
         integer :: i,j ! counters
 
         do i = 1, Nx
             do j = 1, Ny
-                c_new(i,j) = c(i,j) + dt*dQ(i,j)
+                grid_new(i,j) = grid(i,j) + dt*dQ(i,j)
             end do
         end do
 

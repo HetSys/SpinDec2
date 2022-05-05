@@ -17,12 +17,11 @@ module grid
         implicit none
 
         real(real64) :: u
-        integer :: seed_in, seed_out
+        integer :: seed_in
 
         if (seed_in .EQ. -1) then
         call random_number(u)
             seed_in = int((999999-100000)*u + 100000)
-            seed_out = seed_in
         end if
 
     end subroutine get_seed
@@ -33,8 +32,8 @@ module grid
 
         implicit none
 
-        real(real64) :: x
-        integer :: seed_in
+        real(real64), intent(out) :: x
+        integer, intent(in) :: seed_in
         real(real64) :: u1, u2
         integer :: n
         integer , dimension(:), allocatable :: seed
@@ -61,8 +60,9 @@ module grid
 
         implicit none
 
-        integer :: seed_in
-        real(real64):: x, mean, std
+        integer, intent(in) :: seed_in
+        real(real64), intent(in) :: mean, std 
+        real(real64), intent(out) :: x
 
         call rand_stdnormal(x,seed_in)        
         x = x*std + mean
@@ -80,9 +80,9 @@ module grid
         implicit none
 
         integer, intent(in) :: Nx, Ny
-        integer :: seed_in
-        real(real64), intent(in) :: C, C_std
         real(real64), dimension(Nx,Ny), intent(out) :: grid
+        real(real64), intent(in) :: C, C_std
+        integer :: seed_in
         real(real64) :: x ! dummy variable for concnetration
         integer :: i,j ! counters
 
