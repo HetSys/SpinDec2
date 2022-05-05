@@ -119,7 +119,7 @@ program main
 
 
     ! Initialize grid
-    call grid_init(c(:,:,1),Nx,Ny,c0,c_std)
+    call grid_init(c(:,:,1),Nx,Ny,c0,c_std,random_seed)
 
 
 
@@ -148,7 +148,7 @@ program main
         call total_potential(Q,mu,c(:,:,k-1),dx,dy,Kappa)
 
         ! Get second derivative of Q
-        call del_Q(dQ,Q,M,dx,dy)
+        call del_Q(dQ,Q,M,dx,dy,Nx,Ny)
 
         ! Get new concentrations for current timesteps
         call time_evolution(c(:,:,k-1),c_new,dQ,dt,Nx,Ny)
