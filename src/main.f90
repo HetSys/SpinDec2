@@ -2,7 +2,7 @@ program main
 
     use iso_fortran_env
     use cahn_hilliard
-    use grid_modules
+    use grid
     use potentials
     use io
     use free_energy
@@ -56,6 +56,10 @@ program main
             stop
         end if
     end if
+
+    ! Set seed
+    call get_seed(random_seed)
+
 
     !Nx = 50
     !Ny = 50
