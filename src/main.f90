@@ -88,7 +88,7 @@ program main
     c_new = 0.0
 
     ! Initialize grid
-    call grid_init(c(:,:,1),Nx,Ny,c0,c_std,random_seed)
+    call grid_init(c(:,:,1),Nx,Ny,c0,c_std)
 
     ! Get Initial Bulk Free Energy over space
     call bulk_free_energy(f_b,c(:,:,1),a)

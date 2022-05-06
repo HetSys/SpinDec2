@@ -16,33 +16,33 @@ module grid
 
         implicit none
 
-        real(real64) :: u
         integer :: seed_in
+        real(real64) :: u
+        integer :: n
+        integer , dimension(:), allocatable :: seed
 
         if (seed_in .EQ. -1) then
         call random_number(u)
             seed_in = int((999999-100000)*u + 100000)
         end if
 
+        ! Set seed
+        call random_seed(size=n)
+        allocate(seed(n))
+        seed = seed_in
+        call random_seed(put=seed)
+
     end subroutine get_seed
 
-    subroutine rand_stdnormal(x,seed_in)
+    subroutine rand_stdnormal(x)
         
         ! Subroutine to get a standard normal random number
 
         implicit none
 
         real(real64), intent(out) :: x
-        integer, intent(in) :: seed_in
         real(real64) :: u1, u2
-        integer :: n
-        integer , dimension(:), allocatable :: seed
 
-        call random_seed(size=n)
-        allocate(seed(n))
-        seed = seed_in
-        call random_seed(put=seed)
-        
         call random_number(u1)
         call random_number(u2)
 
@@ -53,18 +53,17 @@ module grid
 
     end subroutine rand_stdnormal
 
-    subroutine rand_normal(x,seed_in,mean,std)
+    subroutine rand_normal(x,mean,std)
 
         ! Subroutine to get a random number from a normal distribution
         ! given the mean and standard deviation
 
         implicit none
 
-        integer, intent(in) :: seed_in
         real(real64), intent(in) :: mean, std 
         real(real64), intent(out) :: x
 
-        call rand_stdnormal(x,seed_in)        
+        call rand_stdnormal(x)        
         x = x*std + mean
 
     end subroutine
@@ -88,9 +87,8 @@ module grid
 
         do i = 1, Nx
             do j = 1, Ny
-                call rand_normal(x, seed_in, C, C_std)
+                call rand_normal(x, C, C_std)
                 grid(i,j) = x
-                seed_in = seed_in + 100000
             end do
         end do
         
