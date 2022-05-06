@@ -18,7 +18,6 @@ contains
         real(kind=real64), dimension(:,:), allocatable :: mu
         real(kind=real64), dimension(:), allocatable :: ftot
 
-        TYPE(run_data_type) :: run_data
 
         allocate(datas(1,1,1))
         allocate(mu(1,1))
