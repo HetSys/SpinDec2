@@ -342,8 +342,7 @@ contains
         if(req < 8) then
             err = -1
             print*, "Not all required inputs were found. Plase check an try again."
-        end if
-        if(req2 == 0) then
+        else if(req2 == 0) then
             err = -1
             print*, "Not all required inputs were found. Plase check an try again."
         end if
