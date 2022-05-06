@@ -22,6 +22,9 @@ module potentials
         ny = size(mu,2)
         n = size(a)
 
+        !Initialize mu array with zero values
+        mu = 0.0
+
         ! Loop filling the mu array
         do j=1,ny
             do i=1,nx
