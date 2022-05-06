@@ -74,8 +74,12 @@ contains
         real(kind=REAL64), intent(out) :: initial_conc, conc_std,m1,m2,k,bfe,t,delta_t,df_tol
         real(kind=real64), intent(out),dimension(:),allocatable :: coeffs
         logical :: f_exists
+        integer :: req, req2, cofs
 
         !Setting deafault values for optional params
+        req = 0
+        req2 = 0
+        cofs = 0
         err = 0
         random_seed = -1
         delta_t = -1
@@ -83,6 +87,7 @@ contains
         cpi = ""
         cpo = "Checkpoint.cpf"
         use_input = 0
+        df_tol = -1
         !reading file
         !There is a large amount of  if statements below to ensure values are
         !sensisble (no negative max time etc)
@@ -114,6 +119,7 @@ contains
             name = trim(adjustl(name(:read_counter-1)))
 
             if(name == "Initial_concentration") then
+                req = req + 1
                 read(var,*,iostat=ierr) initial_conc
                 if(ierr /= 0) then
                     print*,"An error occured reading Initial_concentration. &
@@ -132,6 +138,7 @@ contains
                     err = -1
                 end if
             else if(name == "Concentration_std") then
+                req = req + 1
                 read(var,*,iostat=ierr) conc_std
                 if(ierr /= 0) then
                     print*,"An error occured reading Concentration_std. &
@@ -145,11 +152,14 @@ contains
                     err = -1
                 end if
             else if(name == "f(c)") then
+                req2 = req2 + 1
+                cofs = cofs + 1
                 coeffs = read_poly(var,err)
                 if(err == -1) then
                     deallocate(coeffs)
                 end if
             else if(name == "Domain_x_size") then
+                req = req + 1
                 read(var,*,iostat=ierr) nx
                 if(ierr /= 0) then
                     print*,"An error occured reading Domain_x_size. &
@@ -163,6 +173,7 @@ contains
                     err = -1
                 end if
             else if(name == "Domain_y_size") then
+                req = req + 1
                 read(var,*,iostat=ierr) ny
                 if(ierr /= 0) then
                     print*,"An error occured reading Domain_y_size. &
@@ -176,6 +187,7 @@ contains
                     err = -1
                 end if
             else if(name == "Mobility_1") then
+                req = req + 1
                 read(var,*,iostat=ierr) m1
                 if(ierr /= 0) then
                     print*,"An error occured reading Mobility_1. &
@@ -189,6 +201,7 @@ contains
                     err = -1
                 end if
             else if(name == "Mobility_2") then
+                req = req + 1
                 read(var,*,iostat=ierr) m2
                 if(ierr /= 0) then
                     print*,"An error occured reading Mobility_2. &
@@ -202,6 +215,7 @@ contains
                     err = -1
                 end if
             else if(name == "free_energy_gradient_parameter") then
+                req = req + 1
                 read(var,*,iostat=ierr) k
                 if(ierr /= 0) then
                     print*,"An error occured reading &
@@ -211,6 +225,7 @@ contains
                     exit
                 end if
             else if(name == "Bulk_free_energy") then
+                req2 = req2 + 1
                 read(var,*,iostat=ierr) bfe
                 if(ierr /= 0) then
                     print*,"An error occured reading Bulk_free_energy. &
@@ -219,6 +234,7 @@ contains
                     exit
                 end if
             else if(name == "Checkpointing_interval") then
+                req = req + 1
                 read(var,*,iostat=ierr) cint
                 if(ierr /= 0) then
                     print*,"An error occured reading Checkpointing_interval. &
@@ -318,15 +334,30 @@ contains
                     & Please check you input file and try again"
                     err = -1
                 end if
-                if(use_input == 0) then
-                    if(.not. allocated(coeffs)) then
-                        allocate(coeffs(1))
-                    end if
-                end if
             end if
 
             !print*, name,var
         end do
+
+        if(req < 8) then
+            err = -1
+            print*, "Not all required inputs were found. Plase check an try again."
+        end if
+        if(req2 == 0) then
+            err = -1
+            print*, "Not all required inputs were found. Plase check an try again."
+        end if
+        if(req2 == 2) then
+            print*, "The bulk free energy will be ignored as there is a custom f(c)"
+        end if
+        if(cofs == 0) then
+            allocate(coeffs(5))
+            coeffs(1) = 0
+            coeffs(2) = 0
+            coeffs(3) = bfe
+            coeffs(4) = 0
+            coeffs(5) = -bfe
+        end if
     end subroutine read_params
 
 end module input_params
