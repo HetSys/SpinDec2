@@ -75,7 +75,7 @@ module free_energy
 
         !Loop filling the mu array
         do j=0,ny-1
-             do i=0,nx-1
+            do i=0,nx-1
 
                 xlap = (c(modulo(i+1,nx),j)-2*c(i,j)+c(modulo(i-1,nx),j))/(dx*dx)
                 ylap = (c(i,modulo(j+1,ny))-2*c(i,j)+c(i,modulo(j-1,ny)))/(dy*dy)
@@ -83,11 +83,9 @@ module free_energy
 
                 F = F + (f_b(i,j) + 0.5*kappa*P*P)*dx*dy
 
-                end do
             end do
+        end do
 
     end subroutine
-
-
 
 end module free_energy
