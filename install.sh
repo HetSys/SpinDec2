@@ -173,6 +173,8 @@ help_message () {
     echo "  -t, --test RUN          run automated unit tests"
     echo "                          RUN options: [ c/compile | r/run | b/both ] (default=both)"
     echo
+    echo "  -T, --test-clean        clean test binaries"
+    echo 
     echo "  -e, --example           run with example initialisation states"
 }
 
@@ -226,6 +228,11 @@ while [[ $# -gt 0 ]]; do
                 exit 2
             fi
             break
+            ;;
+        -T | --test-clean)
+            # Clean compilation from tests
+            # TODO
+            break 
             ;;
         -e | --example)
             example
