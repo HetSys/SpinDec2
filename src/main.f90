@@ -24,15 +24,13 @@ program main
     real(real64) :: Kappa ! free energy gradient parameter
     real(real64) :: t_end !end time
     real(real64) :: M, MA, MB ! Mobility's
-    real(real64) :: bfe ,df_tol!PLaceholder
+    real(real64) :: bfe ,df_tol!PLaceholder (These were in the input file but df_tol hasn't been used in any code)
     integer :: Nx, Ny, Nt, Nc
     integer :: k,count ! counters
     integer :: cint,random_seed,err,use_input,current_iter,ncerr !checkpointing_interval, random seed,error var
     character(len=128) :: cpi,cpo ! checkpointing files
 
-
-
-    call read_params("../test/input_test.txt",c0,c_std,a,nx,&
+    call read_params("test/input_test.txt",c0,c_std,a,nx,&
         ny,ma,mb,kappa,bfe,cint,cpi,cpo,t_end,dt,df_tol,random_seed,use_input,err)
 
     if(err == -1) then
@@ -40,12 +38,8 @@ program main
         stop
     end if
 
-
     current_iter = 2
     Nt = floor(t_end/dt)
-
-
-
 
     if(cpi /= "") then
         call read_checkpoint_in(c,mu,F_tot, cpi,c0,c_std,a,nx,&
@@ -59,37 +53,14 @@ program main
     ! Set seed
     call get_seed(random_seed)
 
-
-    !Nx = 50
-    !Ny = 50
-
     dx = 0.01
     dy = 0.01
-    !dt = 1e-12 ! 1 picosecond timestep
-    !t_end = 1e-7
-
-
-
-    !t_max = 10000
-
-    !Kappa = 1.6
-
-    !c0 = 0.7
-    !c_std = 0.1
-    !MA = 1
-    !MB = 1
 
     !Take constant M to be average estimate of Darken's Equation
     M = (MA*(1-c0) + MB*c0)*c0*(1-c0)
 
-
-
-    ! Try a 4th order polynomial
-    !allocate(a(6))
+    !Find polynomial coefficients size
     Nc=size(a)
-
-    !a = (/5.0,2.1,2.2,2.3,2.4,2.5/)
-
 
     ! Allocate grid
     if(.not. allocated(c)) then
@@ -116,17 +87,8 @@ program main
     allocate(c_new(Nx,Ny))
     c_new = 0.0
 
-
     ! Initialize grid
     call grid_init(c(:,:,1),Nx,Ny,c0,c_std,random_seed)
-
-
-
-
-
-
-
-
 
     ! Get Initial Bulk Free Energy over space
     call bulk_free_energy(f_b,c(:,:,1),a)
