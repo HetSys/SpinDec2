@@ -68,7 +68,7 @@ module grid
 
     end subroutine
 
-    subroutine grid_init(grid,Nx,Ny,C,C_std,seed_in)
+    subroutine grid_init(grid,Nx,Ny,C,C_std)
         ! Subroutine to initialise the concentration grid
         ! The first input is an array with dimensions Nx x Ny to store concentrations
         ! Nx and Ny are the grid dimensions
@@ -81,7 +81,6 @@ module grid
         integer, intent(in) :: Nx, Ny
         real(real64), dimension(Nx,Ny), intent(out) :: grid
         real(real64), intent(in) :: C, C_std
-        integer :: seed_in
         real(real64) :: x ! dummy variable for concnetration
         integer :: i,j ! counters
 
