@@ -26,7 +26,6 @@ program main
     real(real64) :: M, MA, MB ! Mobility's
     real(real64) :: bfe ,df_tol!PLaceholder
     integer :: Nx, Ny, Nt, Nc
-    integer :: t_max ! number of timesteps
     integer :: k,count ! counters
     integer :: cint,random_seed,err,use_input,current_iter,ncerr !checkpointing_interval, random seed,error var
     character(len=128) :: cpi,cpo ! checkpointing files
