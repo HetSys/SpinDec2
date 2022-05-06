@@ -1,5 +1,5 @@
 indent = 4
-# line-length = 80 
+line-length = 150
 whitespace = 4 
 whitespace-comma = true 
 whitespace-assignment = true 
@@ -25,3 +25,5 @@ diff = false
 stdout = false 
 silent = false 
 recursive = true
+
+# Line to run: fprettify -c ./.fprettify.rc -r ./
