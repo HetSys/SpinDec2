@@ -5,23 +5,6 @@ MODULE checkpointing
 
     IMPLICIT NONE
 
-    ! Creating a data type to hold run data
-    TYPE run_data_type
-        real(kind=real64) :: initial_conc
-        real(kind=real64) :: conc_std
-        integer :: nx
-        integer :: ny
-        real(kind=real64) :: m1
-        real(kind=real64) :: m2
-        real(kind=real64) :: k
-        real(kind=real64) :: bfe
-        integer :: Cint
-        real(kind=real64) :: t
-        real(kind=real64) :: time_step
-        integer :: current_iter
-        real(kind=real64) :: df_tol
-        integer :: random_seed
-    END TYPE
 
     CONTAINS
         ! This subroutine was apdated from the example provided in the assignment brief
