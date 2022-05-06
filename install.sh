@@ -24,6 +24,11 @@ compile () {
     # Add program files from src 
     prog_files=(src/*)
 
+    # Move main to last item in array
+    main="src/main.f90"
+    prog_files=("${prog_files[@]/$main}")
+    prog_files+=("$main")
+
     # Binary name and location
     mod_files="bin/"
     compd_file="bin/spindec"
