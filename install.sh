@@ -61,7 +61,7 @@ compile () {
                 working_dir=`pwd`
                 path_var='$PATH'
                 echo '' >> $HOME/.bashrc
-                echo "export PATH=$working_dir/bin/spindec:$path_var" >> $HOME/.bashrc
+                echo "export PATH=$working_dir/bin/:$path_var" >> $HOME/.bashrc
                 echo 'Binary added to $PATH and written to ~/.bashrc'
                 echo "For changes to take effect, use the command 'source ~/.bashrc'"
                 break
