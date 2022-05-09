@@ -84,7 +84,7 @@ clean () {
     bins=("bin/*.mod" "bin/*.nc" "bin/*.cpf" "bin/*spindec")
 
     # Check for binaries
-    if [[ `ls */* | grep -E 'mod|nc|cpf|spindec'` == '' ]]; then
+    if [[ `ls bin/* | grep -E 'mod|nc|cpf|spindec'` == '' ]]; then
         echo "No binaries found"
         exit 1
     fi
@@ -99,7 +99,7 @@ clean () {
     # Remove binaries
     while true; do
         echo -e "Removing the following files:\n"
-        ls */* | grep -E 'mod|nc|cpf|spindec'
+        ls bin/* | grep -E 'mod|nc|cpf|spindec'
         echo
 
         # Ask for confirmation before removing if option provided
