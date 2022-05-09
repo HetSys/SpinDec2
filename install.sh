@@ -41,25 +41,33 @@ compile () {
     echo -e "Compile line: $comp_line $fflags ${prog_files[@]} $flibs -J$mod_files -I$mod_files -o $compd_file\n"
     $comp_line $fflags ${prog_files[@]} $flibs -J$mod_files -I$mod_files -o $compd_file
 
-    # Add binary to $PATH (with some checks)
+    # Don't prompt to add to $PATH if debug option specified
+    if [[ "$1" == "d" ]] || [[ "$1" == "debug" ]]; then
+        exit 0
+    fi
+
+    # Don't prompt to add to $PATH if already in path
+    if grep -Fq "spindec" $HOME/.bashrc; then
+        echo 'Binary already in $PATH. Exiting...'
+        exit 0
+    fi
+
+    # Add binary to $PATH if bash is default $SHELL
     while true; do
         read -p 'Add binary to $PATH? [Y/n] ' confirmation
 
         if [[ "$confirmation" =~ ^[Yy]$ ]] || [[ "$confirmation" == '' ]]; then
-            if grep -Fq "spindec" $HOME/.bashrc; then
-                echo 'The binary is already in your $PATH'
+            if [[ "$SHELL" == *"bash"* ]]; then
+                working_dir=`pwd`
+                path_var='$PATH'
+                echo '' >> $HOME/.bashrc
+                echo "export PATH=$working_dir/bin/spindec:$path_var" >> $HOME/.bashrc
+                echo 'Binary added to $PATH and written to ~/.bashrc'
+                echo "For changes to take effect, use the command 'source ~/.bashrc'"
                 break
             else
-                if [[ "$SHELL" == *"bash"* ]]; then
-                    working_dir=`pwd`
-                    echo "export PATH=`pwd`/bin/spindec:$PATH" >> $HOME/.bashrc
-                    echo 'Binary added to $PATH and written to ~/.bashrc'
-                    echo "You will need to restart your shell with 'source ~/.bashrc'"
-                    break
-                else
-                    echo 'Unable to add to $PATH as bash is not your default shell'
-                    break
-                fi
+                echo 'Unable to add to $PATH as bash is not your default shell'
+                break
             fi
 
         elif [[ "$confirmation" =~ ^[Nn]$ ]]; then
