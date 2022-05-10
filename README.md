@@ -44,7 +44,7 @@ A description of the different flags and their arugments are given below:
 ### Compile 
 To compile the code, run 
 
-`./install.sh -c/–-compile`.
+`./install.sh -c` or `./install.sh –-compile`.
 
 The compilation argument takes an optional argument `d/debug`, however this is only for developer use. Running with this argument can cause decreases in performance.
 
