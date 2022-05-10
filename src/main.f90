@@ -31,7 +31,7 @@ program main
     character(len=128) :: cpi, cpo ! checkpointing files
 
     ! Only run files in test for now
-    call read_params("../test/input_test.txt", c0, c_std, a, nx, &
+    call read_params("input.txt", c0, c_std, a, nx, &
                      ny, ma, mb, kappa, bfe, cint, cpi, cpo, t_end, dt, df_tol, random_seed, use_input, err)
 
     if (err == -1) then
