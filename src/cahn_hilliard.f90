@@ -13,7 +13,6 @@ contains
         ! M is the mobility of the species
         ! dx and dy are the spatial grid spacings in x and y
 
-        implicit none
 
         integer, intent(in) :: Nx, Ny
         real(real64), dimension(Nx, Ny), intent(in) :: Q
@@ -89,7 +88,7 @@ contains
 
     end subroutine del_Q
     
-        subroutine dQ_dx(dQx,Q,dx,Nx,Ny)
+    subroutine dQ_dx(dQx,Q,dx,Nx,Ny)
         ! Subroutine to calculate dQ/dx
         ! Using central differences
         integer, intent(in) :: Nx, Ny
@@ -143,11 +142,64 @@ contains
 
     end subroutine dQ_dy
 
+    subroutine dM_dx(dMx,M,dx,Nx,Ny)
+        ! Subroutine to calculate dQ/dx
+        ! Using central differences
+        integer, intent(in) :: Nx, Ny
+        real(real64), dimension(Nx,Ny), intent(in) :: M
+        real(real64), intent(in) :: dx
+        real(real64), dimension(Nx,Ny), intent(out) :: dMx
+        real(real64) :: dx_inv
+        integer :: i,j ! counters
+
+        dx_inv = 1.0/(2.0*dx)
+
+        ! LHS and RHS Boundary
+        do i = 1, Nx
+            dMx(i,1) = (M(i,2) - M(i,Ny))*dx_inv    ! LHS
+            dMx(i,Ny) = (M(i,1) - M(i,Ny-1))*dx_inv ! RHS
+        end do
+
+        ! Bulk (non-boundary nodes)
+        do i = 1, Nx
+            do j = 2, Ny-1
+                dMx(i,j) = (M(i,j+1) - M(i,j-1))*dx_inv
+            end do
+        end do
+
+    end subroutine dM_dx
+
+
+    subroutine dM_dy(dMy,M,dy,Nx,Ny)
+        ! Subroutine to calculate dQ/dx
+        ! Using central differences
+        integer, intent(in) :: Nx, Ny
+        real(real64), dimension(Nx,Ny), intent(in) :: M
+        real(real64), intent(in) :: dy
+        real(real64), dimension(Nx,Ny), intent(out) :: dMy
+        real(real64) :: dy_inv
+        integer :: i,j ! counters
+
+        dy_inv = 1.0/(2.0*dy)
+
+        ! Top and Bottom Boundary
+        do j = 1, Ny
+            dMy(1,j) = (M(2,j) - M(Nx,j))*dy_inv    ! Top
+            dMy(Nx,j) = (M(1,j) - M(Nx-1,j))*dy_inv ! Bottom
+        end do 
+
+        ! Bulk (non-boundary nodes)
+        do i = 2, Nx-1
+            do j = 1, Ny
+                dMy(i,j) = (M(i+1,j) - M(i-1,j))*dy_inv
+            end do
+        end do
+
+    end subroutine dM_dy
+
     subroutine time_evolution(grid, grid_new, dQ, M, dt, Nx, Ny)
         ! Subroutine to perform the time evolution in accordance with
         ! the Cahn-Hilliard equation
-
-        implicit none
 
         integer, intent(in) :: Nx, Ny
         real(real64), dimension(Nx, Ny), intent(in) :: grid, dQ
