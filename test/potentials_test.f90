@@ -76,14 +76,15 @@ contains
 
         ! Testing if resulting Q is equal to expected
         ! within certain tolerance
-        do j = 1, ny
+        outer: do j = 1, ny
             do i = 1, nx
                 if (abs(Q(i, j) - expected(i, j)) > 1e-3) then
                     res = .false.
-                    exit
+                    print *, i,j
+                    exit outer
                 end if
             end do
-        end do
+        end do outer
 
         if (res) then
             print *, 'Unit test #', test_num, ' for total potential succeeded.'
