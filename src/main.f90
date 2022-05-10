@@ -116,10 +116,10 @@ program main
         call total_potential(Q, mu, c(:, :, k - 1), dx, dy, Kappa)
 
         ! Get second derivative of Q
-        call del_Q(dQ, Q, M, dx, dy, Nx, Ny)
+        call del_Q(dQ, Q, dx, dy, Nx, Ny)
 
         ! Get new concentrations for current timesteps
-        call time_evolution(c(:, :, k - 1), c_new, dQ, dt, Nx, Ny)
+        call time_evolution(c(:, :, k - 1), c_new, dQ, M,dt, Nx, Ny)
 
         ! set grid to c_new
         c(:, :, k) = c_new(:, :)
