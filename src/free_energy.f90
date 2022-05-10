@@ -83,25 +83,25 @@ contains
         grad_x = (c(2, 1) -  c(nx, 1)) * dx2
         grad_y = (c(1, 2) -  c(1, ny)) * dy2
         P = grad_x*grad_x + grad_y*grad_y
-        F = F + (f_b(i, j) + 0.5 * kappa * P ) * dx * dy
+        F = F + (f_b(1, 1) + 0.5 * kappa * P ) * dx * dy
 
         ! Bottom-left
         grad_x = (c(1, 1) - c(nx - 1, 1)) * dx2
         grad_y = (c(nx, 2) - c(nx, ny)) * dy2
         P = grad_x*grad_x + grad_y*grad_y
-        F = F + (f_b(i, j) + 0.5 * kappa * P ) * dx * dy
+        F = F + (f_b(nx, 1) + 0.5 * kappa * P ) * dx * dy
 
         ! Bottom-right
         grad_x = (c(1, ny) - c(nx - 1, ny)) * dx2
         grad_y = (c(nx, 1) - c(nx, ny - 1)) * dy2
         P = grad_x*grad_x + grad_y*grad_y
-        F = F + (f_b(i, j) + 0.5 * kappa * P ) * dx * dy
+        F = F + (f_b(nx, ny) + 0.5 * kappa * P ) * dx * dy
 
         ! Top-right
         grad_x = (c(2, ny) - c(nx, ny)) * dx2
         grad_y = (c(1, 1) - c(1, ny - 1)) * dy2
         P = grad_x*grad_x + grad_y*grad_y
-        F = F + (f_b(i, j) + 0.5 * kappa * P ) * dx * dy
+        F = F + (f_b(1, ny) + 0.5 * kappa * P ) * dx * dy
 
         ! Boundary nodes
         ! LHS - j = 1
@@ -109,7 +109,7 @@ contains
             grad_x = (c(i + 1, 1) - c(i - 1, 1)) * dx2
             grad_y = (c(i, 2) - c(i, ny)) * dy2
             P = grad_x*grad_x + grad_y*grad_y
-            F = F + (f_b(i, j) + 0.5 * kappa * P ) * dx * dy
+            F = F + (f_b(i, 1) + 0.5 * kappa * P ) * dx * dy
         end do
 
         ! RHS - j = ny
@@ -117,7 +117,7 @@ contains
             grad_x = (c(i + 1, ny) - c(i - 1, ny)) * dx2
             grad_y = (c(i, 1) - c(i, ny - 1)) * dy2
             P = grad_x*grad_x + grad_y*grad_y
-            F = F + (f_b(i, j) + 0.5 * kappa * P ) * dx * dy
+            F = F + (f_b(i, ny) + 0.5 * kappa * P ) * dx * dy
         end do
 
         ! Top - i = 1
@@ -125,7 +125,7 @@ contains
             grad_x = (c(2, j) - c(nx, j)) * dx2
             grad_y = (c(1, j + 1) - c(1, j - 1)) * dy2
             P = grad_x*grad_x + grad_y*grad_y
-            F = F + (f_b(i, j) + 0.5 * kappa * P ) * dx * dy
+            F = F + (f_b(1, j) + 0.5 * kappa * P ) * dx * dy
         end do
 
         ! Bottom - i = nx
@@ -133,7 +133,7 @@ contains
             grad_x = (c(1, j) - c(nx - 1, j)) * dx2
             grad_y = (c(nx, j + 1) - c(nx, j - 1)) * dy2
             P = grad_x*grad_x + grad_y*grad_y
-            F = F + (f_b(i, j) + 0.5 * kappa * P ) * dx * dy
+            F = F + (f_b(nx, j) + 0.5 * kappa * P ) * dx * dy
         end do
 
         ! Bulk (non-boundary) nodes
