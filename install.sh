@@ -30,7 +30,8 @@ compile () {
     prog_files+=("$main")
 
     # Binary name and location
-    mod_files="bin/"
+    bin_files="bin/"
+    obj_files="bin/*.o"
     compd_file="bin/spindec"
 
     # NetCDF flags
@@ -38,8 +39,19 @@ compile () {
     fflags=`nf-config --fflags`
 
     # Compile
-    echo -e "Compile line: $comp_line $fflags ${prog_files[@]} $flibs -J$mod_files -I$mod_files -o $compd_file\n"
-    $comp_line $fflags ${prog_files[@]} $flibs -J$mod_files -I$mod_files -o $compd_file
+    echo "Compile line:"
+    for file in ${prog_files[@]}; do
+        file_nx=${file/.f90/}
+        file_nx=${file_nx/src\//}
+        $comp_line -J$bin_files -c $file $fflags $flibs -o $bin_files$file_nx.o
+        echo "$comp_line -J$bin_files -c $file $fflags $flibs -o $bin_files$file_nx.o"
+    done 	
+
+    $comp_line -o $compd_file $obj_files
+    echo "$comp_line -o $compd_file $obj_files"
+
+    # Old line:
+    # $comp_line $fflags ${prog_files[@]} $flibs -J$mod_files -I$mod_files -o $compd_file
 
     # Don't prompt to add to $PATH if debug option specified
     if [[ "$1" == "d" ]] || [[ "$1" == "debug" ]]; then
@@ -81,10 +93,10 @@ compile () {
 
 clean () {
     ### Remove compiled binaries ###
-    bins=("bin/*.mod" "bin/*.nc" "bin/*.cpf" "bin/*spindec")
+    bins=("bin/*.mod" "bin/*.o" "bin/*spindec")
 
     # Check for binaries
-    if [[ `ls bin/* | grep -E 'mod|nc|cpf|spindec'` == '' ]]; then
+    if [[ `ls bin/* | grep -E 'mod|[.]o|spindec'` == '' ]]; then
         echo "No binaries found"
         exit 1
     fi
@@ -99,7 +111,7 @@ clean () {
     # Remove binaries
     while true; do
         echo -e "Removing the following files:\n"
-        ls bin/* | grep -E 'mod|nc|cpf|spindec'
+        ls bin/* | grep -E 'mod|[.]o|spindec'
         echo
 
         # Ask for confirmation before removing if option provided
