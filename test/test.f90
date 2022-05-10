@@ -6,16 +6,18 @@ program main
     use input_tester
     use checkpoint_tester
     use test_potentials
+    use test_free_energy
 
     implicit none
 
     real(real64), dimension(3) :: a_1
     real(real64), dimension(3, 3) :: c_1
-    real(real64), dimension(3, 3) :: expected_bulk_1, expected_total_1
+    real(real64), dimension(3, 3) :: expected_bulk_1, expected_total_1, expected_fb_1
     real(real64) :: dx, dy, kappa
     real(real64), dimension(5) :: a_2
     real(real64), dimension(4, 4) :: c_2
-    real(real64), dimension(4, 4) :: expected_bulk_2, expected_total_2
+    real(real64), dimension(4, 4) :: expected_bulk_2, expected_total_2, expected_fb_2
+    real(real64) :: expected_total_F_1, expected_total_F_2
     integer :: test_num
 
     print *, "Starting input testing"
@@ -59,5 +61,31 @@ program main
 
     !Test 3 for total potential
     !call test_total_potential(mu_3,c_3,dx,dx,kappa,expected_total_3)
+
+    print *, 'Starting free energy testing.'
+
+    !Test 1 for bulk free energy
+    test_num = 1
+    expected_fb_1 = reshape((/6.0, 17.0, 34.0, 17.0, 34.0, 121.0, 6.0, 17.0, 57.0/), shape(c_1))
+    call test_bulk_free(c_1, a_1, expected_fb_1, test_num)
+
+    !Test 2 for bulk free energy
+    test_num = 2
+    expected_fb_2 = reshape((/0.2945, 0.3524, 0.4534, 0.6789, 0.4958, 0.6164, 1.6139, 0.2671, 0.3619, 0.6789, 1.2783, &
+                                2.3815, 0.3432, 0.6164, 0.3096, 1.6139/), shape(c_2))
+    call test_bulk_free(c_2, a_2, expected_fb_2, test_num)
+
+    !Test 1 for total free energy
+    test_num = 1
+    expected_total_F_1 = 525.0
+    
+    call test_total_free_energy(c_1, expected_fb_1, dx, dy, kappa, expected_total_F_1, test_num)
+
+    !Test 2 for total free energy
+    test_num = 2
+    expected_total_F_2 = 26.2304
+
+    call test_total_free_energy(c_2, expected_fb_2, dx, dy, kappa, expected_total_F_2, test_num)
+
 
 end program main

@@ -45,12 +45,13 @@ class Vis_CH:
         self.av_period = av_period
 
     #read in data from output file (netcdf)
-    def read_netcdf(self, verbose = True):
+    def read_and_setup(self, verbose = True):
 
         data = NC.Dataset(self.file, "r", format="NETCDF4")
 
         #concentration order parameter c(t, y, x)
         self.c = np.array([data.variables['c'][:]][0])
+        # self.c = np.swapaxes(self.c, 1, 2)
 
         #### Issue/needs checking - does c need to be transposed?
 
@@ -73,21 +74,14 @@ class Vis_CH:
         #time array
         self.time = np.arange(self.N_t) * self.dt
 
-        #moving average of F
+         #moving average of F
         if (self.av_period > self.N_t):
             print("WARNING:")
-            print('set average period is greater than total time period (N_t = ' + str(self.N_t) + ' setting to default value of 10')
+            print('set average period is greater than total time period (N_t = ' + str(self.N_t) + ' setting to default value')
+
             self.av_period = 10
 
         self.F_av = moving_av(self.F_tot, self.N_t, self.av_period)
-
-        #frame speed of animation depending on number of files (i.e more files, want to be quicker)
-
-        if (self.N_t >= 1000):
-            self.frame_step = 1
-        else:
-            self.frame_step = 5
-        self.frame_skip = 100
 
         #print metadata to terminal
         if (verbose):
@@ -97,7 +91,7 @@ class Vis_CH:
             print('\u039C_A =', self.M_A)
             print('\u039C_B =', self.M_B)
             print('\u03BA =', self.kappa)
-            print('c_0', self.c_0)
+            print('c_0 =', self.c_0)
             string = 'f(c) = ' + str(np.round(self.coeffs[0], 2)) + ' + '
             for i in range(len(self.coeffs)):
                 if i == 0:
@@ -112,138 +106,153 @@ class Vis_CH:
 
             print(string)
 
+        
+
+        self.nframes = 300
+
+        if self.N_t < self.nframes:
+            self.modulo = 1
+        else:
+            self.modulo = int(self.N_t/self.nframes)
+
+        c_plot = []
+        self.F_anim = np.array([])
+        self.F_anim_av = np.array([])
+        self.time_anim = np.array([])
+
+        for i in range(len(self.c)):
+            if (i % self.modulo == 0):
+                c_plot.append(self.c[i])
+                self.F_anim = np.append(self.F_anim, self.F_tot[i])
+                self.F_anim_av = np.append(self.F_anim_av, self.F_av[i])
+                self.time_anim = np.append(self.time_anim, self.time[i])
+
+        self.c_plot = np.array(c_plot)
+
+        
+        
+
+    
     #function that plots an animation of both c and F (and its moving average) on the same figure
     def dual_animation(self):
 
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15,15))
-        cmap = cm.jet
-        im = ax1.imshow(self.c[0], interpolation='none', aspect='auto', vmin=0, vmax=1, cmap = cmap)
-        fig.suptitle(r"Time =  " + str(self.time[0]))
+
+        # cmap = cm.jet
+        pos1 = ax1.imshow(np.zeros(shape=(self.N_y, self.N_x)), vmin=0, vmax=1, origin='lower')
         div = make_axes_locatable(ax1)
         cax = div.append_axes('right', '5%', '5%')
-        fig.colorbar(im, cax = cax)
-
+        fig.colorbar(pos1, cax = cax)
 
         ax1.set_xlabel(r'x')
         ax1.set_ylabel(r"$y$")
         ax1.set_title(r'$c(x,y)$')
-        div = make_axes_locatable(ax1)
-        cax = div.append_axes('right', '5%', '5%')
-        fig.colorbar(im, cax = cax)
+
+        line, = ax2.plot([], [], '-', label = r'Sim Data', color = 'black')
+        line_av, = ax2.plot([], [], '--', label = r'Moving Average ($t_{period}$ = ' + str(self.N_t // self.av_period) + r' s)', color = 'red')
+        ax2.set_xlabel(r'Time (ns)')
+        ax2.set_ylabel(r'Total Free Energy - $F$')
+        ax2.set_xlim(self.time_anim[0], self.time_anim[-1])
+        ax2.set_ylim(0.98*self.F_anim[0], 1.02*self.F_anim[-1])
+        ax2.legend()
 
         def init():
-            im.set_data(np.zeros(shape=(self.N_x,self.N_y)))
-            return [im]
+            pos1.set_array(self.c_plot[0])
+            line.set_data(self.time_anim[0], self.F_anim[0])
+            line_av.set_data(self.time_anim[0], self.F_anim_av[0])
+            return [pos1, line, line_av,]
 
-        def animate_grid(i):
-            i = i *self.frame_skip
-            im.set_array(self.c[i])
-            fig.suptitle(r"Time =  " + str(self.time[i]))
-            return [im]
+        def animate(i):
+            pos1.set_array(self.c_plot[i])
+            line.set_data(self.time_anim[:i], self.F_anim[:i])
+            line_av.set_data(self.time_anim[:i], self.F_anim_av[:i])
+            return [pos1, line, line_av,]
+    
+        anim = animation.FuncAnimation(fig = fig, func = animate, init_func = init, frames = len(self.c_plot), repeat = False, interval=1,blit=True)
 
-
-
-
-
-        self.x = [self.time[0]]
-        self.y = [self.F_tot[0]]
-        self.y_av = [self.F_av[0]]
-
-        ax2.plot(self.x,self.y, scaley=True, scalex=True, color="blue", label = r'CH Data')
-        ax2.plot(self.x,self.y_av, scaley=True, scalex=True, color="red", linestyle = '--', label = r'Moving Average ($t_{period}$ = ' + str(self.N_t // self.av_period) + r' s)')
-        ax2.set_xlabel(r'Time (s)')
-        ax2.set_ylabel(r"Total Free Energy")
-        ax2.set_title(r'$F(t)$')
-        ax2.legend(loc = 'upper left')
-
-        def animate_line(j):
-            j = j * self.frame_skip
-            j += 1
-            self.x.append(self.time[j])
-            self.y.append(self.F_tot[j])
-            self.y_av.append(self.F_av[j])
-
-            ax2.plot(self.x,self.y, scaley=True, scalex=True, color="blue")
-            ax2.plot(self.x,self.y_av, scaley=True, scalex=True, color="red", linestyle = '--')
-
-        anim_grid = animation.FuncAnimation(fig = fig, func = animate_grid,init_func=init, frames=len(self.time), repeat=False, interval=self.frame_step,blit=True)
-        anim_line = animation.FuncAnimation(fig = fig, func = animate_line, frames = len(self.time) - 1, repeat = False, interval=self.frame_step)
-        plt.subplots_adjust(left=0.1,
-                        bottom=0.1,
-                        right=0.9,
-                        top=0.9,
-                        wspace=0.5,
-                        hspace=0.4)
         plt.show()
 
+       
+
+
+    #function that plots an animation of both c and F (and its moving average) on the same figure
+    def F_animation(self):
+
+        fig, ax = plt.subplots()
+        
+        line, = ax.plot([], [], '-', label = r'Sim Data', color = 'black')
+        line_av, = ax.plot([], [], '--', label = r'Moving Average ($t_{period}$ = ' + str(self.N_t // self.av_period) + r' s)', color = 'red')
+        ax.set_xlabel(r'Time (ns)')
+        ax.set_ylabel(r'Total Free Energy - $F$')
+        ax.set_xlim(self.time_anim[0], self.time_anim[-1])
+        ax.set_ylim(0.98*self.F_anim[0], 1.02*self.F_anim[-1])
+        ax.legend()
+
+        def init():
+            line.set_data(self.time_anim[0], self.F_anim[0])
+            line_av.set_data(self.time_anim[0], self.F_anim_av[0])
+            return [line,line_av,]
+
+        def animate(i):
+            line.set_data(self.time_anim[:i], self.F_anim[:i])
+            line_av.set_data(self.time_anim[:i], self.F_anim_av[:i])
+            return [line,line_av,]
+
+        anim_traj = animation.FuncAnimation(fig = fig, func = animate, init_func = init, frames = len(self.c_plot), repeat = False, interval=1,blit=True)
+               
+
+        plt.show()
+    
     #function that plots an animation of c
     def grid_animation(self):
 
         fig, ax = plt.subplots()
-        cmap = cm.jet
-        im = ax.imshow(self.c[0], interpolation='none', aspect='auto', vmin=0, vmax=1, cmap = cmap)
-        fig.suptitle(r"Time =  " + str(self.time[0]))
+        # cmap = cm.jet
+           # cmap = cm.jet
+        pos1 = ax.imshow(np.zeros(shape=(self.N_y, self.N_x)), vmin=0, vmax=1, origin='lower')
         div = make_axes_locatable(ax)
         cax = div.append_axes('right', '5%', '5%')
-        fig.colorbar(im, cax = cax)
+        fig.colorbar(pos1, cax = cax)
 
         ax.set_xlabel(r'x')
         ax.set_ylabel(r"$y$")
         ax.set_title(r'$c(x,y)$')
-        div = make_axes_locatable(ax)
-        cax = div.append_axes('right', '5%', '5%')
-        fig.colorbar(im, cax = cax)
-
 
         def init():
-            im.set_data(np.zeros(shape=(self.N_x,self.N_y)))
-            return [im]
+            pos1.set_array(self.c_plot[0])
+            return [pos1]
 
-        def animate_grid(i):
-            i = i *self.frame_skip
-            im.set_array(self.c[i])
-            fig.suptitle(r"Time =  " + str(self.time[i]))
-            return [im]
+        def animate(i):
+            pos1.set_array(self.c_plot[i])
+            return [pos1]
+    
+        anim = animation.FuncAnimation(fig = fig, func = animate, init_func = init, frames = len(self.c_plot), repeat = False, interval=1,blit=True)
 
-
-
-
-        anim_grid = animation.FuncAnimation(fig = fig, func = animate_grid,init_func=init, frames=len(self.time), repeat=False, interval=self.frame_step,blit=True)
         plt.show()
 
-    #function that plots an animation of F (and its moving average)
-    def F_animation(self):
+
+    #function that plots an animation of c
+    def grid_snapshot(self, snapshot = -1):
+
         fig, ax = plt.subplots()
+        # cmap = cm.jet
+        pos1 = ax.imshow(self.c_plot[snapshot][:,:], vmin=0, vmax=1, origin = 'lower')
+        div = make_axes_locatable(ax)
+        cax = div.append_axes('right', '5%', '5%')
+        fig.colorbar(pos1, cax = cax)
 
-        self.x = [self.time[0]]
-        self.y = [self.F_tot[0]]
-        self.y_av = [self.F_av[0]]
+        ax.set_xlabel(r'x')
+        ax.set_ylabel(r"$y$")
+        ax.set_title(r'$c(x,y)$')
 
-        ax.plot(self.x,self.y, scaley=True, scalex=True, color="blue", label = r'CH Data')
-        ax.plot(self.x,self.y_av, scaley=True, scalex=True, color="red", linestyle = '--', label = r'Moving Average ($t_{period}$ = ' + str(self.N_t // self.av_period) + r' s)')
-        ax.set_xlabel(r'Time (s)')
-        ax.set_ylabel(r"Total Free Energy")
-        ax.set_title(r'$F(t)$')
-        ax.legend(loc = 'upper left')
-
-        def animate_line(j):
-            j=j *self.frame_skip
-            j += 1
-            self.x.append(self.time[j])
-            self.y.append(self.F_tot[j])
-            self.y_av.append(self.F_av[j])
-
-            ax.plot(self.x,self.y, scaley=True, scalex=True, color="blue")
-            ax.plot(self.x,self.y_av, scaley=True, scalex=True, color="red", linestyle = '--')
-
-        anim_line = animation.FuncAnimation(fig = fig, func = animate_line, frames = len(self.time) - 1, repeat = False, interval=self.frame_step)
         plt.show()
+
 
     #Function that plots F (and its moving average)
     def F_plot(self):
         fig, ax = plt.subplots()
         ax.plot(self.time,self.F_tot, scaley=True, scalex=True, color="blue", label = r'CH Data')
-        ax.plot(self.time,self.F_av, scaley=True, scalex=True, color="red", linestyle = '--', label = r'Moving Average ($t_{period}$ = ' + str(self.N_t // self.av_period) + r' s)')
+        ax.plot(self.time,self.F_av, scaley=True, scalex=True, color="red", label = r'Moving Average ($t_{period}$ = ' + str(self.N_t // self.av_period) + r' s)')
         ax.set_xlabel(r'Time (s)')
         ax.set_ylabel(r"Total Free Energy - $F(t)$")
         ax.legend(loc = 'upper left')
@@ -261,32 +270,30 @@ class Vis_CH:
             for i in range(len(self.coeffs)):
                 self.f_b += self.coeffs[i] * self.c_space**i
 
-            for i in range(self.N_t):
-                av = np.average(self.c[i])
+            for i in range(len(self.c_plot)):
+                av = np.average(self.c_plot[i])
                 self.c_av = np.append(self.c_av, av)
                 self.f_b_av = np.append(self.f_b_av, bulk_energy_av(self.coeffs, self.c_av))
-
-            self.traj_c = [self.c_av[0]]
-            self.traj_f_b = [self.f_b_av[0]]
 
             fig, ax = plt.subplots()
 
             ax.plot(self.c_space, self.f_b, label = r'$f(c)$', color = 'blue', linestyle = '--')
-            fig.suptitle(r"Time =  " + str(self.time[0]))
-            ax.scatter(self.traj_c, self.traj_f_b, label = r'Trajectory', color = 'red')
+            traj, = ax.plot([], [], 'o', label = r'Trajectory', color = 'red')
             ax.set_xlabel(r'c')
             ax.set_ylabel(r'Bulk Free Energy')
+            ax.set_xlim(0.49, 0.51)
 
-            def animate_traj(i):
-                i=i * self.frame_skip
-                i += 1
-                self.traj_c.append(self.c_av[i])
-                self.traj_f_b.append(self.f_b_av[i])
-                ax.plot(self.c_space, self.f_b, color = 'blue', linestyle = '--')
-                fig.suptitle(r"Time =  " + str(self.time[i]))
-                ax.scatter(self.traj_c, self.traj_f_b, color = 'red')
+            def init():
+                traj.set_data(self.c_av[0], self.f_b_av[0])
+                return traj,
 
-            anim_traj = animation.FuncAnimation(fig = fig, func = animate_traj, frames = len(self.time) - 1, repeat = False, interval=self.frame_step,blit=True)
+            def animate(i):
+                traj.set_data(self.c_av[:i], self.f_b_av[:i])
+                return traj,
+               
+                
+
+            anim_traj = animation.FuncAnimation(fig = fig, func = animate, init_func = init, frames = len(self.c_plot), repeat = False, interval=1,blit=True)
 
             plt.show()
 
@@ -296,14 +303,16 @@ class Vis_CH:
 #perhaps need to change to get the file from whatever dir we choose
 res_CH = Vis_CH(file = 'CH_output.nc', av_period=10)
 
-res_CH.read_netcdf(verbose=True)
+res_CH.read_and_setup(verbose=True)
 
-res_CH.dual_animation()
+res_CH.F_animation()
 
 res_CH.grid_animation()
 
-res_CH.F_animation()
+res_CH.grid_snapshot(snapshot=-1)
 
 res_CH.F_plot()
 
 res_CH.bulk_energy_traj()
+
+res_CH.dual_animation()
