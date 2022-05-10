@@ -47,7 +47,7 @@ compile () {
     fi
 
     # Don't prompt to add to $PATH if already in path
-    if grep -Fq "spindec" $HOME/.bashrc; then
+    if grep -Fq "/SpinDec2/bin/" $HOME/.bashrc; then
         echo 'Binary already in $PATH. Exiting...'
         exit 0
     fi
