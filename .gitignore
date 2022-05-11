@@ -4,9 +4,13 @@ shopt -s globstar
 # binaries
 **.mod
 **.o
-**.cpf
-**.nc
 **spindec**
+
+# Program generated
+**.cpf
+**.cp
+**.nc
+test/test_bin/*.txt
 
 # others 
 **.tmp

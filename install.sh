@@ -298,11 +298,15 @@ while [[ $# -gt 0 ]]; do
         -t | --test)
             if [[ "$2" == "b" ]] || [[ "$2" == "both" ]]; then
                 unit_test_compile
-                ./test/test_bin/test_spindec
+                cd test/test_bin/
+                echo
+                ./test_spindec
+                cd ../../
             elif [[ "$2" == "c" ]] || [[ "$2" == "compile" ]]; then
                 unit_test_compile
             elif [[ "$2" == "r" ]] || [[ "$2" == "run" ]]; then
-                ./test/test_bin/test_spindec
+                cd test/test_bin/ && ./test_spindec
+                cd ../../
             else
                 echo -e "$2 is not a valid option for -t/--test\n"
                 help_message
