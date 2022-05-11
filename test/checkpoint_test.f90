@@ -31,7 +31,7 @@ contains
         open (unit=13, file="Out.cp")
         close (13)
 
-        call read_params("checkpoint_test.txt", initial_conc, conc_std, coeffs, nx, &
+        call read_params("../checkpoint_test.txt", initial_conc, conc_std, coeffs, nx, &
                          ny, m1, m2, k, bfe, cint, cpi, cpo, t, delta_t, df_tol, random_seed, use_input, err)
 
         do while (current_time < t / delta_t)

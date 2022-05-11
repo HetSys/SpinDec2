@@ -18,7 +18,7 @@ contains
         real(kind=real64), dimension(:, :), allocatable :: mu
         real(kind=real64), dimension(:), allocatable :: ftot
 
-        call read_params("input_test.txt", initial_conc, conc_std, coeffs, nx, &
+        call read_params("../input_test.txt", initial_conc, conc_std, coeffs, nx, &
                          ny, m1, m2, k, bfe, cint, cpi, cpo, t, delta_t, df_tol, random_seed, use_input, err)
 
         if (err == -1) then
@@ -51,7 +51,7 @@ contains
             stop
         end if
 
-        call read_params("input_test2.txt", initial_conc, conc_std, coeffs, nx, &
+        call read_params("../input_test2.txt", initial_conc, conc_std, coeffs, nx, &
                          ny, m1, m2, k, bfe, cint, cpi, cpo, t, delta_t, df_tol, random_seed, use_input, err)
 
         if (err == -1) then
@@ -87,7 +87,7 @@ contains
             stop
         end if
 
-        call read_params("input_test3.txt", initial_conc, conc_std, coeffs, nx, &
+        call read_params("../input_test3.txt", initial_conc, conc_std, coeffs, nx, &
                          ny, m1, m2, k, bfe, cint, cpi, cpo, t, delta_t, df_tol, random_seed, use_input, err)
 
         if (err /= -1) then
