@@ -14,9 +14,11 @@
 ```
 
 # SpinDec2
-Modelling the phase field of spinoidal decomposition
+Modelling Spinoidal Decomposition Using a Phase Field Approach
 
 [LIST FEATURES HERE]
+
+[SHOW SOME PRETTY PICTURES/DIAGRAMS/GRAPHS]
 
 ## Dependencies 
 Prior to installation, please ensure that the following dependencies are installed: 
@@ -39,7 +41,7 @@ When using the long version, additional arguments can be specified like so (also
 
 `./install.sh --compile=debug`.
 
-A description of the different flags and their arugments are given below:
+A description of the different flags and their arguments are given below:
 
 ### Compile 
 To compile the code, run 
@@ -53,12 +55,31 @@ After compilation, you will be prompted to add the binary to your default shell 
 ### Clean 
 Using the option will remove all installed binaries, netcdf, and checkpoint files in `bin`. To do so, run 
 
-`./install.sh -C/–-clean`
+`./install.sh -C` or `./install.sh –-clean`
 
 The clean argument takes an option argument `c/confirm`. This will prompt for confirmation before removing binaries.
 
-### Test 
-TODO
+## Testing
+### Running 
+Unit tests can be automatically run from the install script. To use this feature, specify the argument 
 
-### Example 
-TODO
+`./install.sh -t` or `./install.sh --test`. 
+
+This takes one of several required arguments:
+- `c/compile` to only compile the tests 
+- `r/run` to only run the tests 
+- `b/both` to both compile and run the tests.
+
+All test binaries are compiled to `test/test_bin/`, and the main executable is saved as `test_spindec`.
+
+### Cleaning 
+To clean all unit tests binaries, use 
+
+`./install.sh -T` or `./install.sh --test-clean`.
+
+## Contributors 
+Geraldine Anis, Ben Gosling, Dylan Morgan, Matyas Parrag, and Anas Siddiqui
+
+HetSys CDT, University of Warwick
+
+Copyright © 2022, Geraldine Anis, Ben Gosling, Dylan Morgan, Matyas Parrag, and Anas Siddiqui
