@@ -157,9 +157,9 @@ unit_test_compile () {
     test_files=("${test_files[@]/$test_main}")
     test_files+=("$test_main")
 
+    # Remove actual main from src
     src_main="src/main.f90"
     src_files=("${src_files[@]/$src_main}")
-    src_files+=("$src_main")
 
     # Binary name and location
     bin_files="test/test_bin/"
@@ -257,8 +257,6 @@ help_message () {
     echo "                          required RUN arguments: [ c/compile | r/run | b/both ]"
     echo
     echo "  -T, --test-clean        clean test binaries"
-    echo 
-    echo "  -e, --example           run with example initialisation states"
 }
 
 ### Argument Parser ###
