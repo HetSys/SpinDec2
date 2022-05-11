@@ -74,8 +74,8 @@ contains
             abs(coeffs(1) - 0) < 1 / 1e7 .and. &
             abs(coeffs(2) - 0) < 1 / 1e7 .and. &
             abs(coeffs(3) - 1.7) < abs(coeffs(3) / 1e7) .and. &
-            abs(coeffs(4) - 0) < 1 / 1e7 .and. &
-            abs(coeffs(5) + 1.7) < abs(coeffs(5) / 1e7) .and. &
+            abs(coeffs(4) + 3.4) < abs(coeffs(4) / 1e7) .and. &
+            abs(coeffs(5) - 1.7) < abs(coeffs(5) / 1e7) .and. &
             abs(t + 1) < abs(t / 1e7) .and. &
             abs(delta_t + 1) < abs(delta_t / 1e7) .and. &
             abs(df_tol + 1) < abs(df_tol / 1e7) .and. &

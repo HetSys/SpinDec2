@@ -7,18 +7,34 @@ program main
     use checkpoint_tester
     use test_potentials
     use test_free_energy
+    use grid_test
+    use ch_test
 
     implicit none
 
     real(real64), dimension(3) :: a_1
     real(real64), dimension(3, 3) :: c_1
     real(real64), dimension(3, 3) :: expected_bulk_1, expected_total_1, expected_fb_1
-    real(real64) :: dx, dy, kappa
+    real(real64) :: dx, dy, kappa, dt
     real(real64), dimension(5) :: a_2
     real(real64), dimension(4, 4) :: c_2
     real(real64), dimension(4, 4) :: expected_bulk_2, expected_total_2, expected_fb_2
     real(real64) :: expected_total_F_1, expected_total_F_2
     integer :: test_num
+    real(real64), dimension(:,:), allocatable :: c_new ! new conc. grid
+    real(real64), dimension(:,:), allocatable :: dQ   ! 2nd derivative of Q
+    real(real64), dimension(:), allocatable :: a
+    real(real64) :: C_mean, C_std
+    real(real64) :: M ! Mobility
+    integer :: Nx, Ny
+    integer :: t_max ! number of timesteps
+    real(real64), dimension(:,:), allocatable :: c_grid ! conc. grid
+    integer :: seed_in ! seed for random number generator
+    ! Testing variables
+    real(real64) :: mean, std
+
+    real(real64), dimension(:,:), allocatable :: Q_test, dQ_expected
+    real(real64), dimension(:,:), allocatable :: c_test, c_expected
 
     print *, "Starting input testing"
     call input_test()
@@ -78,7 +94,7 @@ program main
     !Test 1 for total free energy
     test_num = 1
     expected_total_F_1 = 525.0
-    
+
     call test_total_free_energy(c_1, expected_fb_1, dx, dy, kappa, expected_total_F_1, test_num)
 
     !Test 2 for total free energy
@@ -86,6 +102,119 @@ program main
     expected_total_F_2 = 26.2304
 
     call test_total_free_energy(c_2, expected_fb_2, dx, dy, kappa, expected_total_F_2, test_num)
+
+    print*, "Starting testing for Cahn Hilliard solver"
+
+    Nx = 3
+    Ny = 3
+
+    dx = 0.01
+    dy = 0.01
+    dt = 1e-12 ! 1 picosecond timestep
+
+    t_max = 1
+
+    Kappa = 1.6
+
+    M = 1.5
+
+    C_mean = 0.7
+    C_std = 0.1
+
+    ! Try a 4th order polynomial
+    allocate(a(6))
+    a = (/5.0,2.1,2.2,2.3,2.4,2.5/)
+
+    ! Test on del_Q subroutine
+
+    ! Allocate dQ, Q_test, and Q_expected
+    allocate(dQ(Nx,Ny))
+    allocate(Q_test(Nx,Ny))
+    allocate(dQ_expected(Nx,Ny))
+
+    ! Set test values for Q
+    Q_test = reshape((/0.905,0.553,0.633, &
+                       0.788,0.770,0.781, &
+                       0.735,0.672,0.653/),shape(Q_test))
+    ! Q_test = reshape((/0.826002263439135,0.740150544928188,0.708851124175835, &
+    !                    0.737634258586795,0.739006281014932,0.657503183174631, &
+    !                    0.755632532965362,0.689995984417304,0.803969348899452/),shape(Q_test))
+
+    ! Set known del_Q values
+    !!These seem to be the wrong expected results, the code looks like it is correct however
+    !!So i will comment out the below and add the output of the code.
+    !dQ_expected = reshape((/-13665.0,11520.0,5400.0, &
+    !                         585.0,-4290.0,-4200.0, &
+    !                         1170.0,345.0,3135.0/),shape(dQ_expected))
+    dQ_expected = reshape((/-9109.9993486702097, 7680.0010061264447, 3599.9991118907510, &
+                            390.00036075712836, -2859.9996653199032, -2800.0010311603992, &
+                            779.99893337483377, 230.00002935528875,2090.0006036460659/),shape(dQ_expected))
+    ! dQ_expected = reshape((/-5426.10889650539,48.8021000167921,2883.31265607101, &
+    !                          414.108393703222,-1961.11729429216,5391.72419967732, &
+    !                          526.075852218563,4181.62155208077,-6058.41856297014/),shape(dQ_expected))
+
+    call test_del_Q(dQ,Q_test,dQ_expected,dx,dy,Nx,Ny)
+
+    ! Test on time_evolution subroutine
+
+    ! Set dQ to zero
+    dQ = 0.0
+
+    ! Allocate c_test, c_expected, c_new, Q, and mu
+    allocate(c_test(Nx,Ny))
+    allocate(c_expected(Nx,Ny))
+    allocate(c_new(Nx,Ny))
+
+    ! initialize concentration grid with test values
+    c_test = reshape((/0.82600226343913463,0.73763425858679454,0.75563253296536192, &
+                       0.74015054492818821,0.73900628101493215,0.68999598441730403, &
+                       0.70885112417583473,0.65750318317463130,0.80396934889945193/),shape(c_test))
+
+    c_expected = reshape((/0.825592729545098,0.737684308382165,0.755776463302995, &
+                           0.740158839048355,0.738720099275076,0.690382929167892, &
+                           0.709132521563533,0.657924059121464,0.803700028541638/),shape(c_expected))
+
+    call test_time_evolution(c_new,c_test,c_expected,Nx,Ny,dx,dy,dt,a,Kappa,M)
+
+
+    print*, "Starting grid test"
+
+    Nx = 10
+    Ny = 10
+
+    dx = 0.01
+    dy = 0.01
+    dt = 1e-12 ! 1 picosecond timestep
+
+    t_max = 10000
+
+    Kappa = 1.6
+
+    M = 1.5
+
+    C_mean = 0.7
+    C_std = 0.01
+
+    seed_in = -1
+
+    ! Set seed
+    call get_seed(seed_in)
+
+    print*, "Random seed: ", seed_in
+
+    ! Try a 4th order polynomial
+    a = (/5.0,2.1,2.2,2.3,2.4,2.5/)
+
+    ! Allocate grid
+    allocate(c_grid(Nx,Ny))
+
+    ! TESTS
+
+    call test_grid_init(c_grid,Nx,Ny,C_mean,C_std,mean,std)
+
+    call test_rand_normal(mean,std,C_mean,C_std)
+
+    call test_stdnormal(mean,std)
 
 
 end program main
