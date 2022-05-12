@@ -8,11 +8,17 @@ module test_free_energy
 
     contains
 
-    ! Subroutine that tests the bulk free energy
-    ! @param c: concentration grid used for testing
-    ! @param a: array storing coefficients
-    ! @param expected: expected answer for bulk chemical potential
-    ! @param test_num : test number
+    !******************************************************************************
+    !> test_bulk_free
+    !!
+    !! subroutine to unit test bulk free energy
+    !!
+    !!@param c : concentration field
+    !!@param a : polynomial coefficients
+    !!@param expected : expected result for bulk free energy given a and c
+    !!@param test_num : unit test number
+    !******************************************************************************
+    !
     subroutine test_bulk_free(c, a, expected, test_num)
 
         real(real64), allocatable :: f_b(:, :)
@@ -51,14 +57,18 @@ module test_free_energy
 
     end subroutine test_bulk_free
 
-    ! subroutine that tests the total chemical potential
-    ! @param f_b: bulk free energy grid used for testing
-    ! @param c: concentration grid used for testing
-    ! @param dx: spatial grid spacing in x direction used for testing
-    ! @param dy: spatial grid spacing in y direction used for testing
-    ! @param kappa: free energy gradient parameter used for testing
-    ! @param expected: expected answer for total chemical potential
-    ! @param test_num : test number
+    !******************************************************************************
+    !> test_total_free_energy
+    !!
+    !! subroutine to unit test total free energy
+    !!
+    !!@param c : concentration field
+    !!@param f_b : bulk free energy field
+    !!@param dx,dy : finite difference spacing
+    !!@param kappa : interfacial term coefficient
+    !!@param expected : expected result for bulk free energy given a and c
+    !!@param test_num : unit test number
+    !******************************************************************************
     subroutine test_total_free_energy(c, f_b, dx, dy, kappa, expected, test_num)
 
 
@@ -95,4 +105,59 @@ module test_free_energy
 
 
     end subroutine test_total_free_energy
+
+    !******************************************************************************
+    !> free_energy_convergence
+    !!
+    !! subroutine to observe if F converges with reducing dx, dy
+    !!
+    !!@param c : concentration field
+    !!@param f_b : bulk free energy field
+    !!@param kappa : interfacial term coefficient
+    !******************************************************************************
+
+
+    subroutine free_energy_convergence(c, f_b, kappa)
+
+        real(real64) :: dx, dy, delta
+        real(real64), intent(in) :: kappa
+        real(real64), intent(in) :: c(:, :)
+        real(real64), intent(in) :: f_b(:, :)
+        real(real64), dimension(0:5) :: F
+        logical :: res = .false.
+        integer :: i
+
+        F = 0.0
+
+        dx = 1
+        dy = 1
+
+        call total_free_energy(F(0), c, f_b, dx, dy, kappa)
+
+        !observe whether F converges with increasing resoloution in x and y
+        do i = 1, 10
+            
+            dx = dx/10
+            dy = dy/10
+
+            call total_free_energy(F(i), c, f_b, dx, dy, kappa)
+
+            delta = abs(F(i) - F(i-1))
+
+            if (delta < 1e-6) then
+                res = .true.
+                exit
+             end if
+
+        end do
+        
+        
+        if (res) then
+            print *, 'Convergence achieved'
+        else
+            print *, 'Convergence failed'
+        end if
+
+    end subroutine free_energy_convergence
+
 end module test_free_energy

@@ -32,16 +32,16 @@ program main
     integer :: seed_in ! seed for random number generator
     ! Testing variables
     real(real64) :: mean, std
-
+    integer :: i
     real(real64), dimension(:,:), allocatable :: Q_test, dQ_expected
     real(real64), dimension(:,:), allocatable :: c_test, c_expected
 
     print *, "Starting input testing"
     call input_test()
-    print *, "Starting checkpoitn testing"
+    print *, "Starting checkpoint testing"
     call checkpoint_test()
 
-    print *, 'Starting potenitals testing.'
+    print *, 'Starting potenitals unit testing.'
 
     !Test 1 for bulk potential
     a_1 = (/1.0, 2.0, 3.0/)
@@ -78,7 +78,8 @@ program main
     !Test 3 for total potential
     !call test_total_potential(mu_3,c_3,dx,dx,kappa,expected_total_3)
 
-    print *, 'Starting free energy testing.'
+    print *, 'Starting free energy unit testing.'
+
 
     !Test 1 for bulk free energy
     test_num = 1
@@ -92,16 +93,27 @@ program main
     call test_bulk_free(c_2, a_2, expected_fb_2, test_num)
 
     !Test 1 for total free energy
+    dx = 1.0
+    dy = 1.0
+    kappa = 0.34
     test_num = 1
-    expected_total_F_1 = 525.0
+    expected_total_F_1 = 311.71999
 
     call test_total_free_energy(c_1, expected_fb_1, dx, dy, kappa, expected_total_F_1, test_num)
 
     !Test 2 for total free energy
+    dx = 0.01
+    dy = 0.01
+    kappa = 2.3
     test_num = 2
-    expected_total_F_2 = 26.2304
+    expected_total_F_2 = 0.939175
 
     call test_total_free_energy(c_2, expected_fb_2, dx, dy, kappa, expected_total_F_2, test_num)
+
+    print*, "Starting Convergence test for F"
+
+    call free_energy_convergence(c_2, expected_fb_2, kappa)
+
 
     print*, "Starting testing for Cahn Hilliard solver"
 
