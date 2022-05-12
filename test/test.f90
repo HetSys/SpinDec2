@@ -7,6 +7,7 @@ program main
     use checkpoint_tester
     use test_potentials
     use test_free_energy
+    use test_derivatives
     use grid_test
     use ch_test
 
@@ -32,16 +33,21 @@ program main
     integer :: seed_in ! seed for random number generator
     ! Testing variables
     real(real64) :: mean, std
-    integer :: i
     real(real64), dimension(:,:), allocatable :: Q_test, dQ_expected
     real(real64), dimension(:,:), allocatable :: c_test, c_expected
-
+    print*,'########################################################'
     print *, "Starting input testing"
+    print*,'--------------------------------------------------------'
     call input_test()
+
+    print*,'########################################################'
     print *, "Starting checkpoint testing"
+    print*,'--------------------------------------------------------'
     call checkpoint_test()
 
+    print*,'########################################################'
     print *, 'Starting potenitals unit testing.'
+    print*,'--------------------------------------------------------'
 
     !Test 1 for bulk potential
     a_1 = (/1.0, 2.0, 3.0/)
@@ -78,7 +84,9 @@ program main
     !Test 3 for total potential
     !call test_total_potential(mu_3,c_3,dx,dx,kappa,expected_total_3)
 
+    print*,'########################################################'
     print *, 'Starting free energy unit testing.'
+    print*,'--------------------------------------------------------'
 
 
     !Test 1 for bulk free energy
@@ -110,12 +118,27 @@ program main
 
     call test_total_free_energy(c_2, expected_fb_2, dx, dy, kappa, expected_total_F_2, test_num)
 
+    print*,'########################################################'
     print*, "Starting Convergence test for F"
+    print*,'--------------------------------------------------------'
 
     call free_energy_convergence(c_2, expected_fb_2, kappa)
 
+    print*,'########################################################'
+    print*, 'Testing First order derivatives - (for Chain rule term)'
+    print*,'--------------------------------------------------------'
 
+    Nx = 128
+    Ny = 128
+
+    call test_x_der(Nx, Ny)
+    call test_y_der(Nx, Ny)
+
+
+
+    print*,'########################################################'
     print*, "Starting testing for Cahn Hilliard solver"
+    print*,'--------------------------------------------------------'
 
     Nx = 3
     Ny = 3
@@ -187,9 +210,11 @@ program main
                            0.709132521563533,0.657924059121464,0.803700028541638/),shape(c_expected))
 
     call test_time_evolution(c_new,c_test,c_expected,Nx,Ny,dx,dy,dt,a,Kappa,M)
+    
 
-
+    print*,'########################################################'
     print*, "Starting grid test"
+    print*,'--------------------------------------------------------'
 
     Nx = 10
     Ny = 10
@@ -228,5 +253,8 @@ program main
 
     call test_stdnormal(mean,std)
 
+    print*,'########################################################'
+    print*, 'Tests Complete'
+    
 
 end program main

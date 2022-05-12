@@ -123,7 +123,7 @@ module test_free_energy
         real(real64), intent(in) :: kappa
         real(real64), intent(in) :: c(:, :)
         real(real64), intent(in) :: f_b(:, :)
-        real(real64), dimension(0:5) :: F
+        real(real64), dimension(0:10) :: F
         logical :: res = .false.
         integer :: i
 
