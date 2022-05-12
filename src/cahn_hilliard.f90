@@ -87,33 +87,7 @@ contains
         end do
 
     end subroutine del_Q
-    
-    subroutine dQ_dx(dQx,Q,dx,Nx,Ny)
-        ! Subroutine to calculate dQ/dx
-        ! Using central differences
-        integer, intent(in) :: Nx, Ny
-        real(real64), dimension(Nx,Ny), intent(in) :: Q
-        real(real64), intent(in) :: dx
-        real(real64), dimension(Nx,Ny), intent(out) :: dQx
-        real(real64) :: dx_inv
-        integer :: i,j ! counters
 
-        dx_inv = 1.0/(2.0*dx)
-
-        ! LHS and RHS Boundary
-        do i = 1, Nx
-            dQx(i,1) = (Q(i,2) - Q(i,Ny))*dx_inv    ! LHS
-            dQx(i,Ny) = (Q(i,1) - Q(i,Ny-1))*dx_inv ! RHS
-        end do
-
-        ! Bulk (non-boundary nodes)
-        do i = 1, Nx
-            do j = 2, Ny-1
-                dQx(i,j) = (Q(i,j+1) - Q(i,j-1))*dx_inv
-            end do
-        end do
-
-    end subroutine dQ_dx
 
     subroutine dQ_dy(dQy,Q,dy,Nx,Ny)
         ! Subroutine to calculate dQ/dx
@@ -127,51 +101,51 @@ contains
 
         dy_inv = 1.0/(2.0*dy)
 
-        ! Top and Bottom Boundary
-        do j = 1, Ny
-            dQy(1,j) = (Q(2,j) - Q(Nx,j))*dy_inv    ! Top
-            dQy(Nx,j) = (Q(1,j) - Q(Nx-1,j))*dy_inv ! Bottom
-        end do 
+        ! LHS and RHS Boundary
+        do i = 1, Nx
+            dQy(i,1) = (Q(i,2) - Q(i,Ny))*dy_inv    ! LHS
+            dQy(i,Ny) = (Q(i,1) - Q(i,Ny-1))*dy_inv ! RHS
+        end do
 
         ! Bulk (non-boundary nodes)
-        do i = 2, Nx-1
-            do j = 1, Ny
-                dQy(i,j) = (Q(i+1,j) - Q(i-1,j))*dy_inv
+        do j = 2, Ny-1
+            do i = 1, Nx
+                dQy(i,j) = (Q(i,j+1) - Q(i,j-1))*dy_inv
             end do
         end do
 
     end subroutine dQ_dy
 
-    subroutine dM_dx(dMx,M,dx,Nx,Ny)
+    subroutine dQ_dx(dQx,Q,dx,Nx,Ny)
         ! Subroutine to calculate dQ/dx
         ! Using central differences
         integer, intent(in) :: Nx, Ny
-        real(real64), dimension(Nx,Ny), intent(in) :: M
+        real(real64), dimension(Nx,Ny), intent(in) :: Q
         real(real64), intent(in) :: dx
-        real(real64), dimension(Nx,Ny), intent(out) :: dMx
+        real(real64), dimension(Nx,Ny), intent(out) :: dQx
         real(real64) :: dx_inv
         integer :: i,j ! counters
 
         dx_inv = 1.0/(2.0*dx)
 
-        ! LHS and RHS Boundary
-        do i = 1, Nx
-            dMx(i,1) = (M(i,2) - M(i,Ny))*dx_inv    ! LHS
-            dMx(i,Ny) = (M(i,1) - M(i,Ny-1))*dx_inv ! RHS
-        end do
+        ! Top and Bottom Boundary
+        do j = 1, Ny
+            dQx(1,j) = (Q(2,j) - Q(Nx,j))*dx_inv    ! Top
+            dQx(Nx,j) = (Q(1,j) - Q(Nx-1,j))*dx_inv ! Bottom
+        end do 
 
         ! Bulk (non-boundary nodes)
-        do i = 1, Nx
-            do j = 2, Ny-1
-                dMx(i,j) = (M(i,j+1) - M(i,j-1))*dx_inv
+        do j = 1, Ny
+            do i = 2, Nx-1
+                dQx(i,j) = (Q(i+1,j) - Q(i-1,j))*dx_inv
             end do
         end do
 
-    end subroutine dM_dx
+    end subroutine dQ_dx
 
 
     subroutine dM_dy(dMy,M,dy,Nx,Ny)
-        ! Subroutine to calculate dQ/dx
+        ! Subroutine to calculate dM/dx
         ! Using central differences
         integer, intent(in) :: Nx, Ny
         real(real64), dimension(Nx,Ny), intent(in) :: M
@@ -182,20 +156,49 @@ contains
 
         dy_inv = 1.0/(2.0*dy)
 
-        ! Top and Bottom Boundary
-        do j = 1, Ny
-            dMy(1,j) = (M(2,j) - M(Nx,j))*dy_inv    ! Top
-            dMy(Nx,j) = (M(1,j) - M(Nx-1,j))*dy_inv ! Bottom
-        end do 
+        ! LHS and RHS Boundary
+        do i = 1, Nx
+            dMy(i,1) = (M(i,2) - M(i,Ny))*dy_inv    ! LHS
+            dMy(i,Ny) = (M(i,1) - M(i,Ny-1))*dy_inv ! RHS
+        end do
 
         ! Bulk (non-boundary nodes)
-        do i = 2, Nx-1
-            do j = 1, Ny
-                dMy(i,j) = (M(i+1,j) - M(i-1,j))*dy_inv
+        do j = 2, Ny-1
+            do i = 1, Nx
+                dMy(i,j) = (M(i,j+1) - M(i,j-1))*dy_inv
             end do
         end do
 
     end subroutine dM_dy
+
+    subroutine dM_dx(dMx,M,dx,Nx,Ny)
+        ! Subroutine to calculate dM/dx
+        ! Using central differences
+        integer, intent(in) :: Nx, Ny
+        real(real64), dimension(Nx,Ny), intent(in) :: M
+        real(real64), intent(in) :: dx
+        real(real64), dimension(Nx,Ny), intent(out) :: dMx
+        real(real64) :: dx_inv
+        integer :: i,j ! counters
+
+        dx_inv = 1.0/(2.0*dx)
+
+        ! Top and Bottom Boundary
+        do j = 1, Ny
+            dMx(1,j) = (M(2,j) - M(Nx,j))*dx_inv    ! Top
+            dMx(Nx,j) = (M(1,j) - M(Nx-1,j))*dx_inv ! Bottom
+        end do 
+
+        ! Bulk (non-boundary nodes)
+        do j = 1, Ny
+            do i = 2, Nx-1
+                dMx(i,j) = (M(i+1,j) - M(i-1,j))*dx_inv
+            end do
+        end do
+
+    end subroutine dM_dx
+    
+
 
     subroutine time_evolution(grid, grid_new, dQ, M, dt, Nx, Ny)
         ! Subroutine to perform the time evolution in accordance with
