@@ -137,27 +137,14 @@ contains
         end do
 
         ! Bulk (non-boundary) nodes
-        do i = 2, nx - 1
-            do j = 2, ny - 1
+        do j = 2, ny - 1
+            do i = 2, nx - 1
                 grad_x = (c(i + 1, j) -  c(i - 1, j)) * dx2
                 grad_y = (c(i, j + 1) -  c(i, j - 1)) * dy2
                 P = grad_x*grad_x + grad_y*grad_y
                 F = F + (f_b(i, j) + 0.5 * kappa * P ) * dx * dy
             end do
         end do
-
-        !Loop filling the  array
-        ! do j = 0, ny - 1
-        !     do i = 0, nx - 1
-
-        !         xlap = (c(modulo(i + 1, nx), j) - 2 * c(i, j) + c(modulo(i - 1, nx), j)) / (dx * dx)
-        !         ylap = (c(i, modulo(j + 1, ny)) - 2 * c(i, j) + c(i, modulo(j - 1, ny))) / (dy * dy)
-        !         P = xlap + ylap
-
-        !         F = F + (f_b(i, j) + 0.5 * kappa * P * P) * dx * dy
-
-        !     end do
-        ! end do
 
     end subroutine
 
