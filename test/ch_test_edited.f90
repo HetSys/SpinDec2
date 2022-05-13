@@ -9,35 +9,70 @@ module ch_test
 
     contains
 
-    subroutine test_del_Q(dQ,Q_test,dQ_expected,dx,dy,Nx,Ny)
-
+    subroutine test_del_Q(d2Q_finite_diff,Q_test,d2Q_analytical,dx,dy,Nx,Ny)
         integer, intent(in) :: Nx, Ny
-        real(real64), dimension(Nx,Ny), intent(in) :: Q_test, dQ_expected
-        real(real64), dimension(Nx,Ny), intent(out) :: dQ
         real(real64), intent(in) :: dx, dy
-        logical :: result = .TRUE.
+        real(real64), dimension(Nx,Ny), intent(in) :: Q_test
+        real(real64), dimension(Nx,Ny), intent(out) :: d2Q_finite_diff
+        real(real64), dimension(Nx,Ny), intent(out) :: d2Q_analytical
+        logical :: res = .TRUE.
         integer :: i,j ! counters
 
-        call del_Q(dQ,Q_test,dx,dy,Nx,Ny)
+        ! Test function f(x,y) = x^2 + y^2
+        ! Analytical del^2(f) = 4.0
+        
+        ! Analytical Solution
+        d2Q_analytical = 4.0
 
+        ! Finite differences
+        call del_Q(d2Q_finite_diff,Q_test,dx,dy,Nx,Ny)
 
-        do i = 1, Nx
-            do j = 1 , Ny
-                ! print*, abs(dQ(i,j)-dQ_expected(i,j))
-                if(abs(dQ(i,j)-dQ_expected(i,j)) > 1e-2) then
-                    result = .FALSE.
-                    exit ! do not continue checking
+        ! Test internal nodes
+        do i = 2, Nx-1
+            do j = 2, Ny-1
+                if(abs(d2Q_analytical(i,j)-d2Q_finite_diff(i,j)) > 1e-3) then
+                    res = .FALSE.
+                    exit ! do not continue testing remaining values
                 end if
             end do
         end do
 
-        if (result) then
+        if (res) then
             print*, "del_Q passes test"
         else
             print*, "del_Q does not pass test"
         end if
-
     end subroutine test_del_Q
+
+    ! subroutine test_del_Q(dQ,Q_test,dQ_expected,dx,dy,Nx,Ny)
+
+    !     integer, intent(in) :: Nx, Ny
+    !     real(real64), dimension(Nx,Ny), intent(in) :: Q_test, dQ_expected
+    !     real(real64), dimension(Nx,Ny), intent(out) :: dQ
+    !     real(real64), intent(in) :: dx, dy
+    !     logical :: result = .TRUE.
+    !     integer :: i,j ! counters
+
+    !     call del_Q(dQ,Q_test,dx,dy,Nx,Ny)
+
+
+    !     do i = 1, Nx
+    !         do j = 1 , Ny
+    !             ! print*, abs(dQ(i,j)-dQ_expected(i,j))
+    !             if(abs(dQ(i,j)-dQ_expected(i,j)) > 1e-2) then
+    !                 result = .FALSE.
+    !                 exit ! do not continue checking
+    !             end if
+    !         end do
+    !     end do
+
+    !     if (result) then
+    !         print*, "del_Q passes test"
+    !     else
+    !         print*, "del_Q does not pass test"
+    !     end if
+
+    ! end subroutine test_del_Q
 
 
     subroutine test_time_evolution(c_new,c_test,c_expected,Nx,Ny,dx,dy,dt,a,Kappa,M)

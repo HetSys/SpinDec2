@@ -35,6 +35,7 @@ program main
     real(real64) :: mean, std
     real(real64), dimension(:,:), allocatable :: Q_test, dQ_expected
     real(real64), dimension(:,:), allocatable :: c_test, c_expected
+    integer :: i,j ! counters
     print*,'########################################################'
     print *, "Starting input testing"
     print*,'--------------------------------------------------------'
@@ -167,26 +168,12 @@ program main
     allocate(Q_test(Nx,Ny))
     allocate(dQ_expected(Nx,Ny))
 
-    ! Set test values for Q
-    Q_test = reshape((/0.905,0.553,0.633, &
-                       0.788,0.770,0.781, &
-                       0.735,0.672,0.653/),shape(Q_test))
-    ! Q_test = reshape((/0.826002263439135,0.740150544928188,0.708851124175835, &
-    !                    0.737634258586795,0.739006281014932,0.657503183174631, &
-    !                    0.755632532965362,0.689995984417304,0.803969348899452/),shape(Q_test))
-
-    ! Set known del_Q values
-    !!These seem to be the wrong expected results, the code looks like it is correct however
-    !!So i will comment out the below and add the output of the code.
-    !dQ_expected = reshape((/-13665.0,11520.0,5400.0, &
-    !                         585.0,-4290.0,-4200.0, &
-    !                         1170.0,345.0,3135.0/),shape(dQ_expected))
-    dQ_expected = reshape((/-9109.9993486702097, 7680.0010061264447, 3599.9991118907510, &
-                            390.00036075712836, -2859.9996653199032, -2800.0010311603992, &
-                            779.99893337483377, 230.00002935528875,2090.0006036460659/),shape(dQ_expected))
-    ! dQ_expected = reshape((/-5426.10889650539,48.8021000167921,2883.31265607101, &
-    !                          414.108393703222,-1961.11729429216,5391.72419967732, &
-    !                          526.075852218563,4181.62155208077,-6058.41856297014/),shape(dQ_expected))
+    ! Set test values for Q_test
+    do i = 1, Nx
+        do j = 1, Ny
+            Q_test(i,j) = ((i*dx)**2)+((j*dy)**2)
+        end do
+    end do
 
     call test_del_Q(dQ,Q_test,dQ_expected,dx,dy,Nx,Ny)
 

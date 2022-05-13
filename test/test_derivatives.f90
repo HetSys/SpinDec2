@@ -6,7 +6,7 @@ module test_derivatives
     implicit none
 
     contains
-
+    
     subroutine test_x_der(Nx, Ny)
 
         integer, intent(in) :: Nx, Ny
@@ -242,20 +242,20 @@ module test_derivatives
         res = .true.
 
         do i = 1, Nx
-            lh_bound = (test_in(i,2) - test_in(i, Ny))*dy_inv
-            rh_bound = (test_in(i,1) - test_in(i, Ny-1))*dy_inv
+            top_bound = (test_in(i,2) - test_in(i, Ny))*dy_inv
+            bottom_bound = (test_in(i,1) - test_in(i, Ny-1))*dy_inv
 
-            if (abs(lh_bound - dQy(i,1)) > 1e-6) then
+            if (abs(top_bound - dQy(i,1)) > 1e-6) then
                 res = .false.
                 exit
             end if
 
-            if (abs(rh_bound - dQy(i,Ny)) > 1e-6) then
+            if (abs(bottom_bound - dQy(i,Ny)) > 1e-6) then
                 res = .false.
                 exit
             end if
 
-            if (abs(rh_bound - lh_bound) > 1e-6) then
+            if (abs(bottom_bound - top_bound) > 1e-6) then
                 res = .false.
                 exit
             end if
@@ -297,20 +297,20 @@ module test_derivatives
         res = .true.
 
         do i = 1, Nx
-            lh_bound = (test_in(i,2) - test_in(i, Ny))*dy_inv
-            rh_bound = (test_in(i,1) - test_in(i, Ny-1))*dy_inv
+            top_bound = (test_in(i,2) - test_in(i, Ny))*dy_inv
+            bottom_bound = (test_in(i,1) - test_in(i, Ny-1))*dy_inv
 
-            if (abs(lh_bound - dMy(i,1)) > 1e-6) then
+            if (abs(top_bound - dMy(i,1)) > 1e-6) then
                 res = .false.
                 exit
             end if
 
-            if (abs(rh_bound - dMy(i,Ny)) > 1e-6) then
+            if (abs(bottom_bound - dMy(i,Ny)) > 1e-6) then
                 res = .false.
                 exit
             end if
 
-            if (abs(rh_bound - lh_bound) > 1e-6) then
+            if (abs(bottom_bound - top_bound) > 1e-6) then
                 res = .false.
                 exit
             end if
