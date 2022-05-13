@@ -33,6 +33,24 @@ contains
         call random_seed(put=seed)
 
     end subroutine get_seed
+    
+    subroutine rand_uniform(x,c_min,c_max)
+
+	! Subroutine to get a standard normal random number
+
+	implicit none
+
+	real(real64), intent(in) :: c_min, c_max
+	real(real64), intent(out) :: x
+	real(real64) :: u1
+
+	call random_number(u1)
+
+	u1 = 1.0 - u1
+
+	x = (c_max-c_min)*u1 + c_min
+ 
+    end subroutine rand_uniform
 
     subroutine rand_stdnormal(x)
         ! Subroutine to get a standard normal random number
@@ -66,25 +84,25 @@ contains
 
     end subroutine
 
-    subroutine grid_init(grid, Nx, Ny, C, C_std)
+    subroutine grid_init(grid, Nx, Ny, c_min, c_max)
         ! Subroutine to initialise the concentration grid
         ! The first input is an array with dimensions Nx x Ny to store concentrations
         ! Nx and Ny are the grid dimensions
-        ! C is the mean concentration
-        ! C_std is the standard deviation of the concentration distribution
+        ! c_min is the lower bound for the concentration
+        ! c_upper is the upper bound for the concentration
         ! seed_in is a seed for the random number generator
 
         implicit none
 
         integer, intent(in) :: Nx, Ny
         real(real64), dimension(Nx, Ny), intent(out) :: grid
-        real(real64), intent(in) :: C, C_std
+        real(real64), intent(in) :: c_min, c_max
         real(real64) :: x ! dummy variable for concnetration
         integer :: i, j ! counters
 
         do i = 1, Nx
             do j = 1, Ny
-                call rand_normal(x, C, C_std)
+                call rand_normal(x,c_min,c_max)
                 grid(i, j) = x
             end do
         end do
