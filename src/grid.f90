@@ -102,7 +102,7 @@ contains
 
         do i = 1, Nx
             do j = 1, Ny
-                call rand_normal(x,c_min,c_max)
+                call rand_uniform(x,c_min,c_max)
                 grid(i, j) = x
             end do
         end do

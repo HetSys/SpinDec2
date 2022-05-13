@@ -16,19 +16,25 @@ program main
     real(real64), dimension(:, :), allocatable :: mu   ! bulk chem. pot.
     real(real64), dimension(:, :), allocatable :: Q    ! total chem. pot.
     real(real64), dimension(:, :), allocatable :: dQ   ! 2nd derivative of Q
+    real(real64), dimension(:, :), allocatable :: M    ! Mobility field
+    real(real64), dimension(:, :), allocatable :: T ! Temp
     real(real64), dimension(:), allocatable :: a ! user inputted polynomial coefficients
     real(real64), dimension(:), allocatable :: F_tot ! Total free energy with time
     real(real64), dimension(:, :), allocatable :: f_b
-    real(real64) :: c0, c_std !initial grid mean and std sample
+    real(real64) :: c0, c_std !initial grid mean and std sample - if using normal dist
+    real(real64) :: c_min, c_max !initial grid lower and upper boubds - for default uniform dist
+    real(real64) :: T_min, T_max !initial temp grid mean and std sample
     real(real64) :: dx, dy, dt ! spatial and temporal grid spacings
     real(real64) :: Kappa ! free energy gradient parameter
     real(real64) :: t_end !end time
-    real(real64) :: M, MA, MB ! Mobility's
-    real(real64) :: bfe, df_tol!PLaceholder (These were in the input file but df_tol hasn't been used in any code)
+    real(real64) :: MA, MB ! Mobility's
+    real(real64) :: EA, EB ! exciation energy
+    real(real64) :: bfe, df_tol!Placeholder (These were in the input file but df_tol hasn't been used in any code)
     integer :: Nx, Ny, Nt, Nc
     integer :: k, count ! counters
     integer :: cint, random_seed, err, use_input, current_iter, ncerr !checkpointing_interval, random seed,error var
     character(len=128) :: cpi, cpo ! checkpointing files
+    character(len=*), parameter :: problem = "Constant"
 
     ! Only run files in test for now
     call read_params("input.txt", c0, c_std, a, nx, &
@@ -40,7 +46,10 @@ program main
     end if
 
     current_iter = 2
-    Nt = floor(t_end / dt)
+    ! come back to this
+    ! Nt = floor(t_end / dt) 
+
+    Nt = 1e4
 
     if (cpi /= "") then
         call read_checkpoint_in(c, mu, F_tot, cpi, c0, c_std, a, nx, &
@@ -57,19 +66,42 @@ program main
     dx = 0.01
     dy = 0.01
 
-    !Take constant M to be average estimate of Darken's Equation
-    M = (MA * (1 - c0) + MB * c0) * c0 * (1 - c0)
+    if (dt > min(0.1*dx**4, 0.1*dy**4)) then
+        print*, 'Warning time-step unstable, setting to default stable value'
+        dt = min(0.1*dx**4, 0.1*dy**4)
+    end if
+
+    EA = 1.0
+    EB = 1.0
+
+    c_min = 0.1
+    c_max = 0.9
+
+    T_min = 945
+    T_max = 955
+
 
     !Find polynomial coefficients size
     Nc = size(a)
-
-    ! Allocate grid
+    ! Allocate c grid
     if (.not. allocated(c)) then
         allocate (c(Nx, Ny, Nt))
-        c = 0
+        c = 0.0
     end if
 
-    ! Allocate mu
+    ! Allocate T grid
+    if (.not. allocated(T)) then
+        allocate (T(Nx, Ny))
+        T = 0.0
+    end if
+
+     ! Allocate M grid
+    if (.not. allocated(M)) then
+        allocate (M(Nx, Ny))
+        M = 0.0
+    end if
+
+    ! Allocate mu grid
     if (.not. allocated(mu)) then
         allocate (mu(Nx, Ny))
         mu = 0.0
@@ -78,29 +110,34 @@ program main
     ! Allocate F_tot
     if (.not. allocated(F_tot)) then
         allocate (F_tot(Nt))
-        F_tot = 0
+        F_tot = 0.0
     end if
 
-    ! Allocate Q
-    allocate (Q(Nx, Ny))
-    Q = 0.0
+     ! Allocate Q grid
+    if (.not. allocated(Q)) then
+        allocate (Q(Nx, Ny))
+        Q = 0.0
+    end if
 
-    ! Allocate dQ
-    allocate (dQ(Nx, Ny))
-    dQ = 0.0
+     ! Allocate c_new grid
+    if (.not. allocated(c_new)) then
+        allocate (c_new(Nx, Ny))
+        c_new = 0.0
+    end if
 
-    ! Allocate c_new
-    allocate (c_new(Nx, Ny))
-    c_new = 0.0
+    ! Initialize c grid
+    call grid_init(c(:, :, 1), Nx, Ny, c_min, c_max)
 
-    ! Initialize grid
-    call grid_init(c(:, :, 1), Nx, Ny, c0, c_std)
+    if (problem == 'Temp') then
+        call grid_init(T, Nx, Ny, T_min, T_max)
+    end if
 
     ! Get Initial Bulk Free Energy over space
     call bulk_free_energy(f_b, c(:, :, 1), a)
 
     ! Calculate Initial F(t)
     call total_free_energy(F_tot(1), c(:, :, 1), f_b, dx, dy, kappa)
+
 
     deallocate (f_b)
 
@@ -115,11 +152,13 @@ program main
         ! Get total chemical potentials
         call total_potential(Q, mu, c(:, :, k - 1), dx, dy, Kappa)
 
-        ! Get second derivative of Q
-        call del_Q(dQ, Q, dx, dy, Nx, Ny)
+        ! Get Mobility Field
+        call Mobility(M,MA,MB, EA, EB, c0, c(:, :, k-1), T, problem)
+
+        print*, M(1,1), M(1,2), M(6,7)
 
         ! Get new concentrations for current timesteps
-        call time_evolution(c(:, :, k - 1), c_new, dQ, M,dt, Nx, Ny)
+        call time_evoloution_new(c(:, :, k-1),c_new,M,Q,dx,dy,dt, Nx, Ny)
 
         ! set grid to c_new
         c(:, :, k) = c_new(:, :)
