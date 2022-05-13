@@ -185,7 +185,7 @@ module test_derivatives
         integer, intent(in) :: Nx, Ny
         integer ::  j, i
         real(real64) :: dy, dx
-        real(real64) :: dy_inv, lh_bound, rh_bound
+        real(real64) :: dy_inv, top_bound, bottom_bound
         real(kind=real64), dimension(Nx, Ny) :: test_in,test_out
         real(kind=real64), dimension(Nx, Ny) :: dQy, dMy, dQx, dMx
         real(kind=real64), dimension(Ny) :: y
