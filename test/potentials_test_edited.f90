@@ -76,6 +76,7 @@ contains
         call total_potential(Q, mu, c, dx, dy, Kappa)
 
         if (analytical) then
+        ! check only non-boundary elements
             start_i = 2
             start_j = 2
             end_i = nx-1
