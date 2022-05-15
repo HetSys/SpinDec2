@@ -57,7 +57,7 @@ contains
     ! @param dy: spatial grid spacing in y direction used for testing
     ! @param kappa: free energy gradient parameter used for testing
     ! @param expected: expected answer for total chemical potential
-    subroutine test_total_potential(mu, c, dx, dy, Kappa, expected, test_num)
+    subroutine test_total_potential(mu, c, dx, dy, Kappa, expected, test_num, analytical)
 
         real(real64), allocatable :: Q(:, :)
         real(real64), intent(in) :: c(:, :)
@@ -65,8 +65,9 @@ contains
         real(real64), intent(in) :: dx, dy, Kappa
         real(real64), intent(in) :: expected(:, :)
         integer, intent(in) :: test_num
+        logical, intent(in) :: analytical
         logical :: res = .true.
-        integer :: nx, ny, i, j
+        integer :: nx, ny, i, j,start_i,start_j,end_i,end_j
 
         nx = size(c, 1)
         ny = size(c, 2)
@@ -74,10 +75,22 @@ contains
         allocate (Q(nx, ny))
         call total_potential(Q, mu, c, dx, dy, Kappa)
 
+        if (analytical) then
+            start_i = 2
+            start_j = 2
+            end_i = nx-1
+            end_j = ny-1 
+        else
+            start_i = 1
+            start_j = 1
+            end_i = nx
+            end_j = ny
+        end if
+
         ! Testing if resulting Q is equal to expected
         ! within certain tolerance
-        do j = 1, ny
-            do i = 1, nx
+        do j = start_j, end_j
+            do i = start_i, end_i
                 if (abs(Q(i, j) - expected(i, j)) > 1e-3) then
                     res = .false.
                     exit
@@ -94,4 +107,5 @@ contains
         deallocate (Q)
 
     end subroutine test_total_potential
+
 end module test_potentials

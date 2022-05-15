@@ -20,6 +20,8 @@ program main
     real(real64), dimension(5) :: a_2
     real(real64), dimension(4, 4) :: c_2
     real(real64), dimension(4, 4) :: expected_bulk_2, expected_total_2, expected_fb_2
+    real(real64), dimension(3) :: a_3
+    real(real64), dimension(3,3)  :: c_3,expected_bulk_3,expected_total_3
     real(real64) :: expected_total_F_1, expected_total_F_2
     integer :: test_num
     real(real64), dimension(:,:), allocatable :: c_new ! new conc. grid
@@ -47,7 +49,7 @@ program main
     call checkpoint_test()
 
     print*,'########################################################'
-    print *, 'Starting potenitals unit testing.'
+    print *, 'Starting potentials unit testing.'
     print*,'--------------------------------------------------------'
 
     !Test 1 for bulk potential
@@ -65,7 +67,21 @@ program main
     test_num = 2
     call test_bulk_potential(c_2, a_2, expected_bulk_2, test_num)
 
-    !Test 3 for bulk potential
+    !Test 3 (Analytical) for bulk potential
+    ! f(c) = c^2
+    ! f'(c) = 2*c (expected_bulk)
+    ! c = x^2 + y^2
+    dx = 0.01
+    dy = 0.01
+    a_3 = (/0.0,0.0,1.0/)
+    do i=1,3
+        do j=1,3
+            c_3(i,j) = ((i*dx)**2)+((j*dy)**2)
+            expected_bulk_3(i,j) = 2*c_3(i,j)
+        end do
+    end do
+    test_num = 3
+    call test_bulk_potential(c_3,a_3,expected_bulk_3,test_num)
     !call test_bulk_potential(c_3,a_3,expeceted_bulk_3)
 
     !Test 1 for total potential
@@ -74,15 +90,21 @@ program main
     kappa = 2.0
     expected_total_1 = reshape((/0.0, 12.0, 18.0, 8.0, 20.0, 62.0, -2.0, 10.0, 34.0/), shape(c_1))
     test_num = 1
-    call test_total_potential(expected_bulk_1, c_1, dx, dx, kappa, expected_total_1, test_num)
+    call test_total_potential(expected_bulk_1, c_1, dx, dx, kappa, expected_total_1, test_num,.false.)
 
     !Test 2 for total potential
     expected_total_2 = reshape((/-0.4902, 0.1380, 0.7517, 3.1837, 2.4189, 1.8470, 8.0138, -3.0764, -0.8056, 2.3637, &
                                  5.0620, 10.7708, -0.3965, 3.1670, -1.9585, 7.6538/), shape(c_2))
     test_num = 2
-    call test_total_potential(expected_bulk_2, c_2, dx, dx, kappa, expected_total_2, test_num)
+    call test_total_potential(expected_bulk_2, c_2, dx, dx, kappa, expected_total_2, test_num,.false.)
 
-    !Test 3 for total potential
+    !Test 3(analytical) for total potential
+    dx = 0.01
+    dy = 0.01
+    kappa = 2.0
+    test_num = 3
+    expected_total_3 = expected_bulk_3 - 4.0*kappa
+    call test_total_potential(expected_bulk_3,c_3,dx,dy,kappa,expected_total_3,test_num,.true.)
     !call test_total_potential(mu_3,c_3,dx,dx,kappa,expected_total_3)
 
     print*,'########################################################'
