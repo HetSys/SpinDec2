@@ -99,6 +99,8 @@ program main
     call test_total_potential(expected_bulk_2, c_2, dx, dx, kappa, expected_total_2, test_num,.false.)
 
     !Test 3(analytical) for total potential
+    ! c = x^2 + y^2
+    ! laplacian c = 4.0
     dx = 0.01
     dy = 0.01
     kappa = 2.0
