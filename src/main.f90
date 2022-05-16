@@ -155,8 +155,6 @@ program main
         ! Get Mobility Field
         call Mobility(M,MA,MB, EA, EB, c0, c(:, :, k-1), T, problem)
 
-        print*, M(1,1), M(1,2), M(6,7)
-
         ! Get new concentrations for current timesteps
         call time_evoloution_new(c(:, :, k-1),c_new,M,Q,dx,dy,dt, Nx, Ny)
 
