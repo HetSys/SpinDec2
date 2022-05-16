@@ -41,7 +41,7 @@ contains
             !           are dependent on T
             case ("Temp")
                 
-
+                !$omp parallel do default(shared) private(i,j,boltz)
                 do j = 1, Ny
                     do i = 1, Nx
                         boltz = R * T(i,j)
@@ -55,6 +55,7 @@ contains
             !           are independent on T
             case ("NonTemp")
 
+                !$omp parallel do default(shared) private(i,j)
                 do j = 1, Ny
                     do i = 1, Nx
                         M(i,j) = (MA*(1-c(i,j)) + MB*c(i,j))*c(i,j)*(1-c(i,j))
@@ -65,6 +66,7 @@ contains
             !           mobilities, and is independent of c 
             case ("Constant")
 
+                !$omp parallel do default(shared) private(i,j)
                 do j = 1, Ny
                     do i = 1, Nx
                         M(i,j) = (MA*(1-c0) + MB*c0)*c0*(1-c0)
@@ -153,6 +155,7 @@ contains
         end do
 
         ! Bulk (non-boundary) nodes
+        !$omp parallel do default(shared) private(i,j,der_x,der_y)
         do i = 2, Nx - 1
             do j = 2, Ny - 1
                 der_x = (Q(i + 1, j) - 2 * Q(i, j) + Q(i - 1, j)) * dx2
@@ -183,6 +186,7 @@ contains
         end do
 
         ! Bulk (non-boundary nodes)
+        !$omp parallel do default(shared) private(i,j)
         do j = 2, Ny-1
             do i = 1, Nx
                 dQy(i,j) = (Q(i,j+1) - Q(i,j-1))*dy_inv
@@ -210,6 +214,7 @@ contains
         end do 
 
         ! Bulk (non-boundary nodes)
+        !$omp parallel do default(shared) private(i,j)
         do j = 1, Ny
             do i = 2, Nx-1
                 dQx(i,j) = (Q(i+1,j) - Q(i-1,j))*dx_inv
@@ -238,6 +243,7 @@ contains
         end do
 
         ! Bulk (non-boundary nodes)
+        !$omp parallel do default(shared) private(i,j)
         do j = 2, Ny-1
             do i = 1, Nx
                 dMy(i,j) = (M(i,j+1) - M(i,j-1))*dy_inv
@@ -265,6 +271,7 @@ contains
         end do 
 
         ! Bulk (non-boundary nodes)
+        !$omp parallel do default(shared) private(i,j)
         do j = 1, Ny
             do i = 2, Nx-1
                 dMx(i,j) = (M(i+1,j) - M(i-1,j))*dx_inv
@@ -324,7 +331,7 @@ contains
         call dM_dx(dMx,M,dx, Nx, Ny)
         call dM_dy(dMy,M,dy, Nx, Ny)
 
-
+        !$omp parallel do default(shared) private(i,j,alpha,xbeta,ybeta,beta)
         do j = 1, Ny
             do i = 1, Nx
 
