@@ -13,6 +13,8 @@ compile () {
     # Option for choosing the compiler
     if [[ "$1" == "d" ]] || [[ "$1" == "debug" ]]; then
         comp_line="gfortran -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
+    elif [[ "$1" == "p" ]] || [[ "$1" == "profile" ]]; then
+        comp_line="gfortran -pg"
     elif [[ -z "$1" ]]; then
         comp_line="gfortran"
     else
@@ -240,21 +242,21 @@ ascii_art () {
 
 help_message () {
     echo "usage: spindec [-h]"
-    echo "               [-c DEBUG]"
-    echo "               [-C CONFIRM]"
-    echo "               [-t RUN]"
+    echo "               [-c ARGS]"
+    echo "               [-C ARGS]"
+    echo "               [-t ARGS]"
     echo "               [-T]"
     echo
     echo "options:"
     echo "  -h, --help              show this help message and exit"
-    echo "  -c, --compile DEBUG     compile the code with optional debug option"
-    echo "                          optional DEBUG arguments: [ none | d/debug ] (default=none)"
+    echo "  -c, --compile ARGS      compile the code with optional debug or profile option"
+    echo "                          optional arguments: [ none | d/debug | p/profile] (default=none)"
     echo
-    echo "  -C, --clean CONFIRM     remove compiled binaries from repository"
-    echo "                          optional CONFIRM arguments: [ none | c/confirm ] (default=none)"
+    echo "  -C, --clean ARGS        remove compiled binaries from repository"
+    echo "                          optional arguments: [ none | c/confirm ] (default=none)"
     echo
-    echo "  -t, --test RUN          run automated unit tests"
-    echo "                          required RUN arguments: [ c/compile | r/run | b/both ]"
+    echo "  -t, --test ARGS         run automated unit tests"
+    echo "                          required arguments: [ c/compile | r/run | b/both ]"
     echo
     echo "  -T, --test-clean        clean test binaries"
 }

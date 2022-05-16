@@ -1,0 +1,240 @@
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls   s/call   s/call  name    
+ 28.50      3.85     3.85    10000     0.00     0.00  __free_energy_MOD_bulk_free_energy
+ 19.69      6.51     2.66     9999     0.00     0.00  __potentials_MOD_bulk_potential
+  8.73      7.69     1.18     9999     0.00     0.00  __cahn_hilliard_MOD_time_evoloution_new
+  7.99      8.77     1.08     9999     0.00     0.00  __potentials_MOD_total_potential
+  6.88      9.70     0.93    10000     0.00     0.00  __free_energy_MOD_total_free_energy
+  6.81     10.62     0.92     9999     0.00     0.00  __cahn_hilliard_MOD_del_q
+  5.33     11.34     0.72     9999     0.00     0.00  __cahn_hilliard_MOD_dq_dx
+  4.15     11.90     0.56     9999     0.00     0.00  __cahn_hilliard_MOD_dq_dy
+  3.48     12.37     0.47     9999     0.00     0.00  __cahn_hilliard_MOD_mobility
+  3.18     12.80     0.43        1     0.43    13.43  MAIN__
+  2.52     13.14     0.34     9999     0.00     0.00  __cahn_hilliard_MOD_dm_dy
+  2.15     13.43     0.29     9999     0.00     0.00  __cahn_hilliard_MOD_dm_dx
+  0.59     13.51     0.08                             _init
+  0.00     13.51     0.00    16384     0.00     0.00  __grid_MOD_rand_uniform
+  0.00     13.51     0.00       22     0.00     0.00  __io_MOD_check
+  0.00     13.51     0.00        1     0.00     0.00  __grid_MOD_get_seed
+  0.00     13.51     0.00        1     0.00     0.00  __grid_MOD_grid_init
+  0.00     13.51     0.00        1     0.00     0.00  __input_params_MOD_read_params
+  0.00     13.51     0.00        1     0.00     0.00  __io_MOD_write_netcdf
+
+ %         the percentage of the total running time of the
+time       program used by this function.
+
+cumulative a running sum of the number of seconds accounted
+ seconds   for by this function and those listed above it.
+
+ self      the number of seconds accounted for by this
+seconds    function alone.  This is the major sort for this
+           listing.
+
+calls      the number of times this function was invoked, if
+           this function is profiled, else blank.
+
+ self      the average number of milliseconds spent in this
+ms/call    function per call, if this function is profiled,
+	   else blank.
+
+ total     the average number of milliseconds spent in this
+ms/call    function and its descendents per call, if this
+	   function is profiled, else blank.
+
+name       the name of the function.  This is the minor sort
+           for this listing. The index shows the location of
+	   the function in the gprof listing. If the index is
+	   in parenthesis it shows where it would appear in
+	   the gprof listing if it were to be printed.
+
+Copyright (C) 2012-2021 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+		     Call graph (explanation follows)
+
+
+granularity: each sample hit covers 4 byte(s) for 0.07% of 13.51 seconds
+
+index % time    self  children    called     name
+                0.43   13.00       1/1           main [2]
+[1]     99.4    0.43   13.00       1         MAIN__ [1]
+                1.18    2.83    9999/9999        __cahn_hilliard_MOD_time_evoloution_new [3]
+                3.85    0.00   10000/10000       __free_energy_MOD_bulk_free_energy [4]
+                2.66    0.00    9999/9999        __potentials_MOD_bulk_potential [5]
+                1.08    0.00    9999/9999        __potentials_MOD_total_potential [6]
+                0.93    0.00   10000/10000       __free_energy_MOD_total_free_energy [7]
+                0.47    0.00    9999/9999        __cahn_hilliard_MOD_mobility [11]
+                0.00    0.00       1/1           __input_params_MOD_read_params [25]
+                0.00    0.00       1/1           __grid_MOD_get_seed [23]
+                0.00    0.00       1/1           __grid_MOD_grid_init [24]
+                0.00    0.00       1/1           __io_MOD_write_netcdf [26]
+-----------------------------------------------
+                                                 <spontaneous>
+[2]     99.4    0.00   13.43                 main [2]
+                0.43   13.00       1/1           MAIN__ [1]
+-----------------------------------------------
+                1.18    2.83    9999/9999        MAIN__ [1]
+[3]     29.7    1.18    2.83    9999         __cahn_hilliard_MOD_time_evoloution_new [3]
+                0.92    0.00    9999/9999        __cahn_hilliard_MOD_del_q [8]
+                0.72    0.00    9999/9999        __cahn_hilliard_MOD_dq_dx [9]
+                0.56    0.00    9999/9999        __cahn_hilliard_MOD_dq_dy [10]
+                0.34    0.00    9999/9999        __cahn_hilliard_MOD_dm_dy [12]
+                0.29    0.00    9999/9999        __cahn_hilliard_MOD_dm_dx [13]
+-----------------------------------------------
+                3.85    0.00   10000/10000       MAIN__ [1]
+[4]     28.5    3.85    0.00   10000         __free_energy_MOD_bulk_free_energy [4]
+-----------------------------------------------
+                2.66    0.00    9999/9999        MAIN__ [1]
+[5]     19.7    2.66    0.00    9999         __potentials_MOD_bulk_potential [5]
+-----------------------------------------------
+                1.08    0.00    9999/9999        MAIN__ [1]
+[6]      8.0    1.08    0.00    9999         __potentials_MOD_total_potential [6]
+-----------------------------------------------
+                0.93    0.00   10000/10000       MAIN__ [1]
+[7]      6.9    0.93    0.00   10000         __free_energy_MOD_total_free_energy [7]
+-----------------------------------------------
+                0.92    0.00    9999/9999        __cahn_hilliard_MOD_time_evoloution_new [3]
+[8]      6.8    0.92    0.00    9999         __cahn_hilliard_MOD_del_q [8]
+-----------------------------------------------
+                0.72    0.00    9999/9999        __cahn_hilliard_MOD_time_evoloution_new [3]
+[9]      5.3    0.72    0.00    9999         __cahn_hilliard_MOD_dq_dx [9]
+-----------------------------------------------
+                0.56    0.00    9999/9999        __cahn_hilliard_MOD_time_evoloution_new [3]
+[10]     4.1    0.56    0.00    9999         __cahn_hilliard_MOD_dq_dy [10]
+-----------------------------------------------
+                0.47    0.00    9999/9999        MAIN__ [1]
+[11]     3.5    0.47    0.00    9999         __cahn_hilliard_MOD_mobility [11]
+-----------------------------------------------
+                0.34    0.00    9999/9999        __cahn_hilliard_MOD_time_evoloution_new [3]
+[12]     2.5    0.34    0.00    9999         __cahn_hilliard_MOD_dm_dy [12]
+-----------------------------------------------
+                0.29    0.00    9999/9999        __cahn_hilliard_MOD_time_evoloution_new [3]
+[13]     2.1    0.29    0.00    9999         __cahn_hilliard_MOD_dm_dx [13]
+-----------------------------------------------
+                                                 <spontaneous>
+[14]     0.6    0.08    0.00                 _init [14]
+-----------------------------------------------
+                0.00    0.00   16384/16384       __grid_MOD_grid_init [24]
+[21]     0.0    0.00    0.00   16384         __grid_MOD_rand_uniform [21]
+-----------------------------------------------
+                0.00    0.00      22/22          __io_MOD_write_netcdf [26]
+[22]     0.0    0.00    0.00      22         __io_MOD_check [22]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[23]     0.0    0.00    0.00       1         __grid_MOD_get_seed [23]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[24]     0.0    0.00    0.00       1         __grid_MOD_grid_init [24]
+                0.00    0.00   16384/16384       __grid_MOD_rand_uniform [21]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[25]     0.0    0.00    0.00       1         __input_params_MOD_read_params [25]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[26]     0.0    0.00    0.00       1         __io_MOD_write_netcdf [26]
+                0.00    0.00      22/22          __io_MOD_check [22]
+-----------------------------------------------
+
+ This table describes the call tree of the program, and was sorted by
+ the total amount of time spent in each function and its children.
+
+ Each entry in this table consists of several lines.  The line with the
+ index number at the left hand margin lists the current function.
+ The lines above it list the functions that called this function,
+ and the lines below it list the functions this one called.
+ This line lists:
+     index	A unique number given to each element of the table.
+		Index numbers are sorted numerically.
+		The index number is printed next to every function name so
+		it is easier to look up where the function is in the table.
+
+     % time	This is the percentage of the `total' time that was spent
+		in this function and its children.  Note that due to
+		different viewpoints, functions excluded by options, etc,
+		these numbers will NOT add up to 100%.
+
+     self	This is the total amount of time spent in this function.
+
+     children	This is the total amount of time propagated into this
+		function by its children.
+
+     called	This is the number of times the function was called.
+		If the function called itself recursively, the number
+		only includes non-recursive calls, and is followed by
+		a `+' and the number of recursive calls.
+
+     name	The name of the current function.  The index number is
+		printed after it.  If the function is a member of a
+		cycle, the cycle number is printed between the
+		function's name and the index number.
+
+
+ For the function's parents, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the function into this parent.
+
+     children	This is the amount of time that was propagated from
+		the function's children into this parent.
+
+     called	This is the number of times this parent called the
+		function `/' the total number of times the function
+		was called.  Recursive calls to the function are not
+		included in the number after the `/'.
+
+     name	This is the name of the parent.  The parent's index
+		number is printed after it.  If the parent is a
+		member of a cycle, the cycle number is printed between
+		the name and the index number.
+
+ If the parents of the function cannot be determined, the word
+ `<spontaneous>' is printed in the `name' field, and all the other
+ fields are blank.
+
+ For the function's children, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the child into the function.
+
+     children	This is the amount of time that was propagated from the
+		child's children to the function.
+
+     called	This is the number of times the function called
+		this child `/' the total number of times the child
+		was called.  Recursive calls by the child are not
+		listed in the number after the `/'.
+
+     name	This is the name of the child.  The child's index
+		number is printed after it.  If the child is a
+		member of a cycle, the cycle number is printed
+		between the name and the index number.
+
+ If there are any cycles (circles) in the call graph, there is an
+ entry for the cycle-as-a-whole.  This entry shows who called the
+ cycle (as parents) and the members of the cycle (as children.)
+ The `+' recursive calls entry shows the number of function calls that
+ were internal to the cycle, and the calls entry for each member shows,
+ for that member, how many times it was called from other members of
+ the cycle.
+
+Copyright (C) 2012-2021 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+Index by function name
+
+   [1] MAIN__                  [3] __cahn_hilliard_MOD_time_evoloution_new [22] __io_MOD_check
+   [8] __cahn_hilliard_MOD_del_q [4] __free_energy_MOD_bulk_free_energy [26] __io_MOD_write_netcdf
+  [13] __cahn_hilliard_MOD_dm_dx [7] __free_energy_MOD_total_free_energy [5] __potentials_MOD_bulk_potential
+  [12] __cahn_hilliard_MOD_dm_dy [23] __grid_MOD_get_seed  [6] __potentials_MOD_total_potential
+   [9] __cahn_hilliard_MOD_dq_dx [24] __grid_MOD_grid_init [14] _init
+  [10] __cahn_hilliard_MOD_dq_dy [21] __grid_MOD_rand_uniform
+  [11] __cahn_hilliard_MOD_mobility [25] __input_params_MOD_read_params
