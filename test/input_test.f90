@@ -18,7 +18,7 @@ contains
         real(kind=real64), dimension(:, :), allocatable :: mu
         real(kind=real64), dimension(:), allocatable :: ftot
 
-        call read_params("input_test.txt", initial_conc, conc_std, coeffs, nx, &
+        call read_params("../input_test.txt", initial_conc, conc_std, coeffs, nx, &
                          ny, m1, m2, k, bfe, cint, cpi, cpo, t, delta_t, df_tol, random_seed, use_input, err)
 
         if (err == -1) then
@@ -51,7 +51,7 @@ contains
             stop
         end if
 
-        call read_params("input_test2.txt", initial_conc, conc_std, coeffs, nx, &
+        call read_params("../input_test2.txt", initial_conc, conc_std, coeffs, nx, &
                          ny, m1, m2, k, bfe, cint, cpi, cpo, t, delta_t, df_tol, random_seed, use_input, err)
 
         if (err == -1) then
@@ -74,8 +74,8 @@ contains
             abs(coeffs(1) - 0) < 1 / 1e7 .and. &
             abs(coeffs(2) - 0) < 1 / 1e7 .and. &
             abs(coeffs(3) - 1.7) < abs(coeffs(3) / 1e7) .and. &
-            abs(coeffs(4) - 0) < 1 / 1e7 .and. &
-            abs(coeffs(5) + 1.7) < abs(coeffs(5) / 1e7) .and. &
+            abs(coeffs(4) + 3.4) < abs(coeffs(4) / 1e7) .and. &
+            abs(coeffs(5) - 1.7) < abs(coeffs(5) / 1e7) .and. &
             abs(t + 1) < abs(t / 1e7) .and. &
             abs(delta_t + 1) < abs(delta_t / 1e7) .and. &
             abs(df_tol + 1) < abs(df_tol / 1e7) .and. &
@@ -87,7 +87,7 @@ contains
             stop
         end if
 
-        call read_params("input_test3.txt", initial_conc, conc_std, coeffs, nx, &
+        call read_params("../input_test3.txt", initial_conc, conc_std, coeffs, nx, &
                          ny, m1, m2, k, bfe, cint, cpi, cpo, t, delta_t, df_tol, random_seed, use_input, err)
 
         if (err /= -1) then

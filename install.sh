@@ -30,7 +30,8 @@ compile () {
     prog_files+=("$main")
 
     # Binary name and location
-    mod_files="bin/"
+    bin_files="bin/"
+    obj_files="bin/*.o"
     compd_file="bin/spindec"
 
     # NetCDF flags
@@ -38,28 +39,48 @@ compile () {
     fflags=`nf-config --fflags`
 
     # Compile
-    echo -e "Compile line: $comp_line $fflags ${prog_files[@]} $flibs -J$mod_files -I$mod_files -o $compd_file\n"
-    $comp_line $fflags ${prog_files[@]} $flibs -J$mod_files -I$mod_files -o $compd_file
+    echo "Compile line:"
+    for file in ${prog_files[@]}; do
+        file_nx=${file/.f90/}
+        file_nx=${file_nx/src\//}  # Remove extension and upper file directory
+        $comp_line -J$bin_files -c $file $fflags $flibs -o $bin_files$file_nx.o
+        echo "$comp_line -J$bin_files -c $file $fflags $flibs -o $bin_files$file_nx.o"
+    done
 
-    # Add binary to $PATH (with some checks)
+    $comp_line -o $compd_file $obj_files $fflags $flibs
+    echo "$comp_line -o $compd_file $obj_files $fflags $flibs"
+
+    # Old line:
+    # $comp_line $fflags ${prog_files[@]} $flibs -J$mod_files -I$mod_files -o $compd_file
+
+    # Don't prompt to add to $PATH if debug option specified
+    if [[ "$1" == "d" ]] || [[ "$1" == "debug" ]]; then
+        exit 0
+    fi
+
+    # Don't prompt to add to $PATH if already in path
+    if grep -Fq "SpinDec2/bin" $HOME/.bashrc; then
+        echo -e '\nBinary already in $PATH'
+        exit 0
+    fi
+
+    # Add binary to $PATH if bash is default $SHELL
     while true; do
+        echo
         read -p 'Add binary to $PATH? [Y/n] ' confirmation
 
         if [[ "$confirmation" =~ ^[Yy]$ ]] || [[ "$confirmation" == '' ]]; then
-            if grep -Fq "spindec" $HOME/.bashrc; then
-                echo 'The binary is already in your $PATH'
+            if [[ "$SHELL" == *"bash"* ]]; then
+                working_dir=`pwd`
+                path_var='$PATH'
+                echo '' >> $HOME/.bashrc
+                echo "export PATH=$working_dir/bin/:$path_var" >> $HOME/.bashrc
+                echo 'Binary added to $PATH and written to ~/.bashrc'
+                echo "For changes to take effect, use the command 'source ~/.bashrc'"
                 break
             else
-                if [[ "$SHELL" == *"bash"* ]]; then
-                    working_dir=`pwd`
-                    echo "export PATH=`pwd`/bin/spindec:$PATH" >> $HOME/.bashrc
-                    echo 'Binary added to $PATH and written to ~/.bashrc'
-                    echo "You will need to restart your shell with 'source ~/.bashrc'"
-                    break
-                else
-                    echo 'Unable to add to $PATH as bash is not your default shell'
-                    break
-                fi
+                echo 'Unable to add to $PATH as bash is not your default shell'
+                break
             fi
 
         elif [[ "$confirmation" =~ ^[Nn]$ ]]; then
@@ -73,10 +94,10 @@ compile () {
 
 clean () {
     ### Remove compiled binaries ###
-    bins=("bin/*.mod" "bin/*.nc" "bin/*.cpf" "bin/*spindec")
+    bins=("bin/*.mod" "bin/*.o" "bin/*spindec")
 
     # Check for binaries
-    if [[ `ls */* | grep -E 'mod|nc|cpf|spindec'` == '' ]]; then
+    if [[ `ls bin/* | grep -E 'mod|[.]o|spindec'` == '' ]]; then
         echo "No binaries found"
         exit 1
     fi
@@ -91,7 +112,7 @@ clean () {
     # Remove binaries
     while true; do
         echo -e "Removing the following files:\n"
-        ls */* | grep -E 'mod|nc|cpf|spindec'
+        ls bin/* | grep -E 'mod|[.]o|spindec'
         echo
 
         # Ask for confirmation before removing if option provided
@@ -123,18 +144,80 @@ clean () {
 
 unit_test_compile () {
     ### Compile unit tests ###
+    # Compile line
+    # Only the debug compile line from above to be used
+    comp_line="gfortran -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
 
-    # Tests directory
-    tests=(./test/*)
+    # f90 file directories
+    test_files=(test/*.f90)
+    src_files=(src/*)
+
+    # Move test main to last item in array
+    test_main="test/test.f90"
+    test_files=("${test_files[@]/$test_main}")
+    test_files+=("$test_main")
+
+    # Remove actual main from src
+    src_main="src/main.f90"
+    src_files=("${src_files[@]/$src_main}")
+
+    # Binary name and location
+    bin_files="test/test_bin/"
+    obj_files="test/test_bin/*.o"
+    compd_file="test/test_bin/test_spindec"
+
+    # NetCDF flags
+    flibs=`nf-config --flibs`
+    fflags=`nf-config --fflags`
+
+    # C H O N K Y  compilation
+    echo "Compile line:"
+
+    # Files in src
+    for file in ${src_files[@]}; do
+        file_nx=${file/.f90/}
+        file_nx=${file_nx/src\//}  # Remove extension and upper file directory
+        $comp_line -J$bin_files -c $file $fflags $flibs -o $bin_files$file_nx.o
+        echo "$comp_line -J$bin_files -c $file $fflags $flibs -o $bin_files$file_nx.o"
+    done
+
+    # Files in test
+    for file in ${test_files[@]}; do
+        file_nx=${file/.f90/}
+        file_nx=${file_nx/test\//}  # Remove extension and upper file directory
+        $comp_line -J$bin_files -c $file $fflags $flibs -o $bin_files$file_nx.o
+        echo "$comp_line -J$bin_files -c $file $fflags $flibs -o $bin_files$file_nx.o"
+    done
+
+    $comp_line -o $compd_file $obj_files $fflags $flibs
+    echo "$comp_line -o $compd_file $obj_files $fflags $flibs"
 }
 
-unit_test_run () {
-    ### Run unit tests ###
-    placeholder="placeholder"
-}
+unit_test_clean () {
+    ### Remove compiled binaries from unit testing ###
+    bins=("test/test_bin/*.mod" "test/test_bin/*.o" "test/test_bin/*test_spindec")
 
-example () {
-    example_dir="./test/"
+    # Check for binaries
+    if [[ `ls test/test_bin/* | grep -E 'mod|[.]o|test_spindec'` == '' ]]; then
+        echo "No binaries found"
+        exit 1
+    fi
+
+    # Remove globs from $bins if they aren't found
+    for glob in ${bins[@]}; do
+        if [[ "$glob" == *'*'* ]]; then
+            bins=("${bins[@]/$glob}")
+        fi
+    done
+
+    echo -e "Removing the following files:\n"
+    ls test/test_bin/* | grep -E 'mod|[.]o|test_spindec'
+    echo
+
+    for file in ${bins[@]}; do
+        rm "$file"
+    done
+    echo "Cleaned successfully"
 }
 
 ascii_art () {
@@ -151,7 +234,7 @@ ascii_art () {
     echo -E '          %% |'
     echo -E '          \__|'
     echo
-    echo -e ' Modelling the Phase Field of Spinoidal Decomposition'
+    echo -e ' Modelling Spinoidal Decomposition Using a Phase Field Approach'
     echo -e ' _________________________________________________________________\n'
 }
 
@@ -159,29 +242,27 @@ help_message () {
     echo "usage: spindec [-h]"
     echo "               [-c DEBUG]"
     echo "               [-C CONFIRM]"
-    echo "               [-t OPTIONS]"
-    echo "               [-e]"
+    echo "               [-t RUN]"
+    echo "               [-T]"
     echo
     echo "options:"
     echo "  -h, --help              show this help message and exit"
     echo "  -c, --compile DEBUG     compile the code with optional debug option"
-    echo "                          DEBUG options: [ none | d/debug ] (default=none)"
+    echo "                          optional DEBUG arguments: [ none | d/debug ] (default=none)"
     echo
     echo "  -C, --clean CONFIRM     remove compiled binaries from repository"
-    echo "                          CONFIRM options: [ none | c/confirm ] (default=none)"
+    echo "                          optional CONFIRM arguments: [ none | c/confirm ] (default=none)"
     echo
     echo "  -t, --test RUN          run automated unit tests"
-    echo "                          RUN options: [ c/compile | r/run | b/both ] (default=both)"
+    echo "                          required RUN arguments: [ c/compile | r/run | b/both ]"
     echo
     echo "  -T, --test-clean        clean test binaries"
-    echo 
-    echo "  -e, --example           run with example initialisation states"
 }
 
 ### Argument Parser ###
-# Requires util-linux (which should be installed with netcdf)
+# Requires util-linux (which should be installed automatically with netcdf)
 # getopt options list
-options=$(getopt -o c::C::te::h -l compile::,clean::,test,example::,help -- "$@")
+options=$(getopt -o c::C::t:Th -l compile::,clean::,test:,test-clean,help -- "$@")
 
 # Exit if error code
 if [[ $? -ne 0 ]]; then
@@ -217,11 +298,15 @@ while [[ $# -gt 0 ]]; do
         -t | --test)
             if [[ "$2" == "b" ]] || [[ "$2" == "both" ]]; then
                 unit_test_compile
-                unit_test_run
+                cd test/test_bin/
+                echo
+                ./test_spindec
+                cd ../../
             elif [[ "$2" == "c" ]] || [[ "$2" == "compile" ]]; then
                 unit_test_compile
             elif [[ "$2" == "r" ]] || [[ "$2" == "run" ]]; then
-                unit_test_run
+                cd test/test_bin/ && ./test_spindec
+                cd ../../
             else
                 echo -e "$2 is not a valid option for -t/--test\n"
                 help_message
@@ -230,13 +315,8 @@ while [[ $# -gt 0 ]]; do
             break
             ;;
         -T | --test-clean)
-            # Clean compilation from tests
-            # TODO
+            unit_test_clean
             break 
-            ;;
-        -e | --example)
-            example
-            break
             ;;
         -h | --help)
             ascii_art

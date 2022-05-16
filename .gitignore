@@ -1,6 +1,16 @@
-# Binaries
-*/*.mod 
-*/*.o
-*/*.cpf
-*/*.nc
-bin/spindec
+# enable recursive globbing
+shopt -s globstar
+
+# binaries
+**.mod
+**.o
+**spindec**
+
+# Program generated
+**.cpf
+**.cp
+**.nc
+test/test_bin/*.txt
+
+# others 
+**.tmp

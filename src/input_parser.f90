@@ -415,8 +415,8 @@ contains
             coeffs(1) = 0
             coeffs(2) = 0
             coeffs(3) = bfe
-            coeffs(4) = 0
-            coeffs(5) = -bfe
+            coeffs(4) = -2*bfe
+            coeffs(5) = bfe
         end if
 
     end subroutine read_params
