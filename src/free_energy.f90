@@ -138,6 +138,7 @@ contains
         end do
 
         ! Bulk (non-boundary) nodes
+        !$omp parallel do default(shared) private(j,i,grad_x,grad_y,P) reduction(+:F)
         do j = 2, ny - 1
             do i = 2, nx - 1
                 grad_x = (c(i + 1, j) -  c(i - 1, j)) * dx2

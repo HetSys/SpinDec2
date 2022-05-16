@@ -114,6 +114,7 @@ contains
         end do
 
         ! Bulk (non-boundary) nodes
+        !$omp parallel do default(shared) private(j,i,lap_x,lap_y)
         do i = 2, nx - 1
             do j = 2, ny - 1
                 lap_x = (c(i + 1, j) - 2 * c(i, j) + c(i - 1, j)) * dx2
