@@ -92,7 +92,7 @@ contains
         dim22 = int(real(dims(2))/2)
 
         forall(i=1:dim12, j=1:dim22)
-            k2(i,j)= 1+(-real(i-1)*real(i-1)-real(j-1)*real(j-1))*4*PI*PI/(dims(1)*dims(1))
+            k2(i,j)= (-real(i-1)*real(i-1)-real(j-1)*real(j-1))*4*PI*PI/(dims(1)*dims(1))
         end forall
 
         forall(i= dim12+1:dims(1), j=dim22+1:dims(2))

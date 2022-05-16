@@ -17,11 +17,11 @@ program main
     real(kind=real64) ,dimension(:,:), allocatable:: c_out
     real(kind=real64) ,dimension(:), allocatable:: coeffs
     real(kind=real64) :: M,kappa,dt,c0,c_std,ma,mb
-    integer :: k,nx,ny,nt,nc
+    integer :: k,nx,ny,nt,nc,seed_in
 
 
 
-
+    seed_in = -1
 
     nc = 5
 
@@ -36,6 +36,7 @@ program main
     c_std = 0.3
 
     M = (MB * (1 - c0) + MA/MB * c0) * c0 * (1 - c0)
+    !print*,M
     nx = 50
     ny = 50
     nt = 100000
@@ -47,7 +48,7 @@ program main
     allocate(coeffs(5))
     allocate(f_tot(nt))
 
-    coeffs(1) = 100
+    coeffs(1) = 0
     coeffs(2) = 0
     coeffs(3) = 1.0*1.7
     coeffs(4) = -2.0*1.7
@@ -55,7 +56,7 @@ program main
 
     f_tot = 0
 
-    call get_seed(134254)
+    call get_seed(seed_in)
     ! Initialize grid
     call grid_init(c(:, :, 1), Nx, Ny, c0, c_std)
     !c(:,:,1)=0
