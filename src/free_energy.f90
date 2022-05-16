@@ -35,6 +35,7 @@ contains
         f_b = 0
 
         !Loop filling the f_b array
+        !$omp parallel do default(shared) private(j,i,k)
         do j = 1, Ny
             do i = 1, Nx
                 do k = 1, n

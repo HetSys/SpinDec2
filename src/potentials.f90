@@ -26,6 +26,7 @@ contains
         mu = 0.0
 
         ! Loop filling the mu array
+        !$omp parallel do default(shared) private(j,i,k)
         do j = 1, ny
             do i = 1, nx
                 do k = 1, n - 1
