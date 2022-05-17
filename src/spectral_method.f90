@@ -1,6 +1,7 @@
 !To use this module fftw3 will need to be installed
 !Once fftw3 is installed a file called fftw3.f90 needs to be written as is shown in the template
-
+!Then run gfortran -c fftw.f90 in src
+!The code should now work
 
 module spectral
     use fftw3
