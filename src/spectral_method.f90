@@ -93,19 +93,19 @@ contains
         dim22 = int(real(dims(2))/2)
 
         forall(i=1:dim12, j=1:dim22)
-            k2(i,j)= (-real(i-1)*real(i-1)-real(j-1)*real(j-1))*4*PI*PI/(dims(1)*dims(1))
+            k2(i,j)= (-real(i-1)*real(i-1)-real(j-1)*real(j-1))*4*PI*PI!/(dims(1)*dims(1))
         end forall
 
         forall(i= dim12+1:dims(1), j=dim22+1:dims(2))
-            k2(i,j)= (-real(i-dims(1)-1)*real(i-dims(1)-1)-real(j-dims(2)-1)*real(j-dims(2)-1))*4*PI*PI/(dims(1)*dims(1))
+            k2(i,j)= (-real(i-dims(1)-1)*real(i-dims(1)-1)-real(j-dims(2)-1)*real(j-dims(2)-1))*4*PI*PI!/(dims(1)*dims(1))
         end forall
 
         forall(i= 1:dim12, j=dim22+1:dims(2))
-            k2(i,j)= (-real(i-1)*real(i-1)-real(j-dims(2)-1)*real(j-dims(2)-1))*4*PI*PI/(dims(1)*dims(1))
+            k2(i,j)= (-real(i-1)*real(i-1)-real(j-dims(2)-1)*real(j-dims(2)-1))*4*PI*PI!/(dims(1)*dims(1))
         end forall
 
         forall(i= dim12+1:dims(1), j=1:dim22)
-            k2(i,j)= (-real(i-dims(1)-1)*real(i-dims(1)-1)-real(j-1)*real(j-1))*4*PI*PI/(dims(1)*dims(1))
+            k2(i,j)= (-real(i-dims(1)-1)*real(i-dims(1)-1)-real(j-1)*real(j-1))*4*PI*PI!/(dims(1)*dims(1))
         end forall
 
         !open(unit=1, iostat=stat, file='ksq.dat', status='old')
@@ -132,10 +132,14 @@ contains
         !print*, M
         !print*,k2
         if(init == 0) then
-            ans = (2.0*dt/(3.0+2.0*dt*M*k*k4+2*dt*c_A*M*k2))*(2.0*M*k2*out_bulk-M*k2*&
-                out_bulk_prev + M*k2*2*c_a*out - M*k2*c_a*out_prev + (4.0*out-out_prev)/(2.0*dt))
+            ! $OMP PARALLEL WORKSHARE
+            ans(:,:) = (2.0*dt/(3.0+2.0*dt*M*k*k4(:,:)+2*dt*c_A*M*k2(:,:)))*(2.0*M*k2(:,:)*out_bulk(:,:)-M*k2(:,:)*&
+                out_bulk_prev(:,:) + M*k2(:,:)*2*c_a*out(:,:) - M*k2(:,:)*c_a*out_prev(:,:) + (4.0*out(:,:)-out_prev(:,:))/(2.0*dt))
+            ! $OMP END PARALLEL WORKSHARE
         else
-            ans = dt*(-M*k*k4*out + M*k2*out_bulk)+out
+            ! $OMP PARALLEL WORKSHARE
+            ans(:,:) = dt*(-M*k*k4(:,:)*out(:,:) + M*k2(:,:)*out_bulk(:,:))+out(:,:)
+            ! $OMP END PARALLEL WORKSHARE
         end if
 
         !print*,ans

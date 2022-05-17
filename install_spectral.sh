@@ -1,33 +1,35 @@
-#!/bin/bash 
-# install.sh
+#!/bin/bash
+# install_spectral.sh
 # Compilation/install script for SpinDec2
 
 # Exit if something fails
 set -e
 
-# Enable recursive globbing 
+# Enable recursive globbing
 # shopt -s globstar
 
 compile () {
     ### Compilation ###
     # Option for choosing the compiler
     if [[ "$1" == "d" ]] || [[ "$1" == "debug" ]]; then
-        comp_line="gfortran -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
+        comp_line="gfortran -fopenmp -O2 -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
     elif [[ -z "$1" ]]; then
-        comp_line="gfortran"
+        comp_line="gfortran -fopenmp -O2"
     else
         echo -e "$1 is not a valid option for -c/--compile\n"
         help_message
         exit 2
     fi
 
-    # Add program files from src 
-    prog_files=(src/*)
+    # Add program files from src
+    prog_files=(src/*.f90)
 
     # Move main to last item in array
-    main="src/main.f90"
+    main="src/spectral_main.f90"
+    mainb="src/main.f90"
     prog_files=("${prog_files[@]/$main}")
     prog_files+=("$main")
+    prog_files=("${prog_files[@]/$mainb}")
 
     # Binary name and location
     bin_files="bin/"
@@ -35,7 +37,7 @@ compile () {
     compd_file="bin/spindec"
 
     # NetCDF flags
-    flibs=`nf-config --flibs`
+    flibs="`nf-config --flibs` -lfftw3_omp -lfftw3 -lm"
     fflags=`nf-config --fflags`
 
     # Compile
@@ -103,11 +105,11 @@ clean () {
     fi
 
     # Remove globs from $bins if they aren't found
-    for glob in ${bins[@]}; do 
+    for glob in ${bins[@]}; do
         if [[ "$glob" == *'*'* ]]; then
             bins=("${bins[@]/$glob}")
         fi
-    done     
+    done
 
     # Remove binaries
     while true; do
@@ -120,18 +122,18 @@ clean () {
             read -p 'Proceed? [Y/n] ' confirmation
         elif [[ -z "$1" ]]; then
             confirmation="y"
-        else 
+        else
             echo -e "$1 is not a valid option for -C/--clean\n"
             help_message
             exit 2
         fi
-      
+
         if [[ "$confirmation" =~ ^[Yy]$ ]] || [[ "$confirmation" == '' ]]; then
             for file in ${bins[@]}; do
                 rm "$file"
             done
             echo "Cleaned successfully"
-            break 
+            break
         elif [[ "$confirmation" =~ ^[Nn]$ ]]; then
             echo 'Files not removed'
             break
@@ -316,7 +318,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         -T | --test-clean)
             unit_test_clean
-            break 
+            break
             ;;
         -h | --help)
             ascii_art

@@ -1,6 +1,7 @@
 !Spectral install
-!Spectral Paralelism
 !Neaten all
+!Spectral test
+!Spectral timings
 program main
     use iso_fortran_env
     use cahn_hilliard
@@ -9,6 +10,7 @@ program main
     use io
     use free_energy
     use spectral
+    use fftw3
     use input_params
     use checkpointing
 
@@ -125,9 +127,8 @@ program main
 
 
     M = (MB * (1 - c0) + MA/MB * c0) * c0 * (1 - c0)
-
     ! Initialize c grid
-    call grid_init(c(:, :, 1), Nx, Ny, c_min, c_max)
+    call grid_init_std(c(:, :, 1), Nx, Ny, c0, c_std)
 
     if (problem == 'Temp') then
         call grid_init(T, Nx, Ny, T_min, T_max)
