@@ -1,5 +1,7 @@
+!Spectral install
+!Spectral Paralelism
+!Neaten all
 program main
-
     use iso_fortran_env
     use cahn_hilliard
     use grid
@@ -30,12 +32,13 @@ program main
     real(real64) :: MA, MB, M ! Mobility's
     real(real64) :: EA, EB ! exciation energy
     real(real64) :: bfe, df_tol!Placeholder (These were in the input file but df_tol hasn't been used in any code)
-    integer :: Nx, Ny, Nt, Nc
+    integer :: Nx, Ny, Nt, Nc, thread
     integer :: k, count ! counters
     integer :: cint, random_seed, err, use_input, current_iter, ncerr !checkpointing_interval, random seed,error var
     character(len=128) :: cpi, cpo ! checkpointing files
     character(len=*), parameter :: problem = "Constant"
 
+    thread =  fftw_init_threads()
     ! Only run files in test for now
     call read_params("../test/input.txt", c0, c_std, a, nx, &
                      ny, ma, mb, kappa, bfe, cint, cpi, cpo, t_end, dt, df_tol, random_seed, use_input, err)
@@ -145,12 +148,6 @@ program main
     ! Grid evolution
     do k = current_iter, Nt-1
 
-        ! Get bulk chemical potentials
-        call bulk_potential(mu, c(:, :, k - 1), a)
-
-        ! Get total chemical potentials
-        call total_potential(Q, mu, c(:, :, k - 1), dx, dy, Kappa)
-
         ! Get new concentrations for current timesteps
         call spectral_method_iter(c(:, :, k),c(:, :, k-1),a,dt,M,Kappa,c_out,0)
         c(:,:,k+1)=c_out
@@ -182,5 +179,4 @@ program main
 
     !Writer for using constant M
     call write_netcdf(c, F_tot, a, Nc, Nx, Ny, Nt, dt, c0, MA, MB, kappa)
-
 end program main

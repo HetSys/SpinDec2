@@ -2,6 +2,7 @@ module spectral
     use fftw3
 
     use iso_fortran_env
+    use omp_lib
     use potentials
     implicit none
 
@@ -13,14 +14,14 @@ contains
         real(kind=real64) ,dimension(:,:), allocatable:: mu,k2,k4
         real(kind=real64),dimension(:), intent(in) :: a
         real(kind=real64) ,intent(in) :: dt,M,k
-        integer :: i,j,init,dim12,dim22,stat
+        integer :: i,j,init,dim12,dim22,stat,no_threads
         complex(C_DOUBLE_COMPLEX),pointer,dimension(:,:) :: in,out_prev,in_prev, out,out_bulk,out_bulk_prev,ans
         integer, dimension(2) :: dims
         type(C_PTR) :: pin,pout,pout_prev,pout_bulk,pout_bulk_prev,plan,pans,plan_b
         real(kind=real64) :: norm, c_A
         real(kind=real64), parameter ::PI= 4*atan(1.0_real64)
 
-
+        no_threads = omp_get_max_threads()
         dims = shape(c_in)
         allocate(mu(dims(1),dims(2)))
         allocate(k2(dims(1),dims(2)))
@@ -48,7 +49,7 @@ contains
 
 
         in(:,:) = c_in(:,:)
-
+        call fftw_plan_with_nthreads(no_threads);
         plan = fftw_plan_dft_2d(dims(1),dims(2),in,out,FFTW_FORWARD,FFTW_ESTIMATE)
         call fftw_execute_dft(plan,in,out)
         !call fftw_destroy_plan(plan)
@@ -139,7 +140,7 @@ contains
 
         !print*,ans
 
-
+        call fftw_plan_with_nthreads(no_threads);
         plan_b = fftw_plan_dft_2d(dims(1),dims(2),ans,in,FFTW_BACKWARD,FFTW_ESTIMATE)
         call fftw_execute_dft(plan_b,ans,in)
         call fftw_destroy_plan(plan_b)
@@ -156,6 +157,7 @@ contains
         deallocate(k2)
         deallocate(k4)
         deallocate(mu)
+        call fftw_cleanup_threads();
 
     end subroutine spectral_method_iter
 
