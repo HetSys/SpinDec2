@@ -10,7 +10,6 @@ set -e
 
 compile () {
     ### Compilation ###
-    # Option for choosing the compiler
     if [[ "$1" == "d" ]] || [[ "$1" == "debug" ]]; then
         comp_line="gfortran -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
     elif [[ "$1" == "o" ]] || [[ "$1" == "openmp" ]]; then
