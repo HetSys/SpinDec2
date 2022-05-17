@@ -25,11 +25,11 @@ compile () {
     prog_files=(src/*.f90)
 
     # Move main to last item in array
-    main="src/spectral_main.f90"
-    mainb="src/main.f90"
+    #main="src/spectral_main.f90"
+    main="src/main.f90"
     prog_files=("${prog_files[@]/$main}")
     prog_files+=("$main")
-    prog_files=("${prog_files[@]/$mainb}")
+    #prog_files=("${prog_files[@]/$mainb}")
 
     # Binary name and location
     bin_files="bin/"
@@ -163,8 +163,8 @@ unit_test_compile () {
     src_main="src/main.f90"
     src_files=("${src_files[@]/$src_main}")
 
-    src_mainb="src/spectral_main.f90"
-    src_files=("${src_files[@]/$src_mainb}")
+    #src_mainb="src/spectral_main.f90"
+    #src_files=("${src_files[@]/$src_mainb}")
 
     # Binary name and location
     bin_files="test/test_bin/"

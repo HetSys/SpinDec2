@@ -4,6 +4,7 @@ program main
     use cahn_hilliard
     use grid
     use potentials
+    use spectral
     use io
     use free_energy
     use input_params
@@ -12,7 +13,7 @@ program main
     implicit none
 
     real(real64), dimension(:, :, :), allocatable :: c ! conc. grid
-    real(real64), dimension(:, :), allocatable :: c_new ! new conc. grid
+    real(real64), dimension(:, :), allocatable :: c_new, c_out ! new conc. grid
     real(real64), dimension(:, :), allocatable :: mu   ! bulk chem. pot.
     real(real64), dimension(:, :), allocatable :: Q    ! total chem. pot.
     real(real64), dimension(:, :), allocatable :: dQ   ! 2nd derivative of Q
@@ -31,11 +32,13 @@ program main
     real(real64) :: EA, EB ! exciation energy
     real(real64) :: bfe, df_tol!Placeholder (These were in the input file but df_tol hasn't been used in any code)
     integer :: Nx, Ny, Nt, Nc
-    integer :: k, count ! counters
+    integer :: k, count,thread ! counters
     integer :: cint, random_seed, err, use_input, current_iter, ncerr !checkpointing_interval, random seed,error var
     character(len=128) :: cpi, cpo ! checkpointing files
     character(len=*), parameter :: problem = "Constant"
 
+
+    thread =  fftw_init_threads()
     ! Only run files in test for now
     call read_params("input.txt", c0, c_std, a, nx, &
                      ny, ma, mb, kappa, bfe, cint, cpi, cpo, t_end, dt, df_tol, random_seed, use_input, err)
@@ -47,7 +50,7 @@ program main
 
     current_iter = 2
     ! come back to this
-    ! Nt = floor(t_end / dt) 
+    ! Nt = floor(t_end / dt)
 
     Nt = 1e4
 
@@ -66,9 +69,11 @@ program main
     dx = 0.01
     dy = 0.01
 
-    if (dt > min(0.1*dx**4, 0.1*dy**4)) then
-        print*, 'Warning time-step unstable, setting to default stable value'
-        dt = min(0.1*dx**4, 0.1*dy**4)
+    if( problem /= 'Spectral') then
+        if (dt > min(0.1*dx**4, 0.1*dy**4)) then
+            print*, 'Warning time-step unstable, setting to default stable value'
+            dt = min(0.1*dx**4, 0.1*dy**4)
+        end if
     end if
 
     EA = 1.0
@@ -125,6 +130,11 @@ program main
         c_new = 0.0
     end if
 
+    if (.not. allocated(c_out)) then
+        allocate (c_out(Nx, Ny))
+        c_out = 0.0
+    end if
+
     ! Initialize c grid
     call grid_init(c(:, :, 1), Nx, Ny, c_min, c_max)
 
@@ -155,19 +165,29 @@ program main
         ! Get Mobility Field
         call Mobility(M,MA,MB, EA, EB, c0, c(:, :, k-1), T, problem)
 
-        print*, M(1,1), M(1,2), M(6,7)
+        !print*, M(1,1), M(1,2), M(6,7)
 
         ! Get new concentrations for current timesteps
-        call time_evoloution_new(c(:, :, k-1),c_new,M,Q,dx,dy,dt, Nx, Ny)
 
-        ! set grid to c_new
-        c(:, :, k) = c_new(:, :)
+        if (problem == 'Spectral') then
+            if(k == 2) then
+                call spectral_method_iter(c(:, :, 1),c(:, :, 1),a,dt,M(1,1),Kappa,c_out,1)
+                c(:,:,2) = c_out
+            else
+                call spectral_method_iter(c(:, :, k-1),c(:, :, k-2),a,dt,M(1,1),Kappa,c_out,0)
+                c(:,:,k) = c_out
+            end if
+        else
+            call time_evoloution_new(c(:, :, k-1),c_new,M,Q,dx,dy,dt, Nx, Ny)
+
+            c(:, :, k) = c_new(:, :)
+        end if
 
         ! Get Bulk Free Energy over space
-        call bulk_free_energy(f_b, c_new, a)
+        call bulk_free_energy(f_b, c(:, :, k), a)
 
         ! Calculate F(t)
-        call total_free_energy(F_tot(k), c_new, f_b, dx, dy, kappa)
+        call total_free_energy(F_tot(k), c(:, :, k), f_b, dx, dy, kappa)
 
         deallocate (f_b)
 

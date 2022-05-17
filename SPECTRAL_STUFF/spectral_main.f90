@@ -1,5 +1,4 @@
 !Neaten all
-!Spectral test
 !Spectral timings
 program main
     use iso_fortran_env
