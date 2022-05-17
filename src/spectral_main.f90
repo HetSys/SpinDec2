@@ -1,4 +1,3 @@
-!Spectral install
 !Neaten all
 !Spectral test
 !Spectral timings

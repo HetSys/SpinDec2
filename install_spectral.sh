@@ -148,11 +148,11 @@ unit_test_compile () {
     ### Compile unit tests ###
     # Compile line
     # Only the debug compile line from above to be used
-    comp_line="gfortran -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
+    comp_line="gfortran -fopenmp -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
 
     # f90 file directories
     test_files=(test/*.f90)
-    src_files=(src/*)
+    src_files=(src/*.f90)
 
     # Move test main to last item in array
     test_main="test/test.f90"
@@ -163,13 +163,16 @@ unit_test_compile () {
     src_main="src/main.f90"
     src_files=("${src_files[@]/$src_main}")
 
+    src_mainb="src/spectral_main.f90"
+    src_files=("${src_files[@]/$src_mainb}")
+
     # Binary name and location
     bin_files="test/test_bin/"
     obj_files="test/test_bin/*.o"
     compd_file="test/test_bin/test_spindec"
 
     # NetCDF flags
-    flibs=`nf-config --flibs`
+    flibs="`nf-config --flibs` -lfftw3_omp -lfftw3 -lm"
     fflags=`nf-config --fflags`
 
     # C H O N K Y  compilation
