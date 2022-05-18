@@ -14,6 +14,10 @@ compile () {
         comp_line="gfortran -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
     elif [[ "$1" == "o" ]] || [[ "$1" == "openmp" ]]; then
         comp_line="gfortran -fopenmp"
+    elif [[ "$1" == "m" ]] || [[ "$1" == "mpi" ]]; then
+        comp_line="mpif90"
+    elif [[ "$1" == "h" ]] || [[ "$1" == "hybrid" ]]; then
+        comp_line="mpif90 -fopenmp"
     elif [[ "$1" == "p" ]] || [[ "$1" == "profile" ]]; then
         read -p 'Profile with OpenMP? [y/n] ' omp_profile
 
@@ -264,7 +268,8 @@ help_message () {
     echo "options:"
     echo "  -h, --help              show this help message and exit"
     echo "  -c, --compile ARGS      compile the code with optional debug or profile option"
-    echo "                          optional arguments: [ none | o/openmp | d/debug | p/profile] (default=none)"
+    echo "                          optional arguments: [ none | o/openmp | m/mpi | h/hybrid | d/debug | p/profile]"
+    echo "                          (default=none)"
     echo
     echo "  -C, --clean ARGS        remove compiled binaries from repository"
     echo "                          optional arguments: [ none | c/confirm ] (default=none)"
