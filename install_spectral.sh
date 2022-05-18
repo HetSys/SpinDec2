@@ -21,7 +21,7 @@ compile () {
         exit 2
     fi
 
-    fftw_dir=$(find . -name "fftw*" -type d)
+    fftw_dir=$(find . -maxdepth=1 -name "fftw*" -type d)
 
     if [[ "$fftw_dir" == *"fftw-3"* ]]; then
         echo "Found fftw-3 library"
