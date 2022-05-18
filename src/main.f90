@@ -3,7 +3,6 @@
 program main
 
     use iso_fortran_env
-    use grid_mpi
     use grid
     use comms
 
@@ -21,7 +20,7 @@ program main
     ! Check Nx = Ny ie. we have a square grid
 
     if (Nx /= Ny) then
-        print*, "A square grid is required. Nx mus equal Ny"
+        print*, "A square grid is required. Nx must equal Ny"
         stop
     end if
 
