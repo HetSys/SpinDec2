@@ -1,192 +1,78 @@
+! Code adapted from PX425 - Assignment 4 (2021) By Dr. David Quigley
+
 program main
 
     use iso_fortran_env
-    use cahn_hilliard
+    use grid_mpi
     use grid
-    use potentials
-    use io
-    use free_energy
-    use input_params
-    use checkpointing
+    use comms
 
     implicit none
 
-    real(real64), dimension(:, :, :), allocatable :: c ! conc. grid
-    real(real64), dimension(:, :), allocatable :: c_new ! new conc. grid
-    real(real64), dimension(:, :), allocatable :: mu   ! bulk chem. pot.
-    real(real64), dimension(:, :), allocatable :: Q    ! total chem. pot.
-    real(real64), dimension(:, :), allocatable :: dQ   ! 2nd derivative of Q
-    real(real64), dimension(:, :), allocatable :: M    ! Mobility field
-    real(real64), dimension(:, :), allocatable :: T ! Temp
-    real(real64), dimension(:), allocatable :: a ! user inputted polynomial coefficients
-    real(real64), dimension(:), allocatable :: F_tot ! Total free energy with time
-    real(real64), dimension(:, :), allocatable :: f_b
-    real(real64) :: c0, c_std !initial grid mean and std sample - if using normal dist
-    real(real64) :: c_min, c_max !initial grid lower and upper boubds - for default uniform dist
-    real(real64) :: T_min, T_max !initial temp grid mean and std sample
-    real(real64) :: dx, dy, dt ! spatial and temporal grid spacings
-    real(real64) :: Kappa ! free energy gradient parameter
-    real(real64) :: t_end !end time
-    real(real64) :: MA, MB ! Mobility's
-    real(real64) :: EA, EB ! exciation energy
-    real(real64) :: bfe, df_tol!Placeholder (These were in the input file but df_tol hasn't been used in any code)
-    integer :: Nx, Ny, Nt, Nc
-    integer :: k, count ! counters
-    integer :: cint, random_seed, err, use_input, current_iter, ncerr !checkpointing_interval, random seed,error var
-    character(len=128) :: cpi, cpo ! checkpointing files
-    character(len=*), parameter :: problem = "Constant"
+    integer :: Nx, Ny
+    integer :: seed_in
+    real(real64) :: c_min, c_max
+    integer :: i,j ! counters
+    integer :: proot
 
-    ! Only run files in test for now
-    call read_params("input.txt", c0, c_std, a, nx, &
-                     ny, ma, mb, kappa, bfe, cint, cpi, cpo, t_end, dt, df_tol, random_seed, use_input, err)
+    Nx = 4
+    Ny = 4
 
-    if (err == -1) then
-        print *, "There was an issue with the input file please check and try again"
+    ! Check Nx = Ny ie. we have a square grid
+
+    if (Nx /= Ny) then
+        print*, "A square grid is required. Nx mus equal Ny"
         stop
     end if
 
-    current_iter = 2
-    ! come back to this
-    ! Nt = floor(t_end / dt) 
+    seed_in = 123456
 
-    Nt = 1e4
+    c_min = 0.0
+    c_max = 1.0
 
-    if (cpi /= "") then
-        call read_checkpoint_in(c, mu, F_tot, cpi, c0, c_std, a, nx, &
-                                ny, ma, mb, kappa, bfe, cint, cpo, t_end, dt, df_tol, current_iter, random_seed, use_input, ncerr)
-        if (ncerr /= nf90_noerr) then
-            print *, "There was an error reading the checkpoint file."
-            stop
-        end if
+    call get_seed(seed_in)
+
+    ! Initialise MPI
+    ! Get my_rank and p
+    call comms_initialise()
+
+    ! Square root of number of processors
+    proot = int(real(sqrt(real(p,kind=real64)),kind=real64)+0.5)
+
+    ! Checks on p and input grid dimensions
+    ! Check number of processors is square
+    if (proot*proot /= p) then
+        if (my_rank == 0) print*, "Error: Number of processors must be exact square"
+        stop
     end if
 
-    ! Set seed
-    call get_seed(random_seed)
-
-    dx = 0.01
-    dy = 0.01
-
-    if (dt > min(0.1*dx**4, 0.1*dy**4)) then
-        print*, 'Warning time-step unstable, setting to default stable value'
-        dt = min(0.1*dx**4, 0.1*dy**4)
+    ! Check that the grid size is divisible by 2*sqrt(p)
+    if (mod(Nx*Ny,2*proot) /= 0) then
+        if (my_rank == 0) print*, "Error: Number of grid points (Nx*Ny) show be divisible by 2*sqrt(p)"
+        stop
     end if
 
-    EA = 1.0
-    EB = 1.0
+    ! Set up Cartesian communicator
+    call comms_processor_map()
 
-    c_min = 0.1
-    c_max = 0.9
+    write(*,'("MPI rank ",I3," has domain coordinates : ",2I3)')my_rank,my_rank_coords
+    write(*,'("MPI rank ",I3," has domain neighbours  : ",4I4)')my_rank,my_rank_neighbours
 
-    T_min = 945
-    T_max = 955
+    ! Set up local grids
+    call grid_initialise_local(Nx,Ny,p,my_rank,my_rank_coords)
 
+    ! Set up global grid
+    ! Initialise global concentration grid
+    ! c ~ U(c_min,c_max)
+    call grid_initialise_global(Nx,Ny,c_min,c_max,my_rank)
 
-    !Find polynomial coefficients size
-    Nc = size(a)
-    ! Allocate c grid
-    if (.not. allocated(c)) then
-        allocate (c(Nx, Ny, Nt))
-        c = 0.0
-    end if
+    ! Start calculations
 
-    ! Allocate T grid
-    if (.not. allocated(T)) then
-        allocate (T(Nx, Ny))
-        T = 0.0
-    end if
+    ! Deallocate local and global grids
+    call local_grid_deallocate(my_rank)
+    call global_grid_deallocate(my_rank)
 
-     ! Allocate M grid
-    if (.not. allocated(M)) then
-        allocate (M(Nx, Ny))
-        M = 0.0
-    end if
-
-    ! Allocate mu grid
-    if (.not. allocated(mu)) then
-        allocate (mu(Nx, Ny))
-        mu = 0.0
-    end if
-
-    ! Allocate F_tot
-    if (.not. allocated(F_tot)) then
-        allocate (F_tot(Nt))
-        F_tot = 0.0
-    end if
-
-     ! Allocate Q grid
-    if (.not. allocated(Q)) then
-        allocate (Q(Nx, Ny))
-        Q = 0.0
-    end if
-
-     ! Allocate c_new grid
-    if (.not. allocated(c_new)) then
-        allocate (c_new(Nx, Ny))
-        c_new = 0.0
-    end if
-
-    ! Initialize c grid
-    call grid_init(c(:, :, 1), Nx, Ny, c_min, c_max)
-
-    if (problem == 'Temp') then
-        call grid_init(T, Nx, Ny, T_min, T_max)
-    end if
-
-    ! Get Initial Bulk Free Energy over space
-    call bulk_free_energy(f_b, c(:, :, 1), a)
-
-    ! Calculate Initial F(t)
-    call total_free_energy(F_tot(1), c(:, :, 1), f_b, dx, dy, kappa)
-
-
-    deallocate (f_b)
-
-    count = 0
-
-    ! Grid evolution
-    do k = current_iter, Nt
-
-        ! Get bulk chemical potentials
-        call bulk_potential(mu, c(:, :, k - 1), a)
-
-        ! Get total chemical potentials
-        call total_potential(Q, mu, c(:, :, k - 1), dx, dy, Kappa)
-
-        ! Get Mobility Field
-        call Mobility(M,MA,MB, EA, EB, c0, c(:, :, k-1), T, problem)
-
-        ! Get new concentrations for current timesteps
-        call time_evoloution_new(c(:, :, k-1),c_new,M,Q,dx,dy,dt, Nx, Ny)
-
-        ! set grid to c_new
-        c(:, :, k) = c_new(:, :)
-
-        ! Get Bulk Free Energy over space
-        call bulk_free_energy(f_b, c_new, a)
-
-        ! Calculate F(t)
-        call total_free_energy(F_tot(k), c_new, f_b, dx, dy, kappa)
-
-        deallocate (f_b)
-
-        if (count >= cint) then
-            call write_checkpoint_file(c, mu, F_tot, a, cpo, c0, c_std, &
-                                       nx, ny, ma, mb, kappa, bfe, Cint, t_end, dt, k, df_tol, &
-                                       random_seed, ncerr)
-
-            if (ncerr /= nf90_noerr) then
-                print *, "There was an error writing the checkpoint file."
-                stop
-            end if
-
-            count = 0
-        end if
-
-        count = count + 1
-
-    end do
-
-    !Writer for using constant M
-    call write_netcdf(c, F_tot, a, Nc, Nx, Ny, Nt, dt, c0, MA, MB, kappa)
+    ! Finalise MPI
+    call comms_finalise()
 
 end program main

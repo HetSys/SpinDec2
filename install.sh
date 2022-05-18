@@ -42,7 +42,7 @@ compile () {
     fi
 
     # Add program files from src 
-    prog_files=(src/*)
+    prog_files=(src/*.f90)
 
     # Move main to last item in array
     main="src/main.f90"
@@ -170,7 +170,7 @@ unit_test_compile () {
 
     # f90 file directories
     test_files=(test/*.f90)
-    src_files=(src/*)
+    src_files=(src/*.f90)
 
     # Move test main to last item in array
     test_main="test/test.f90"
