@@ -1,4 +1,4 @@
-Concentration_min = 0.9
+Concentration_min = 0.1
 Concentration_max = 0.9
 Domain_x_size = 100
 Domain_y_size = 100
@@ -9,7 +9,7 @@ Bulk_free_energy = 1.7
 Checkpointing_interval = 50000
 Checkpoint_output_file = "Out.cp"
 f(c) = 5,0,0,1,-2,1
-Max_time = 2e-6
+Max_time = 2e-4
 time_step = 2e-7
 dF_tolerance = 2.0
 Random_seed = 12345356

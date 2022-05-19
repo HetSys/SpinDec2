@@ -13,12 +13,12 @@ module spectral
 
 contains
 
-    subroutine spectral_method_iter(c_in, c_prev_in,a,dt,M,k, c_out,init)
+    subroutine spectral_method_iter(c_in, c_prev_in,a,dt,M,k, c_out,init,stab)
         real(kind=real64) ,dimension(:,:), intent(in):: c_in,c_prev_in
         real(kind=real64) ,dimension(:,:), intent(inout):: c_out
         real(kind=real64) ,dimension(:,:), allocatable:: mu,k2,k4
         real(kind=real64),dimension(:), intent(in) :: a
-        real(kind=real64) ,intent(in) :: dt,M,k
+        real(kind=real64) ,intent(in) :: dt,M,k,stab
         integer :: i,j,init,dim12,dim22,stat,no_threads
         complex(C_DOUBLE_COMPLEX),pointer,dimension(:,:) :: in,out_prev,in_prev, out,out_bulk,out_bulk_prev,ans
         integer, dimension(2) :: dims
@@ -32,7 +32,7 @@ contains
         allocate(k2(dims(1),dims(2)))
         allocate(k4(dims(1),dims(2)))
         norm = sqrt(real(dims(1)*dims(2)))
-        c_A = 1
+        c_A = stab
 
         pin = fftw_alloc_complex(int(dims(1)*dims(2),C_SIZE_T))
         call c_f_pointer(pin, in, [dims(1),dims(2)])

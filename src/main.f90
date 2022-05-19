@@ -163,10 +163,10 @@ program main
 
         if (problem == 'Spectral') then
             if(k == 2) then
-                call spectral_method_iter(c(:, :, 1),c(:, :, 1),a,dt,M(1,1),Kappa,c_out,1)
+                call spectral_method_iter(c(:, :, 1),c(:, :, 1),a,dt,M(1,1),Kappa,c_out,1,stab)
                 c(:,:,2) = c_out
             else
-                call spectral_method_iter(c(:, :, k-1),c(:, :, k-2),a,dt,M(1,1),Kappa,c_out,0)
+                call spectral_method_iter(c(:, :, k-1),c(:, :, k-2),a,dt,M(1,1),Kappa,c_out,0,stab)
                 c(:,:,k) = c_out
             end if
         else
