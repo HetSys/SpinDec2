@@ -52,7 +52,7 @@ compile () {
     compd_file="bin/spindec"
 
     # NetCDF flags
-    flibs="`nf-config --flibs` -lfftw3_omp -lfftw3 -lm"
+    flibs="`nf-config --flibs` -lfftw3_omp -lfftw3 -lm -I/usr/include"
     fflags=`nf-config --fflags`
 
     # Compile
