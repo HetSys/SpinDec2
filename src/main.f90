@@ -30,18 +30,19 @@ program main
     real(real64) :: t_end !end time
     real(real64) :: MA, MB ! Mobility's
     real(real64) :: EA, EB ! exciation energy
+    real(real64) :: stab !Stabilization_Term
     real(real64) :: bfe, df_tol!Placeholder (These were in the input file but df_tol hasn't been used in any code)
     integer :: Nx, Ny, Nt, Nc
     integer :: k, count,thread ! counters
     integer :: cint, random_seed, err, use_input, current_iter, ncerr !checkpointing_interval, random seed,error var
     character(len=128) :: cpi, cpo ! checkpointing files
-    character(len=*), parameter :: problem = "Spectral"
+    character(len=128) :: problem
 
 
     thread =  fftw_init_threads()
     ! Only run files in test for now
-    call read_params("input.txt", c0, c_std, a, nx, &
-                     ny, ma, mb, kappa, bfe, cint, cpi, cpo, t_end, dt, df_tol, random_seed, use_input, err)
+    call read_params("input.txt",problem, c_min, c_max, a, nx, &
+                     ny, ma, mb,ea,eb,T_min,T_max, kappa, bfe, cint, cpi, cpo, t_end, dt, df_tol,stab, random_seed, use_input, err)
 
     if (err == -1) then
         print *, "There was an issue with the input file please check and try again"
@@ -51,8 +52,8 @@ program main
     current_iter = 2
     ! come back to this
     Nt = floor(t_end / dt)
-
-
+    c0 = (c_min+c_max)/2
+    c_std = 0
 
     if (cpi /= "") then
         call read_checkpoint_in(c, mu, F_tot, cpi, c0, c_std, a, nx, &
@@ -75,15 +76,6 @@ program main
         !    dt = min(0.1*dx**4, 0.1*dy**4)
         !end if
     end if
-
-    EA = 1.0
-    EB = 1.0
-
-    c_min = 0.1
-    c_max = 0.9
-
-    T_min = 945
-    T_max = 955
 
 
     !Find polynomial coefficients size
