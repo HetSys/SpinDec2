@@ -11,23 +11,24 @@ contains
     subroutine input_test()
 
         integer :: nx, ny, cint, random_seed, err, i, count, ncerr, use_input, current_time
-        character(len=128) :: cpi, cpo
-        real(kind=real64) :: initial_conc, conc_std, m1, m2, k, bfe, t, delta_t, df_tol
+        character(len=128) :: cpi, cpo,problem
+        real(kind=real64) :: c_min, c_max, m1, m2, k, bfe, t, delta_t, df_tol,ea,eb,tmax,tmin,stab
         real(kind=real64), dimension(:), allocatable :: coeffs
         real(kind=real64), dimension(:, :, :), allocatable :: datas
         real(kind=real64), dimension(:, :), allocatable :: mu
         real(kind=real64), dimension(:), allocatable :: ftot
 
-        call read_params("../input_test.txt", initial_conc, conc_std, coeffs, nx, &
-                         ny, m1, m2, k, bfe, cint, cpi, cpo, t, delta_t, df_tol, random_seed, use_input, err)
+        call read_params("../input_test.txt",problem, c_min, c_max, coeffs, nx, &
+                         ny, m1, m2,ea,eb,Tmin,Tmax, k, bfe, cint, cpi, cpo,&
+                          t, delta_t, df_tol,stab, random_seed, use_input, err)
 
         if (err == -1) then
             print *, "Input test 1 Failed"
             stop
         end if
 
-        if (abs(initial_conc - 0.7) < initial_conc / 1e7 .and. &
-            abs(conc_std - 0.1) < conc_std / 1e7 .and. &
+        if (abs(c_max - 0.7) < c_max / 1e7 .and. &
+            abs(c_min - 0.1) < c_min / 1e7 .and. &
             nx == 50 .and. &
             ny == 51 .and. &
             abs(m1 - 1) < m1 / 1e7 .and. &
@@ -45,22 +46,29 @@ contains
             abs(delta_t - 1e-12) < delta_t / 1e7 .and. &
             abs(df_tol - 2) < df_tol / 1e7 .and. &
             Random_seed == 12345356 .and. &
+            problem == "Temp" .and. &
+            abs(ea - 0.1) < 1 / 1e7 .and. &
+            abs(eb - 0.2) < 1 / 1e7 .and. &
+            abs(tmin  - 800) < abs(tmin / 1e7) .and. &
+            abs(tmax  - 1000) < abs(tmax / 1e7) .and. &
+            abs(stab - 1) < abs(stab / 1e7) .and. &
             Use_input == 0) then
         else
             print *, "Input test 1 Failed"
             stop
         end if
 
-        call read_params("../input_test2.txt", initial_conc, conc_std, coeffs, nx, &
-                         ny, m1, m2, k, bfe, cint, cpi, cpo, t, delta_t, df_tol, random_seed, use_input, err)
+        call read_params("../input_test2.txt",problem, c_min, c_max, coeffs, nx, &
+                         ny, m1, m2,ea,eb,Tmin,Tmax, k, bfe, cint, cpi, cpo,&
+                          t, delta_t, df_tol,stab, random_seed, use_input, err)
 
         if (err == -1) then
             print *, "Input test 2 Failed"
             stop
         end if
 
-        if (abs(initial_conc - 0.7) < initial_conc / 1e7 .and. &
-            abs(conc_std - 0.1) < conc_std / 1e7 .and. &
+        if (abs(c_max - 0.7) < c_max / 1e7 .and. &
+            abs(c_min - 0.1) < c_min / 1e7 .and. &
             nx == 50 .and. &
             ny == 51 .and. &
             abs(m1 - 1) < m1 / 1e7 .and. &
@@ -87,8 +95,9 @@ contains
             stop
         end if
 
-        call read_params("../input_test3.txt", initial_conc, conc_std, coeffs, nx, &
-                         ny, m1, m2, k, bfe, cint, cpi, cpo, t, delta_t, df_tol, random_seed, use_input, err)
+        call read_params("../input_test3.txt",problem, c_min, c_max, coeffs, nx, &
+                         ny, m1, m2,ea,eb,Tmin,Tmax, k, bfe, cint, cpi, cpo,&
+                          t, delta_t, df_tol,stab, random_seed, use_input, err)
 
         if (err /= -1) then
             print *, "Input test 3 Failed"

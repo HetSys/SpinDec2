@@ -1,4 +1,3 @@
-!Read/write temp grid
 module checkpointing
 
     use netcdf
@@ -12,7 +11,6 @@ contains
                                      initial_conc, nx, ny, m1, m2, k, bfe, Cint, t, time_step, current_iter, &
                                      df_tol, random_seed, ierr)
 
-        ! This subroutine was apdated from the example provided in the assignment brief
 
         real(kind=real64), intent(IN), dimension(:, :, :) :: arr3dim
         real(kind=real64), intent(IN), dimension(:, :) :: arr2dim,temp2dim

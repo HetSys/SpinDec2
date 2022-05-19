@@ -427,7 +427,7 @@ contains
                     exit
                 end if
 
-                if (ea < 0) then
+                if (temp_max < 0) then
                     print *, "Temperature_max must be >= 0.&
                     & Please check you input file and try again"
                     err = -1
@@ -444,7 +444,7 @@ contains
                     exit
                 end if
 
-                if (eb < 0) then
+                if (temp_min< 0) then
                     print *, "Temperature_min must be >= 0.&
                     & Please check you input file and try again"
                     err = -1

@@ -290,12 +290,14 @@ program main
     dt = 0.1
 
 
-    call spectral_method_iter(c_in,c_in_p,coeffs,dt,M,k,c_out,1)
+    call spectral_method_iter(c_in,c_in_p,coeffs,dt,M,k,c_out,1,1.0_real64)
 
     c_out_exp = reshape((/2.3463434502703331, 45.809290092588583,&
      -7.0049297070283778, 45.809290092588583, -153.91998785683825,&
     45.809290092588583, -7.0049297070283831, 45.809290092588597, &
      2.3463434502703282/),shape(c_out_exp))
+
+    !print*, c_out
 
     if(maxval(c_out-c_out_exp) > 1e-5) then
         print*, "Test 1 failed"
@@ -303,7 +305,7 @@ program main
         print*, "Test 1 passed"
     end if
 
-    call spectral_method_iter(c_in,c_in_p,coeffs,dt,M,k,c_out,0)
+    call spectral_method_iter(c_in,c_in_p,coeffs,dt,M,k,c_out,0,1.0_real64)
     c_out_exp = reshape((/2.4698426892921308, 2.2611576236563615, 2.3736714532770624,&
             2.2611576236563615, 0.93500788690283210, 2.2611576236563611, 2.3736714532770629,&
             2.2611576236563615, 2.4698426892921304/),shape(c_out_exp))
@@ -313,6 +315,7 @@ program main
     else
         print*, "Test 2 passed"
     end if
+    !print*, c_out
 
     print*,'########################################################'
     print*, 'Tests Complete'
