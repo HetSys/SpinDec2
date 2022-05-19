@@ -67,6 +67,24 @@ contains
 
     end subroutine comms_processor_map
 
+    subroutine comms_get_global_F(local_F,global_F)
+        ! Subroutine to compute the glocal magnetisation of the grid by     !
+        ! averaging over all values of local_mag, and storing the result    !
+        ! in global_mag.                                                    !
+        real(kind=dp),intent(in)  :: local_F
+        real(kind=dp),intent(out) :: global_F
+
+        integer :: ierr              ! Error flag
+
+        ! This is only correct on one processor. You will need
+        ! to use a collective communication routine to correct this.
+        global_F = local_F
+
+        call MPI_Reduce(local_F,global_F,1,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,ierr)
+
+    end subroutine comms_get_global_F
+
+
     subroutine comms_halo_swap()
 
         ! send and receive concs on each side of the grid to neighbour processors
