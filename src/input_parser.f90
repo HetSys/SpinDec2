@@ -1,6 +1,4 @@
 !Temp_max < temp_min
-!default o/w
-
 module input_params
 
     use iso_fortran_env
@@ -517,6 +515,11 @@ contains
             if(treq < 4) then
                 err  = -1
                 print*, "Not all required inputs found for problem Temp"
+            else
+                if(temp_max < temp_min) then
+                    err = -1
+                    print*, "Temperature_max must be >= Temperature_min."
+                end if
             end if
         end if
 
