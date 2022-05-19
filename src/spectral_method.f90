@@ -23,7 +23,7 @@ contains
         complex(C_DOUBLE_COMPLEX),pointer,dimension(:,:) :: in,out_prev,in_prev, out,out_bulk,out_bulk_prev,ans
         integer, dimension(2) :: dims
         type(C_PTR) :: pin,pout,pout_prev,pout_bulk,pout_bulk_prev,plan,pans,plan_b
-        real(kind=real64) :: norm, c_A
+        real(kind=real64) :: norm, c_A,dt1
         real(kind=real64), parameter ::PI= 4*atan(1.0_real64)
 
         no_threads = omp_get_max_threads()
@@ -143,7 +143,12 @@ contains
             ! $OMP END PARALLEL WORKSHARE
         else
             ! $OMP PARALLEL WORKSHARE
-            ans(:,:) = (1e-10)*(-M*k*k4(:,:)*out(:,:) + M*k2(:,:)*out_bulk(:,:))+out(:,:)
+            if(dt > 1) then
+                dt1 = 1
+            else
+                dt1 = dt**(4/3)
+            end if
+            ans(:,:) = dt1*(-M*k*k4(:,:)*out(:,:) + M*k2(:,:)*out_bulk(:,:))+out(:,:)
             ! $OMP END PARALLEL WORKSHARE
         end if
 
