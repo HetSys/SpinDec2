@@ -40,7 +40,7 @@ contains
             !Temp -- Diffusive mobility dependent on c, and atomic mobilities
             !           are dependent on T
             case ("Temp")
-                
+
 
                 do j = 1, Ny
                     do i = 1, Nx
@@ -61,8 +61,8 @@ contains
                     end do
                 end do
 
-            !Constant - Diffve Mobility is taken to be a mixing of the two constant 
-            !           mobilities, and is independent of c 
+            !Constant - Diffve Mobility is taken to be a mixing of the two constant
+            !           mobilities, and is independent of c
             case ("Constant")
 
                 do j = 1, Ny
@@ -70,13 +70,21 @@ contains
                         M(i,j) = (MA*(1-c0) + MB*c0)*c0*(1-c0)
                     end do
                 end do
-      
+
+            case ("Spectral")
+
+                do j = 1, Ny
+                    do i = 1, Nx
+                        M(i,j) = (MA*(1-c0) + MB*c0)*c0*(1-c0)
+                    end do
+                end do
+
             ! condition to enforce one of the two setups
             case default
                 print*, "PLEASE INPUT PROBLEM AS 'Temp', 'NonTemp' or 'Cons'"
                 stop "STOPPED"
-      
-            
+
+
             end select
 
     end subroutine
@@ -207,7 +215,7 @@ contains
         do j = 1, Ny
             dQx(1,j) = (Q(2,j) - Q(Nx,j))*dx_inv    ! Top
             dQx(Nx,j) = (Q(1,j) - Q(Nx-1,j))*dx_inv ! Bottom
-        end do 
+        end do
 
         ! Bulk (non-boundary nodes)
         do j = 1, Ny
@@ -262,7 +270,7 @@ contains
         do j = 1, Ny
             dMx(1,j) = (M(2,j) - M(Nx,j))*dx_inv    ! Top
             dMx(Nx,j) = (M(1,j) - M(Nx-1,j))*dx_inv ! Bottom
-        end do 
+        end do
 
         ! Bulk (non-boundary nodes)
         do j = 1, Ny
@@ -272,7 +280,7 @@ contains
         end do
 
     end subroutine dM_dx
-    
+
 
 
     subroutine time_evolution(grid, grid_new, dQ, M, dt, Nx, Ny)
@@ -308,7 +316,7 @@ contains
     !!@param Nx, Ny : number of resoloutions in x and y
     !*****************************************************************************
     subroutine time_evoloution_new(c,c_new,M,Q,dx,dy,dt, Nx, Ny)
-      
+
         integer, intent(in) :: Nx, Ny
         real(real64), intent(in) :: c(Nx,Ny), Q(Nx,Ny), M(Nx,Ny)
         real(real64) :: dQ(Nx,Ny), dQx(Nx,Ny), dQy(Nx,Ny)
@@ -334,7 +342,7 @@ contains
                 beta = xbeta + ybeta
 
                 ! print*, alpha
-            
+
                 c_new(i,j) = c(i,j) + dt*(alpha + beta)
 
             end do
