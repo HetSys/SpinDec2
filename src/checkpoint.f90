@@ -1,3 +1,4 @@
+!Read/write temp grid
 module checkpointing
 
     use netcdf
@@ -7,38 +8,39 @@ module checkpointing
 
 contains
 
-    subroutine write_checkpoint_file(arr3dim, arr2dim, arr1dim, coeffs, cpo, &
-                                     initial_conc, conc_std, nx, ny, m1, m2, k, bfe, Cint, t, time_step, current_iter, &
+    subroutine write_checkpoint_file(arr3dim, arr2dim,temp2dim, arr1dim,prob, coeffs, cpo, &
+                                     initial_conc, nx, ny, m1, m2, k, bfe, Cint, t, time_step, current_iter, &
                                      df_tol, random_seed, ierr)
 
         ! This subroutine was apdated from the example provided in the assignment brief
 
         real(kind=real64), intent(IN), dimension(:, :, :) :: arr3dim
-        real(kind=real64), intent(IN), dimension(:, :) :: arr2dim
+        real(kind=real64), intent(IN), dimension(:, :) :: arr2dim,temp2dim
         real(kind=real64), intent(IN), dimension(:) :: arr1dim
         real(kind=real64), intent(IN), dimension(:) :: coeffs
         integer, intent(in) :: nx, ny, cint, random_seed, current_iter
-        real(kind=real64), intent(in) :: initial_conc, conc_std, m1, m2, k, bfe, t, &
+        real(kind=real64), intent(in) :: initial_conc, m1, m2, k, bfe, t, &
                                          time_step, df_tol
         !TYPE(run_data_type), INTENT(IN) :: run_data
-        character(len=*), intent(in) :: cpo
-        character(LEN=1), dimension(7) :: dims = (/"x", "y", "t", "c", "a", "b", "f"/)
+        character(len=*), intent(in) :: cpo,prob
+        character(LEN=1), dimension(9) :: dims = (/"x", "y", "t", "c", "a", "b", "f","n","m"/)
         character(LEN=12), dimension(15) :: comp_names = (/"initial_conc", &
-                                                           "conc_std    ", "nx          ", "ny          ", "m1          ", &
+                                                            "nx          ", "ny          ", "m1          ", &
                                                            "m2          ", "k           ", "bfe         ", "cint        " &
                                                            , "max_t       ", "time_step   ", "current_time", "df_tol      " &
-                                                           , "random_seed ", "cpo         "/)
+                                                           , "random_seed ", "cpo         ","problem     "/)
         integer :: file_id, i
         integer, intent(out) :: ierr
-        integer :: ndims = 7
-        integer, dimension(7) :: sizes, dim_ids
-        integer, dimension(4) :: var_ids
+        integer :: ndims = 9
+        integer, dimension(9) :: sizes, dim_ids
+        integer, dimension(5) :: var_ids
 
         ! Acquiring the size of the dimensions
         sizes(1:3) = shape(arr3dim)
         sizes(4) = size(coeffs)
         sizes(5:6) = shape(arr2dim)
         sizes(7) = size(arr1dim)
+        sizes(8:9) = shape(temp2dim)
 
         ! Opening a file
         ierr = nf90_create(cpo, NF90_CLOBBER, file_id)
@@ -81,6 +83,12 @@ contains
             return
         end if
 
+        ierr = nf90_def_var(file_id, "tempg", NF90_REAL, dim_ids(8:9), var_ids(5))
+        if (ierr /= nf90_noerr) then
+            print *, trim(nf90_strerror(ierr))
+            return
+        end if
+
         ! Adding global attributes (run data)
         ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(1)), initial_conc)
         if (ierr /= nf90_noerr) then
@@ -88,85 +96,85 @@ contains
             return
         end if
 
-        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(2)), conc_std)
+        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(2)), nx)
         if (ierr /= nf90_noerr) then
             print *, trim(nf90_strerror(ierr))
             return
         end if
 
-        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(3)), nx)
+        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(3)), ny)
         if (ierr /= nf90_noerr) then
             print *, trim(nf90_strerror(ierr))
             return
         end if
 
-        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(4)), ny)
+        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(4)), m1)
         if (ierr /= nf90_noerr) then
             print *, trim(nf90_strerror(ierr))
             return
         end if
 
-        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(5)), m1)
+        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(5)), m2)
         if (ierr /= nf90_noerr) then
             print *, trim(nf90_strerror(ierr))
             return
         end if
 
-        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(6)), m2)
+        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(6)), k)
         if (ierr /= nf90_noerr) then
             print *, trim(nf90_strerror(ierr))
             return
         end if
 
-        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(7)), k)
+        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(7)), bfe)
         if (ierr /= nf90_noerr) then
             print *, trim(nf90_strerror(ierr))
             return
         end if
 
-        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(8)), bfe)
+        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(8)), cint)
         if (ierr /= nf90_noerr) then
             print *, trim(nf90_strerror(ierr))
             return
         end if
 
-        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(9)), cint)
+        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(9)), t)
         if (ierr /= nf90_noerr) then
             print *, trim(nf90_strerror(ierr))
             return
         end if
 
-        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(10)), t)
+        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(10)), time_step)
         if (ierr /= nf90_noerr) then
             print *, trim(nf90_strerror(ierr))
             return
         end if
 
-        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(11)), time_step)
+        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(11)), current_iter)
         if (ierr /= nf90_noerr) then
             print *, trim(nf90_strerror(ierr))
             return
         end if
 
-        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(12)), current_iter)
+        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(12)), df_tol)
         if (ierr /= nf90_noerr) then
             print *, trim(nf90_strerror(ierr))
             return
         end if
 
-        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(13)), df_tol)
+        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(13)), random_seed)
         if (ierr /= nf90_noerr) then
             print *, trim(nf90_strerror(ierr))
             return
         end if
 
-        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(14)), random_seed)
+        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(14)), cpo)
         if (ierr /= nf90_noerr) then
             print *, trim(nf90_strerror(ierr))
             return
         end if
 
-        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(15)), cpo)
+        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(15)), prob)
         if (ierr /= nf90_noerr) then
             print *, trim(nf90_strerror(ierr))
             return
@@ -204,6 +212,12 @@ contains
             return
         end if
 
+        ierr = nf90_put_var(file_id, var_ids(5), temp2dim)
+        if (ierr /= nf90_noerr) then
+            print *, trim(nf90_strerror(ierr))
+            return
+        end if
+
         ! Closeing the file
         ierr = nf90_close(file_id)
         if (ierr /= nf90_noerr) then
@@ -215,32 +229,33 @@ contains
 
     end subroutine write_checkpoint_file
 
-    subroutine read_checkpoint_in(arr3dim, arr2dim, arr1dim, fn, initial_conc, &
-                                  conc_std, coeffs, Nx, Ny, M1, M2, k, bfe, Cint, cpo, t, delta_t, df_tol, &
+    subroutine read_checkpoint_in(arr3dim, arr2dim,temp2dim, arr1dim, fn, prob,initial_conc, &
+                                   coeffs, Nx, Ny, M1, M2, k, bfe, Cint, cpo, t, delta_t, df_tol, &
                                   current_iter, random_seed, use_input, ierr)
 
         integer, intent(inout) :: nx, ny, cint, random_seed
         integer, intent(in) :: use_input
-        character(len=*), intent(inout) :: cpo
+        character(len=*), intent(inout) :: cpo,prob
         character(len=*), intent(in) :: fn
-        real(kind=real64), intent(inout) :: initial_conc, conc_std, m1, m2, k, bfe, &
+        real(kind=real64), intent(inout) :: initial_conc, m1, m2, k, bfe, &
                                             t, delta_t, df_tol
         integer, intent(inout) :: current_iter
         real(kind=real64), intent(inout), dimension(:), allocatable :: coeffs
         real(kind=real64), intent(out), dimension(:, :, :), allocatable :: arr3dim
         real(kind=real64), intent(out), dimension(:, :), allocatable :: arr2dim
+        real(kind=real64), intent(inout), dimension(:, :), allocatable :: temp2dim
         real(kind=real64), intent(out), dimension(:), allocatable :: arr1dim
-        character(LEN=1), dimension(7) :: dims = (/"x", "y", "t", "c", "a", "b", "f"/)
+        character(LEN=1), dimension(9) :: dims = (/"x", "y", "t", "c", "a", "b", "f","n","m"/)
         character(LEN=12), dimension(15) :: comp_names = (/"initial_conc", &
-                                                           "conc_std    ", "nx          ", "ny          ", "m1          ", &
+                                                           "nx          ", "ny          ", "m1          ", &
                                                            "m2          ", "k           ", "bfe         ", "cint        " &
                                                            , "max_t       ", "time_step   ", "current_time", "df_tol      " &
-                                                           , "random_seed ", "cpo         "/)
+                                                           , "random_seed ", "cpo         ","problem     "/)
         integer :: file_id, i
         integer, intent(out) :: ierr
-        integer :: ndims = 7
-        integer, dimension(7) :: sizes, dim_ids
-        integer, dimension(4) :: var_ids
+        integer :: ndims = 9
+        integer, dimension(9) :: sizes, dim_ids
+        integer, dimension(5) :: var_ids
 
         ! Open file
         ierr = nf90_open(fn, NF90_NOWRITE, file_id)
@@ -324,85 +339,99 @@ contains
                 return
             end if
 
+            deallocate(temp2dim)
+            allocate (temp2dim(sizes(8),sizes(9)))
+            ierr = nf90_inq_varid(file_id, "tempg", var_ids(5))
+            if (ierr /= nf90_noerr) then
+                print *, trim(nf90_strerror(ierr))
+                return
+            end if
+
+            ierr = nf90_get_var(file_id, var_ids(5), temp2dim)
+            if (ierr /= nf90_noerr) then
+                print *, trim(nf90_strerror(ierr))
+                return
+            end if
+
             ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(1)), initial_conc)
             if (ierr /= nf90_noerr) then
                 print *, trim(nf90_strerror(ierr))
                 return
             end if
 
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(2)), conc_std)
+            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(2)), nx)
             if (ierr /= nf90_noerr) then
                 print *, trim(nf90_strerror(ierr))
                 return
             end if
 
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(3)), nx)
+            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(3)), ny)
             if (ierr /= nf90_noerr) then
                 print *, trim(nf90_strerror(ierr))
                 return
             end if
 
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(4)), ny)
+            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(4)), m1)
             if (ierr /= nf90_noerr) then
                 print *, trim(nf90_strerror(ierr))
                 return
             end if
 
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(5)), m1)
+            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(5)), m2)
             if (ierr /= nf90_noerr) then
                 print *, trim(nf90_strerror(ierr))
                 return
             end if
 
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(6)), m2)
+            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(6)), k)
             if (ierr /= nf90_noerr) then
                 print *, trim(nf90_strerror(ierr))
                 return
             end if
 
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(7)), k)
+            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(7)), bfe)
             if (ierr /= nf90_noerr) then
                 print *, trim(nf90_strerror(ierr))
                 return
             end if
 
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(8)), bfe)
+            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(8)), cint)
             if (ierr /= nf90_noerr) then
                 print *, trim(nf90_strerror(ierr))
                 return
             end if
 
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(9)), cint)
+            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(9)), t)
             if (ierr /= nf90_noerr) then
                 print *, trim(nf90_strerror(ierr))
                 return
             end if
 
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(10)), t)
+            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(10)), delta_t)
             if (ierr /= nf90_noerr) then
                 print *, trim(nf90_strerror(ierr))
                 return
             end if
 
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(11)), delta_t)
+            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(12)), df_tol)
             if (ierr /= nf90_noerr) then
                 print *, trim(nf90_strerror(ierr))
                 return
             end if
 
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(13)), df_tol)
+            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(13)), random_seed)
             if (ierr /= nf90_noerr) then
                 print *, trim(nf90_strerror(ierr))
                 return
             end if
 
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(14)), random_seed)
+            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(14)), cpo)
             if (ierr /= nf90_noerr) then
                 print *, trim(nf90_strerror(ierr))
                 return
             end if
 
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(15)), cpo)
+            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(15)), prob)
             if (ierr /= nf90_noerr) then
                 print *, trim(nf90_strerror(ierr))
                 return
@@ -410,7 +439,7 @@ contains
 
         end if
 
-        ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(12)), current_iter)
+        ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(11)), current_iter)
         if (ierr /= nf90_noerr) then
             print *, trim(nf90_strerror(ierr))
             return

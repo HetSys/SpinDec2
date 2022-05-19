@@ -55,14 +55,25 @@ program main
     c0 = (c_min+c_max)/2
     c_std = 0
 
+    ! Allocate T grid
+    if (.not. allocated(T)) then
+        allocate (T(Nx, Ny))
+        T = 0.0
+    end if
+
+    if (problem == 'Temp') then
+        call grid_init(T, Nx, Ny, T_min, T_max)
+    end if
+
     if (cpi /= "") then
-        call read_checkpoint_in(c, mu, F_tot, cpi, c0, c_std, a, nx, &
+        call read_checkpoint_in(c, mu, T,F_tot, cpi,problem, c0, a, nx, &
                                 ny, ma, mb, kappa, bfe, cint, cpo, t_end, dt, df_tol, current_iter, random_seed, use_input, ncerr)
         if (ncerr /= nf90_noerr) then
             print *, "There was an error reading the checkpoint file."
             stop
         end if
     end if
+
 
     ! Set seed
     call get_seed(random_seed)
@@ -84,12 +95,6 @@ program main
     if (.not. allocated(c)) then
         allocate (c(Nx, Ny, Nt))
         c = 0.0
-    end if
-
-    ! Allocate T grid
-    if (.not. allocated(T)) then
-        allocate (T(Nx, Ny))
-        T = 0.0
     end if
 
      ! Allocate M grid
@@ -184,7 +189,7 @@ program main
         deallocate (f_b)
 
         if (count >= cint) then
-            call write_checkpoint_file(c, mu, F_tot, a, cpo, c0, c_std, &
+            call write_checkpoint_file(c, mu, T,F_tot,problem, a, cpo, c0, &
                                        nx, ny, ma, mb, kappa, bfe, Cint, t_end, dt, k, df_tol, &
                                        random_seed, ncerr)
 
