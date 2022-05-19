@@ -32,7 +32,7 @@ contains
         allocate(k2(dims(1),dims(2)))
         allocate(k4(dims(1),dims(2)))
         norm = sqrt(real(dims(1)*dims(2)))
-        c_A = 0.1
+        c_A = 1
 
         pin = fftw_alloc_complex(int(dims(1)*dims(2),C_SIZE_T))
         call c_f_pointer(pin, in, [dims(1),dims(2)])
@@ -143,7 +143,7 @@ contains
             ! $OMP END PARALLEL WORKSHARE
         else
             ! $OMP PARALLEL WORKSHARE
-            ans(:,:) = dt*(-M*k*k4(:,:)*out(:,:) + M*k2(:,:)*out_bulk(:,:))+out(:,:)
+            ans(:,:) = (1e-10)*(-M*k*k4(:,:)*out(:,:) + M*k2(:,:)*out_bulk(:,:))+out(:,:)
             ! $OMP END PARALLEL WORKSHARE
         end if
 

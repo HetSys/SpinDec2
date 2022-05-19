@@ -21,20 +21,20 @@ compile () {
         exit 2
     fi
 
-    fftw_dir=$(find . -maxdepth=1 -name "fftw*" -type d)
+    #fftw_dir=$(find . -maxdepth 1 -name "fftw*" -type d)
 
-    if [[ "$fftw_dir" == *"fftw-3"* ]]; then
-        echo "Found fftw-3 library"
-        echo "Renaming to fftw3"
-        mv "$fftw_dir" fftw3
-    elif [[ "$fftw_dir" == *"fftw3" ]]; then
-        echo "fftw3 library already present"
-    elif [[ "$fftw_dir" == "" ]]; then
-        echo "Required fftw-3 library not found"
-        echo "Ensure this is installed before attempting compilation"
-        echo "Exiting compilation"
-        exit 1
-    fi
+    #if [[ "$fftw_dir" == *"fftw-3"* ]]; then
+    #    echo "Found fftw-3 library"
+    #    echo "Renaming to fftw3"
+    #    mv "$fftw_dir" fftw3
+    #elif [[ "$fftw_dir" == *"fftw3" ]]; then
+    #    echo "fftw3 library already present"
+    #elif [[ "$fftw_dir" == "" ]]; then
+    #    echo "Required fftw-3 library not found"
+    #    echo "Ensure this is installed before attempting compilation"
+    #    echo "Exiting compilation"
+    #    exit 1
+    #fi
 
     # Add program files from src
     prog_files=(src/*.f90)

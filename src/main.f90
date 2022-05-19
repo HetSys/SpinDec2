@@ -35,7 +35,7 @@ program main
     integer :: k, count,thread ! counters
     integer :: cint, random_seed, err, use_input, current_iter, ncerr !checkpointing_interval, random seed,error var
     character(len=128) :: cpi, cpo ! checkpointing files
-    character(len=*), parameter :: problem = "Constant"
+    character(len=*), parameter :: problem = "Spectral"
 
 
     thread =  fftw_init_threads()
@@ -50,9 +50,9 @@ program main
 
     current_iter = 2
     ! come back to this
-    ! Nt = floor(t_end / dt)
+    Nt = floor(t_end / dt)
 
-    Nt = 1e4
+
 
     if (cpi /= "") then
         call read_checkpoint_in(c, mu, F_tot, cpi, c0, c_std, a, nx, &
@@ -66,14 +66,14 @@ program main
     ! Set seed
     call get_seed(random_seed)
 
-    dx = 0.01
-    dy = 0.01
+    dx = 1.0_real64/real(nx)
+    dy = 1.0_real64/real(ny)
 
     if( problem /= 'Spectral') then
-        if (dt > min(0.1*dx**4, 0.1*dy**4)) then
-            print*, 'Warning time-step unstable, setting to default stable value'
-            dt = min(0.1*dx**4, 0.1*dy**4)
-        end if
+        !if (dt > min(0.1*dx**4, 0.1*dy**4)) then
+        !    print*, 'Warning time-step unstable, setting to default stable value'
+        !    dt = min(0.1*dx**4, 0.1*dy**4)
+        !end if
     end if
 
     EA = 1.0
