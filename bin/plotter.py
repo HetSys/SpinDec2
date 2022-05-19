@@ -305,14 +305,14 @@ res_CH = Vis_CH(file = 'CH_output.nc', av_period=10)
 
 res_CH.read_and_setup(verbose=True)
 
-res_CH.F_animation()
+# res_CH.F_animation()
 
 res_CH.grid_animation()
 
 res_CH.grid_snapshot(snapshot=-1)
 
-res_CH.F_plot()
+# res_CH.F_plot()
 
-res_CH.bulk_energy_traj()
+# res_CH.bulk_energy_traj()
 
-res_CH.dual_animation()
+# res_CH.dual_animation()
