@@ -352,6 +352,6 @@ contains
             end do
         end do
 
-    end subroutine time_evoloution_new
+    end subroutine time_evolution_new
 
 end module cahn_hilliard
