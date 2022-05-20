@@ -66,51 +66,51 @@ contains
         ! Start computing derivatives
         ! Corner nodes
         ! Top-left
-        lap_x = (c(1, 2) - 2.0 * c(1, 1) + conc_halo(1,left)) * dy2
-        lap_y = (c(2, 1) - 2.0 * c(1, 1) + conc_halo(1,up)) * dx2
+        lap_x = (c(1, 2) - 2.0 * c(1, 1) + conc_halo(1,left)) * dx2
+        lap_y = (c(2, 1) - 2.0 * c(1, 1) + conc_halo(1,up)) * dy2
         Q(1, 1) = mu(1, 1) - Kappa * (lap_x + lap_y)
 
         ! Bottom-left
-        lap_x = (c(nx, 2) - 2.0 * c(nx, 1) + conc_halo(nx, left)) * dy2
-        lap_y = (conc_halo(1, down) - 2.0 * c(nx, 1) + c(nx - 1, 1)) * dx2
+        lap_x = (c(nx, 2) - 2.0 * c(nx, 1) + conc_halo(nx, left)) * dx2
+        lap_y = (conc_halo(1, down) - 2.0 * c(nx, 1) + c(nx - 1, 1)) * dy2
         Q(nx, 1) = mu(nx, 1) - Kappa * (lap_x + lap_y)
 
         ! Bottom-right
-        lap_x = (conc_halo(nx,right) - 2.0 * c(nx, ny) + c(nx, ny - 1)) * dy2
-        lap_y = (conc_halo(nx,down) - 2.0 * c(nx, ny) + c(nx - 1, ny)) * dx2
+        lap_x = (conc_halo(nx,right) - 2.0 * c(nx, ny) + c(nx, ny - 1)) * dx2
+        lap_y = (conc_halo(nx,down) - 2.0 * c(nx, ny) + c(nx - 1, ny)) * dy2
         Q(nx, ny) = mu(nx, ny) - Kappa * (lap_x + lap_y)
 
         ! Top-right
-        lap_x = (conc_halo(1, right) - 2.0 * c(1, ny) + c(1, ny - 1)) * dy2
-        lap_y = (c(2, ny) - 2.0 * c(1, ny) + conc_halo(nx,up)) * dx2
+        lap_x = (conc_halo(1, right) - 2.0 * c(1, ny) + c(1, ny - 1)) * dx2
+        lap_y = (c(2, ny) - 2.0 * c(1, ny) + conc_halo(nx,up)) * dy2
         Q(1, ny) = mu(1, ny) - Kappa * (lap_x + lap_y)
 
         ! Boundary nodes
         ! LHS - j = 1
         do i = 2, nx - 1
-            lap_x = (c(i, 2) - 2.0 * c(i, 1) + conc_halo(i, left)) * dy2
-            lap_y = (c(i + 1, 1) - 2.0 * c(i, 1) + c(i - 1, 1)) * dx2
+            lap_x = (c(i, 2) - 2.0 * c(i, 1) + conc_halo(i, left)) * dx2
+            lap_y = (c(i + 1, 1) - 2.0 * c(i, 1) + c(i - 1, 1)) * dy2
             Q(i, 1) = mu(i, 1) - Kappa * (lap_x + lap_y)
         end do
 
         ! RHS - j = ny
         do i = 2, nx - 1
-            lap_x = (conc_halo(i, right) - 2.0 * c(i, ny) + c(i, ny - 1)) * dy2
-            lap_y = (c(i + 1, ny) - 2.0 * c(i, ny) + c(i - 1, ny)) * dx2
+            lap_x = (conc_halo(i, right) - 2.0 * c(i, ny) + c(i, ny - 1)) * dx2
+            lap_y = (c(i + 1, ny) - 2.0 * c(i, ny) + c(i - 1, ny)) * dy2
             Q(i, ny) = mu(i, ny) - Kappa * (lap_x + lap_y)
         end do
 
         ! Top - i = 1
         do j = 2, ny - 1
-            lap_x = (c(1, j + 1) - 2.0 * c(1, j) + c(1, j - 1)) * dy2
-            lap_y = (c(2, j) - 2.0 * c(1, j) + conc_halo(j, up)) * dx2
+            lap_x = (c(1, j + 1) - 2.0 * c(1, j) + c(1, j - 1)) * dx2
+            lap_y = (c(2, j) - 2.0 * c(1, j) + conc_halo(j, up)) * dy2
             Q(1, j) = mu(1,j) - Kappa * (lap_x + lap_y)
         end do
 
         ! Bottom - i = nx
         do j = 2, ny - 1
-            lap_x = (c(nx, j + 1) - 2.0 * c(nx, j) + c(nx, j - 1)) * dy2
-            lap_y = (conc_halo(j,down) - 2.0 * c(nx, j) + c(nx - 1, j)) * dx2
+            lap_x = (c(nx, j + 1) - 2.0 * c(nx, j) + c(nx, j - 1)) * dx2
+            lap_y = (conc_halo(j,down) - 2.0 * c(nx, j) + c(nx - 1, j)) * dy2
             Q(nx, j) = mu(nx, j) - Kappa * (lap_x + lap_y)
         end do
 
@@ -118,8 +118,8 @@ contains
         !$omp parallel do default(shared) private(j,i,lap_x,lap_y)
         do i = 2, nx - 1
             do j = 2, ny - 1
-                lap_x = (c(i + 1, j) - 2 * c(i, j) + c(i - 1, j)) * dx2
-                lap_y = (c(i, j + 1) - 2 * c(i, j) + c(i, j - 1)) * dy2
+                lap_x = (c(i, j + 1) - 2 * c(i, j) + c(i, j - 1)) * dx2
+                lap_y = (c(i + 1, j) - 2 * c(i, j) + c(i - 1, j)) * dy2
                 Q(i, j) = mu(i, j) - Kappa * (lap_x + lap_y)
             end do
         end do
