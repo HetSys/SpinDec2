@@ -209,44 +209,4 @@ contains
 
     end subroutine local_grid_deallocate
 
-    subroutine grid_get_neighbour_elements(grid,ix,iy,neighbours)
-    
-        ! local grid coordinates of a spin
-        integer,intent(in) :: ix,iy
-
-        ! The four neighbouring spins
-        integer,dimension(4),intent(out) :: neighbours
-
-        ! Set spin of left hand neighbour
-        if (ix==1) then
-            neighbours(left)  = grid_halo(iy,left)
-        else
-            neighbours(left)  = grid(ix-1,iy)
-        end if
-
-        ! Set spin of right hand neighbour
-        if (ix==grid_domain_size) then
-            neighbours(right) = grid_halo(iy,right)
-        else
-            neighbours(right) = grid(ix+1,iy)
-        end if
-
-        ! Set spin of bottom neighbour
-        if (iy==1) then
-            neighbours(down) = grid_halo(ix,down)
-        else
-            neighbours(down) = grid(ix,iy-1)
-        end if
-
-        ! Set spin of top neighbour
-        if (iy==grid_domain_size) then
-            neighbours(up) = grid_halo(ix,up)
-        else
-            neighbours(up) = grid(ix,iy+1)
-        end if
-
-  end subroutine grid_get_neighbour_elements
-
-
-
 end module grid
