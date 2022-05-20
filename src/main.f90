@@ -4,27 +4,26 @@ program main
 
     use iso_fortran_env
     use cahn_hilliard
-    use grid
-    use potentials
-    use spectral
-    use io
-    use free_energy
-    use input_params
     use checkpointing
     use comms
+    use free_energy
+    use grid
+    use input_params
+    use io
+    use potentials
+    !use spectral
 
     implicit none
 
-    real(real64), dimension(:, :, :), allocatable :: c ! conc. grid
-    real(real64), dimension(:, :), allocatable :: c_new, c_out ! new conc. grid
-    real(real64), dimension(:, :), allocatable :: mu   ! bulk chem. pot.
-    real(real64), dimension(:, :), allocatable :: Q    ! total chem. pot.
-    real(real64), dimension(:, :), allocatable :: dQ   ! 2nd derivative of Q
-    real(real64), dimension(:, :), allocatable :: M    ! Mobility field
-    real(real64), dimension(:, :), allocatable :: T ! Temp
+    real(real64), dimension(:, :, :), allocatable :: c_check ! conc. grid
+    !real(real64), dimension(:, :), allocatable :: c_new, c_out ! new conc. grid
+    real(real64), dimension(:, :), allocatable :: mu_check   ! bulk chem. pot.
+    real(real64), dimension(:, :), allocatable :: Q_check    ! total chem. pot.
+    real(real64), dimension(:, :), allocatable :: M_check    ! Mobility field
+    real(real64), dimension(:, :), allocatable :: T_check ! Temp
     real(real64), dimension(:), allocatable :: a ! user inputted polynomial coefficients
     real(real64), dimension(:), allocatable :: F_tot ! Total free energy with time
-    real(real64), dimension(:, :), allocatable :: f_b
+    !real(real64), dimension(:, :), allocatable :: f_b
     real(real64) :: c0, c_std !initial grid mean and std sample - if using normal dist
     real(real64) :: c_min, c_max !initial grid lower and upper boubds - for default uniform dist
     real(real64) :: T_min, T_max !initial temp grid mean and std sample
@@ -43,10 +42,10 @@ program main
     character(len=128) :: problem
     integer :: proot ! sqrt of number of processors
 
-    thread =  fftw_init_threads()
+    !thread =  fftw_init_threads()
     ! Only run files in test for now
-    call read_params("input.txt",problem, c_min, c_max, a, nx, &
-                     ny, ma, mb,ea,eb,T_min,T_max, kappa, bfe, cint, cpi, cpo, t_end, dt, df_tol,stab, random_seed, use_input, err)
+    call read_params("input.txt", c0, c_std, a, nx, &
+                     ny, ma, mb, kappa, bfe, cint, cpi, cpo, t_end, dt, df_tol, random_seed, use_input, err)
 
     if (err == -1) then
         print *, "There was an issue with the input file please check and try again"
@@ -59,14 +58,14 @@ program main
     c0 = (c_min+c_max)/2
     c_std = 0
 
-    if (cpi /= "") then
-        call read_checkpoint_in(c, mu, T,F_tot, cpi,problem, c0, a, nx, &
-                                ny, ma, mb, kappa, bfe, cint, cpo, t_end, dt, df_tol, current_iter, random_seed, use_input, ncerr)
-        if (ncerr /= nf90_noerr) then
-            print *, "There was an error reading the checkpoint file."
-            stop
-        end if
-    end if
+    !if (cpi /= "") then
+        !!call read_checkpoint_in(c_check, mu_check, T_check,F_tot, cpi,problem, c0, a, nx, &
+        !!                        ny, ma, mb, kappa, bfe, cint, cpo, t_end, dt, df_tol, current_iter, random_seed, use_input, ncerr)
+        !!if (ncerr /= nf90_noerr) then
+        !    print *, "There was an error reading the checkpoint file."
+        !    stop
+        !end if
+    !end if
 
     ! Set seed
     call get_seed(random_seed)

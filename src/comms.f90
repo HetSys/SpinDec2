@@ -93,11 +93,11 @@ contains
         real(dp), dimension(:,:), intent(in) :: grid
         real(dp), dimension(:,:), intent(out) :: grid_halo
         real(dp), allocatable, dimension(:):: sendbuf, recvbuf
-        real(dp), dimension(mpi_status_size):: status
-        real(dp):: ix, iy, ierr
+        integer, dimension(mpi_status_size):: status
+        integer :: ierr
 
         ! exit if not in parallel
-        if (nprocs == 1) then
+        if (p == 1) then
             return
         end if
 
@@ -118,7 +118,7 @@ contains
         ! and receive from my_rank_neighbours(right) into right of grid_halo
         sendbuf(:) = grid(1, :)
         call mpi_sendrecv(sendbuf, grid_domain_size, mpi_double_precision, my_rank_neighbours(left), 11, &
-                          recvbuf, grid_domain_size, mpi_integer, my_rank_neighbours(right), 11, cart_comm, status, ierr)
+                          recvbuf, grid_domain_size, mpi_double_precision, my_rank_neighbours(right), 11, cart_comm, status, ierr)
         grid_halo(:, right) = recvbuf(:)
 
         ! send right hand boundary elements of grid to my_rank_neighbours(right)

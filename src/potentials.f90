@@ -1,6 +1,7 @@
 module potentials
 
     use iso_fortran_env
+    use grid
 
     implicit none
 
