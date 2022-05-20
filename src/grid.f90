@@ -9,7 +9,9 @@ module grid
 
     ! Variables needed for MPI
     real(real64), dimension(:,:), allocatable :: global_grid_conc
+    real(real64), dimension(:,:,:), allocatable :: c
     real(real64), dimension(:,:), allocatable :: local_grid_conc
+    real(real64), dimension(:,:), allocatable :: Q, M, mu, c_new, T
     real(real64), dimension(:,:), allocatable :: conc_halo, Q_halo, M_halo
     
     ! Constants to define directions
@@ -19,10 +21,26 @@ module grid
     integer, dimension(2) :: grid_domain_start, grid_domain_end
 
 contains
-
+    !******************************************************************************
+    !> grid_initialise_global
+    !!
+    !! subroutine to allocate memory for global concentration grid on rank 0
+    !!
+    !!@param Nx, Ny : Grid dimensions
+    !!@param my_rank : Current MPI rank
+    !!@param ierr : Error flag
+    !*****************************************************************************   
     subroutine get_seed(seed_in)
         ! Subroutine that determines random seed used
-        ! If seed provided is -1 a random seed is generated
+        ! If seed provided is -1 a random seed is genera!******************************************************************************
+    !> grid_initialise_global
+    !!
+    !! subroutine to allocate memory for global concentration grid on rank 0
+    !!
+    !!@param Nx, Ny : Grid dimensions
+    !!@param my_rank : Current MPI rank
+    !!@param ierr : Error flag
+    !*****************************************************************************   ted
         ! Otherwise the provided seed is used
 
         implicit none
@@ -122,12 +140,29 @@ contains
 
     ! MPI grid subroutines
 
-    subroutine grid_initialise_local(Nx,Ny,c_min,c_max,p,my_rank,my_rank_coords)
+    !******************************************************************************
+    !> grid_initialise_local
+    !!
+    !! subroutine to calculate grid subdomain size 
+    !! and allocate needed memory for local concentration, Q, and M, and mu grids
+    !! also allocates memory for corresponding halos
+    !!
+    !!@param Nx, Ny : Grid dimensions
+    !!@param p: Number of processors requested for parallel run
+    !!@param my_rank : Current MPI rank
+    !!@param c_min : User inputted miniumum for initial concentration distribution
+    !!@param c_max : User inputted maximum for initial concentration distribution
+    !!@param proot : Square root of number of processors
+    !!@param ierr : Error flag
+    !*****************************************************************************
+    subroutine grid_initialise_local(Nx,Ny,c_min,c_max,T_min,T_max,problem,p,my_rank,my_rank_coords)
 
         integer, intent(in) :: Nx, Ny, p
         integer, intent(in) :: my_rank
         integer, dimension(2), intent(in) :: my_rank_coords
         real(real64), intent(in) :: c_min, c_max
+        real(real64), intent(in) :: T_min, T_max
+        character(len=128), intent(in) :: problem
         integer :: proot
         integer :: ierr
 
@@ -143,54 +178,120 @@ contains
 
         ! Set up four subdomains on current rank
 
-        ! Allocate concnentration grid on current rank
+        ! Allocate local concnentration grid on current rank
         allocate(local_grid_conc(grid_domain_size,grid_domain_size),stat=ierr)
         if (ierr /= 0) then
-            print*, "Error: allocating local_grid_con failed on rank ", my_rank
+            print*, "Error: allocating local_grid_conc failed on rank ", my_rank
             stop
         end if
 
         ! Allocate four halo arrays for concentration
         allocate(conc_halo(grid_domain_size,4),stat=ierr)
         if (ierr /= 0) then
-            print*, "Error: allocating conc_conc failed on rank ", my_rank
+            print*, "Error: allocating conc_halo failed on rank ", my_rank
             stop
         end if
+
+        ! Allocate local c_new grid
+        allocate(c_new(grid_domain_size,grid_domain_size),stat=ierr)
+        if (ierr /= 0) then
+            print*, "Error: allocating c_new failed on rank ", my_rank
+            stop
+        end if
+
+        ! Allocate local Q grid
+        allocate(Q(grid_domain_size,grid_domain_size),stat=ierr)
+        if (ierr /= 0) then
+            print*, "Error: allocating Q failed on rank ", my_rank
+            stop
+        end if
+        Q = 0.0      
 
         ! Allocate four halo arrays for Q
         allocate(Q_halo(grid_domain_size,4),stat=ierr)
         if (ierr /= 0) then
-            print*, "Error: allocating Q_conc failed on rank ", my_rank
+            print*, "Error: allocating Q_halo failed on rank ", my_rank
             stop
         end if
+        Q_halo = 0.0
 
-        ! Allocate four halo arrays for 
+        ! Allocate local M grid
+        allocate(M(grid_domain_size,grid_domain_size),stat=ierr)
+        if (ierr /= 0) then
+            print*, "Error: allocating M failed on rank ", my_rank
+            stop
+        end if
+        M = 0.0
+
+        ! Allocate four halo arrays for M
         allocate(M_halo(grid_domain_size,4),stat=ierr)
         if (ierr /= 0) then
             print*, "Error: allocating M_halo failed on rank ", my_rank
             stop
         end if
+        M_halo = 0.0
 
-        ! Initiate grid using a uniform distribution on current rank
+        ! Allocate local mu grid
+        allocate(mu(grid_domain_size,grid_domain_size),stat=ierr)
+        if (ierr /= 0) then
+            print*, "Error: allocating mu failed on rank ", my_rank
+            stop
+        end if
+        mu = 0.0
+
+        ! Allocate local T grid
+        allocate(T(grid_domain_size,grid_domain_size),stat=ierr)
+        if (ierr /= 0) then
+            print*, "Error: allocating T failed on rank ", my_rank
+            stop
+        end if
+        T = 0.0
+
+        ! Initialise local temperature grid using a uniform distribution 
+        ! on current rank
+        if (problem == 'Temp') then
+            call grid_init(T, Nx, Ny, T_min, T_max)
+        end if
+    
+        ! Initialise local concentration grid using a uniform distribution 
+        ! on current rank
         call grid_init(global_grid_conc,Nx,Ny,c_min,c_max)
 
     end subroutine grid_initialise_local
 
-    
-    subroutine grid_initialise_global(Nx,Ny,my_rank)
+    !******************************************************************************
+    !> grid_initialise_global
+    !!
+    !! subroutine to allocate memory for global concentration grid on rank 0
+    !!
+    !!@param Nx, Ny : Grid dimensions
+    !!@param my_rank : Current MPI rank
+    !!@param ierr : Error flag
+    !*****************************************************************************   
+    subroutine grid_initialise_global(Nx,Ny,Nt,my_rank)
 
-        integer, intent(in) :: Nx, Ny, my_rank
+        integer, intent(in) :: Nx, Ny, Nt, my_rank
         integer :: ierr
 
         ! allocate grid array on rank zero
         if (my_rank == 0) then
             allocate(global_grid_conc(Nx,Ny),stat=ierr)
             if(ierr/=0) stop "Error: allocating global_grid_conc failed"
+
+            allocate(c(Nx,Ny,Nt),stat=ierr)
+            if(ierr/=0) stop "Error: allocating c failed"
         end if
     end subroutine grid_initialise_global
 
 
-
+    !******************************************************************************
+    !> global_grid_deallocate
+    !!
+    !! subroutine to dellocate memory of global concentration grids
+    !!
+    !!@param my_rank : current MPI rank
+    !!@param ierr : error flag
+    !*****************************************************************************
     subroutine global_grid_deallocate(my_rank)
 
         integer, intent(in) :: my_rank
@@ -205,11 +306,26 @@ contains
                 print*, "Error: deallocating global_grid_conc failed on rank 0"
                 stop
             end if
+
+
+            deallocate(c, stat=ierr)
+            
+            if (ierr /= 0) then
+                print*, "Error: deallocating c failed on rank 0"
+                stop
+            end if
         end if
 
     end subroutine global_grid_deallocate
 
-
+    !******************************************************************************
+    !> global_grid_deallocate
+    !!
+    !! subroutine to dellocate memory of local grids
+    !!
+    !!@param my_rank : current MPI rank
+    !!@param ierr : error flag
+    !*****************************************************************************
     subroutine local_grid_deallocate(my_rank)
         
         integer, intent(in) :: my_rank
@@ -222,6 +338,71 @@ contains
             print*, "Error: deallocating local_grid_conc failed on rank ", my_rank
             stop
         end if
+
+        ! Deallocate memory allocated for each local c_new
+        deallocate(c_new, stat=ierr)
+
+        if (ierr /= 0) then
+            print*, "Error: deallocating local c_new failed on rank ", my_rank
+            stop
+        end if
+
+        ! Deallocate memory allocated for each local Q grid
+        deallocate(Q, stat=ierr)
+
+        if (ierr /= 0) then
+            print*, "Error: deallocating local Q grid failed on rank ", my_rank
+            stop
+        end if
+
+        ! Deallocate memory allocated for each local M grid
+        deallocate(M, stat=ierr)
+
+        if (ierr /= 0) then
+            print*, "Error: deallocating local M grid failed on rank ", my_rank
+            stop
+        end if
+
+        ! Deallocate memory allocated for each local mu grid
+        deallocate(mu, stat=ierr)
+
+        if (ierr /= 0) then
+            print*, "Error: deallocating local mu grid failed on rank ", my_rank
+            stop
+        end if
+
+        ! Deallocate memory allocated for each local T grid
+        deallocate(T, stat=ierr)
+
+        if (ierr /= 0) then
+            print*, "Error: deallocating local T grid failed on rank ", my_rank
+            stop
+        end if
+
+        ! Deallocate halo memory
+        deallocate(conc_halo, stat=ierr)
+
+        if (ierr /= 0) then
+            print*, "Error: deallocating conc_halo failed on rank ", my_rank
+            stop
+        end if
+
+        deallocate(Q_halo, stat=ierr)
+
+        if (ierr /= 0) then
+            print*, "Error: deallocating Q_halo failed on rank ", my_rank
+            stop
+        end if
+
+        deallocate(M_halo, stat=ierr)
+
+        if (ierr /= 0) then
+            print*, "Error: deallocating M_halo failed on rank ", my_rank
+            stop
+        end if
+
+
+
 
     end subroutine local_grid_deallocate
 

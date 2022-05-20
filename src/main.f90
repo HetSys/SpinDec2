@@ -58,12 +58,6 @@ program main
     c0 = (c_min+c_max)/2
     c_std = 0
 
-    ! Allocate T grid
-    if (.not. allocated(T)) then
-        allocate (T(Nx, Ny))
-        T = 0.0
-    end if
-
     if (problem == 'Temp') then
         call grid_init(T, Nx, Ny, T_min, T_max)
     end if
@@ -92,49 +86,11 @@ program main
 
     !Find polynomial coefficients size
     Nc = size(a)
-    ! Allocate c grid
-    if (.not. allocated(c)) then
-        allocate (c(Nx, Ny, Nt))
-        c = 0.0
-    end if
-
-     ! Allocate M grid
-    if (.not. allocated(M)) then
-        allocate (M(Nx, Ny))
-        M = 0.0
-    end if
-
-    ! Allocate mu grid
-    if (.not. allocated(mu)) then
-        allocate (mu(Nx, Ny))
-        mu = 0.0
-    end if
 
     ! Allocate F_tot
     if (.not. allocated(F_tot)) then
         allocate (F_tot(Nt))
         F_tot = 0.0
-    end if
-
-     ! Allocate Q grid
-    if (.not. allocated(Q)) then
-        allocate (Q(Nx, Ny))
-        Q = 0.0
-    end if
-
-     ! Allocate c_new grid
-    if (.not. allocated(c_new)) then
-        allocate (c_new(Nx, Ny))
-        c_new = 0.0
-    end if
-
-    if (.not. allocated(c_out)) then
-        allocate (c_out(Nx, Ny))
-        c_out = 0.0
-    end if
-
-    if (problem == 'Temp') then
-        call grid_init(T, Nx, Ny, T_min, T_max)
     end if
 
     ! Check Nx = Ny ie. we have a square grid
