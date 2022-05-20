@@ -76,7 +76,7 @@ contains
             abs(k-1.6) < k/1e7 .and. &
             abs(bfe-1.7) < bfe/1e7 .and. &
             cint == 50000 .and. &
-            cpo == "Checkpoint.cpf" .and. &
+            cpo == "checkpoint.cpf" .and. &
             cpi == "" .and. &
             size(coeffs) == 5 .and. &
             abs(coeffs(1) - 0) < 1/1e7 .and. &
