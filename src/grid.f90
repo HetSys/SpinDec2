@@ -16,6 +16,8 @@ module grid
     
     ! Constants to define directions
     integer, parameter :: left=1, right=2, down=3, up=4
+    ! Constants to define coordinates
+    integer, parameter :: x=1, y=1
 
     integer :: grid_domain_size
     integer, dimension(2) :: grid_domain_start, grid_domain_end
