@@ -10,7 +10,7 @@ module grid
     ! Variables needed for MPI
     real(real64), dimension(:,:), allocatable :: global_grid_conc
     real(real64), dimension(:,:), allocatable :: local_grid_conc
-    real(real64), dimension(:,:), allocatable :: halo_grid_conc
+    real(real64), dimension(:,:), allocatable :: conc_halo, Q_halo, M_halo
     
     integer :: grid_domain_size
     integer, dimension(2) :: grid_domain_start, grid_domain_end
@@ -46,17 +46,17 @@ contains
 
 	! Subroutine to get a standard normal random number
 
-	implicit none
+	    implicit none
 
-	real(real64), intent(in) :: c_min, c_max
-	real(real64), intent(out) :: x
-	real(real64) :: u1
+	    real(real64), intent(in) :: c_min, c_max
+	    real(real64), intent(out) :: x
+	    real(real64) :: u1
 
-	call random_number(u1)
+	    call random_number(u1)
 
-	u1 = 1.0 - u1
+	    u1 = 1.0 - u1
 
-	x = (c_max-c_min)*u1 + c_min
+	    x = (c_max-c_min)*u1 + c_min
  
     end subroutine rand_uniform
 
@@ -119,11 +119,12 @@ contains
 
     ! MPI grid subroutines
 
-    subroutine grid_initialise_local(Nx,Ny,p,my_rank,my_rank_coords)
+    subroutine grid_initialise_local(Nx,Ny,c_min,c_max,p,my_rank,my_rank_coords)
 
         integer, intent(in) :: Nx, Ny, p
         integer, intent(in) :: my_rank
         integer, dimension(2), intent(in) :: my_rank_coords
+        real(real64), intent(in) :: c_min, c_max
         integer :: proot
         integer :: ierr
 
@@ -146,31 +147,43 @@ contains
             stop
         end if
 
-        ! Allocate four halo arrays
-        allocate(halo_grid_conc(grid_domain_size,4),stat=ierr)
+        ! Allocate four halo arrays for concentration
+        allocate(conc_halo(grid_domain_size,4),stat=ierr)
         if (ierr /= 0) then
-            print*, "Error: allocating halo_grid_conc failed on rank ", my_rank
+            print*, "Error: allocating conc_conc failed on rank ", my_rank
             stop
         end if
+
+        ! Allocate four halo arrays for Q
+        allocate(Q_halo(grid_domain_size,4),stat=ierr)
+        if (ierr /= 0) then
+            print*, "Error: allocating Q_conc failed on rank ", my_rank
+            stop
+        end if
+
+        ! Allocate four halo arrays for 
+        allocate(M_halo(grid_domain_size,4),stat=ierr)
+        if (ierr /= 0) then
+            print*, "Error: allocating M_halo failed on rank ", my_rank
+            stop
+        end if
+
+        ! Initiate grid using a uniform distribution on current rank
+        call grid_init(global_grid_conc,Nx,Ny,c_min,c_max)
 
     end subroutine grid_initialise_local
 
     
-    subroutine grid_initialise_global(Nx,Ny,c_min,c_max,my_rank)
+    subroutine grid_initialise_global(Nx,Ny,my_rank)
 
         integer, intent(in) :: Nx, Ny, my_rank
-        real(real64), intent(in) :: c_min, c_max
         integer :: ierr
 
         ! allocate grid array on rank zero
         if (my_rank == 0) then
             allocate(global_grid_conc(Nx,Ny),stat=ierr)
             if(ierr/=0) stop "Error: allocating global_grid_conc failed"
-
-            ! Initiate grid using a uniform distribution
-            call grid_init(global_grid_conc,Nx,Ny,c_min,c_max)
         end if
-
     end subroutine grid_initialise_global
 
 
