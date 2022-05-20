@@ -30,8 +30,6 @@ contains
         Ny = size(c, 2)
         n = size(a)
 
-        allocate (f_b(Nx, Ny))
-
         f_b = 0
 
         !Loop filling the f_b array
