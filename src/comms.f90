@@ -85,10 +85,11 @@ contains
     end subroutine comms_get_global_F
 
 
-    subroutine comms_halo_swap()
+    subroutine comms_halo_swap(grid)
 
         ! send and receive concs on each side of the grid to neighbour processors
 
+        real(dp), dimension(:,:), intent(in) :: grid
         real(dp), allocatable, dimension(:):: sendbuf, recvbuf
         real(dp), dimension(mpi_status_size):: status
         real(dp):: ix, iy, ierr
@@ -134,7 +135,7 @@ contains
 
         ! send top boundary elements of grid to my_rank_neighbours(up)
         ! and receive from my_rank_neighbours(down) into up of grid_halo
-        sendbuf(:) = grid_spin(:, 1)
+        sendbuf(:) = grid(:, 1)
         call mpi_sendrecv(sendbuf, nx, mpi_double_precision, my_rank_neighbours(up), 14, &
                           recvbuf, nx, mpi_double_precision, my_rank_neighbours(down), 14, cart_comm, status, ierr)
         grid_halo(:, up) = recvbuf(:)
