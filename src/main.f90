@@ -124,8 +124,6 @@ program main
 
         call comms_get_global_F(F_tot(k),local_F)
 
-        deallocate (f_b)
-
         if (my_rank == 0) then
             if (count >= cint) then
                 call write_checkpoint_file(c, mu, F_tot, a, cpo, c0, c_std, &
