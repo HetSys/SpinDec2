@@ -107,7 +107,7 @@ contains
         ! Start computing derivatives
         ! Corner nodes
         ! Top-left
-        der_x = (Q(2, 1) - 2.0 * Q(1, 1) + Q(Nx, 1)) * dx2
+        der_x = (Q(2, 1) - 2.0 * Q(1, 1) + Q_halo(1, top)) * dx2
         der_y = (Q(1, 2) - 2.0 * Q(1, 1) + Q(1, Ny)) * dy2
         dQ(1, 1) = (der_x + der_y)
 
@@ -168,35 +168,6 @@ contains
     end subroutine del_Q
 
 
-    subroutine dQ_dy(dQy,Q,dy,Nx,Ny,Q_halo)
-        ! Subroutine to calculate dQ/dx
-        ! Using central differences
-        integer, intent(in) :: Nx, Ny
-        real(real64), dimension(Nx,Ny), intent(in) :: Q
-        real(real64), dimension(Nx,4), intent(in) :: Q_halo
-        real(real64), intent(in) :: dy
-        real(real64), dimension(Nx,Ny), intent(out) :: dQy
-        real(real64) :: dy_inv
-        integer :: i,j ! counters
-
-        dy_inv = 1.0/(2.0*dy)
-
-        ! LHS and RHS Boundary
-        do i = 1, Nx
-            dQy(i,1) = (Q(i,2) - Q(i,Ny))*dy_inv    ! LHS
-            dQy(i,Ny) = (Q(i,1) - Q(i,Ny-1))*dy_inv ! RHS
-        end do
-
-        ! Bulk (non-boundary nodes)
-        !$omp parallel do default(shared) private(i,j)
-        do j = 2, Ny-1
-            do i = 1, Nx
-                dQy(i,j) = (Q(i,j+1) - Q(i,j-1))*dy_inv
-            end do
-        end do
-
-    end subroutine dQ_dy
-
     subroutine dQ_dx(dQx,Q,dx,Nx,Ny,Q_halo)
         ! Subroutine to calculate dQ/dx
         ! Using central differences
@@ -208,23 +179,52 @@ contains
         real(real64) :: dx_inv
         integer :: i,j ! counters
 
-        dx_inv = 1.0/(2.0*dx)
+        dx_inv = 1.0/(2.0*dy)
+
+        ! LHS and RHS Boundary
+        do i = 1, Nx
+            dQx(i,1) = (Q(i,2) - Q_halo(i,left))*dx_inv    ! LHS
+            dQx(i,Ny) = (Q_halo(i,right) - Q(i,Ny-1))*dx_inv ! RHS
+        end do
+
+        ! Bulk (non-boundary nodes)
+        !$omp parallel do default(shared) private(i,j)
+        do j = 2, Ny-1
+            do i = 1, Nx
+                dQx(i,j) = (Q(i,j+1) - Q(i,j-1))*dx_inv
+            end do
+        end do
+
+    end subroutine dQ_dx
+
+    subroutine dQ_dy(dQy,Q,dy,Nx,Ny,Q_halo)
+        ! Subroutine to calculate dQ/dx
+        ! Using central differences
+        integer, intent(in) :: Nx, Ny
+        real(real64), dimension(Nx,Ny), intent(in) :: Q
+        real(real64), dimension(Nx,4), intent(in) :: Q_halo
+        real(real64), intent(in) :: dy
+        real(real64), dimension(Nx,Ny), intent(out) :: dQy
+        real(real64) :: dy_inv
+        integer :: i,j ! counters
+
+        dy_inv = 1.0/(2.0*dx)
 
         ! Top and Bottom Boundary
         do j = 1, Ny
-            dQx(1,j) = (Q(2,j) - Q(Nx,j))*dx_inv    ! Top
-            dQx(Nx,j) = (Q(1,j) - Q(Nx-1,j))*dx_inv ! Bottom
+            dQy(1,j) = (Q(2,j) - Q_halo(j,top))*dy_inv    ! Top
+            dQy(Nx,j) = (Q_halo(j,bottom) - Q(Nx-1,j))*dy_inv ! Bottom
         end do 
 
         ! Bulk (non-boundary nodes)
         !$omp parallel do default(shared) private(i,j)
         do j = 1, Ny
             do i = 2, Nx-1
-                dQx(i,j) = (Q(i+1,j) - Q(i-1,j))*dx_inv
+                dQy(i,j) = (Q(i+1,j) - Q(i-1,j))*dy_inv
             end do
         end do
 
-    end subroutine dQ_dx
+    end subroutine dQ_dy
 
 
     subroutine dM_dy(dMy,M,dy,Nx,Ny,M_halo)
@@ -240,10 +240,10 @@ contains
 
         dy_inv = 1.0/(2.0*dy)
 
-        ! LHS and RHS Boundary
-        do i = 1, Nx
-            dMy(i,1) = (M(i,2) - M(i,Ny))*dy_inv    ! LHS
-            dMy(i,Ny) = (M(i,1) - M(i,Ny-1))*dy_inv ! RHS
+        ! Top and Bottom Boundary
+        do j = 1, Ny
+            dMy(1,j) = (M(2,j) - M_halo(j,top))*dy_inv    ! Top
+            dMy(Nx,j) = (M_halo(j,bottom) - M(Nx-1,j))*dy_inv ! Bottom
         end do
 
         ! Bulk (non-boundary nodes)
@@ -269,10 +269,10 @@ contains
 
         dx_inv = 1.0/(2.0*dx)
 
-        ! Top and Bottom Boundary
-        do j = 1, Ny
-            dMx(1,j) = (M(2,j) - M(Nx,j))*dx_inv    ! Top
-            dMx(Nx,j) = (M(1,j) - M(Nx-1,j))*dx_inv ! Bottom
+        ! LHS and RHS Boundary
+        do i = 1, Nx
+            dMx(i,1) = (M(i,2) - M_halo(i,left))*dx_inv    ! LHS
+            dMx(i,Ny) = (M_halo(i,right) - M(i-1,Ny))*dx_inv ! RHS
         end do 
 
         ! Bulk (non-boundary nodes)
@@ -285,7 +285,6 @@ contains
 
     end subroutine dM_dx
     
-
 
     subroutine time_evolution(grid, grid_new, dQ, M, dt, Nx, Ny)
         ! Subroutine to perform the time evolution in accordance with
