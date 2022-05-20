@@ -85,7 +85,7 @@ contains
     end subroutine comms_get_global_F
 
 
-    subroutine comms_halo_swap(grid)
+    subroutine comms_halo_swap(grid,grid_halo)
 
         ! send and receive concs on each side of the grid to neighbour processors
 
