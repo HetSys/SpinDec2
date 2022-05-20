@@ -146,7 +146,7 @@ contains
             if(dt > 1) then
                 dt1 = 1
             else
-                dt1 = dt**(4/3)
+                dt1 = dt*0
             end if
             ans(:,:) = dt1*(-M*k*k4(:,:)*out(:,:) + M*k2(:,:)*out_bulk(:,:))+out(:,:)
             ! $OMP END PARALLEL WORKSHARE
