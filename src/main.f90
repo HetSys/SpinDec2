@@ -104,7 +104,7 @@ program main
         call comms_halo_swaps(M,M_halo)
 
         ! Get new concentrations for current timesteps
-        call time_evoloution_new(local_grid_conc,c_new,M,Q,dx,dy,dt, Nx, Ny,Q_halo,M_halo)
+        call time_evolution_new(local_grid_conc,c_new,M,Q,dx,dy,dt, Nx, Ny,Q_halo,M_halo)
 
         ! set grid to c_new
         local_grid_conc(:, :) = c_new(:, :)
