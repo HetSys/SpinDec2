@@ -83,7 +83,7 @@ contains
 
     end subroutine
 
-    subroutine del_Q(dQ, Q, dx, dy, Nx, Ny)
+    subroutine del_Q(dQ, Q, dx, dy, Nx, Ny,Q_halo)
         ! Subroutine to perform spatial dervative of Q
         ! dQ is a 2D grid to store the derivatives of Q
         ! Q is the 2D grid of total chemical potentials
@@ -93,6 +93,7 @@ contains
 
         integer, intent(in) :: Nx, Ny
         real(real64), dimension(Nx, Ny), intent(in) :: Q
+        real(real64), dimension(Nx, 4), intent(in) :: Q_halo
         real(real64), dimension(Nx, Ny), intent(out) :: dQ
         real(real64), intent(in) :: dx, dy
         real(real64) :: dx2, dy2
@@ -167,11 +168,12 @@ contains
     end subroutine del_Q
 
 
-    subroutine dQ_dy(dQy,Q,dy,Nx,Ny)
+    subroutine dQ_dy(dQy,Q,dy,Nx,Ny,Q_halo)
         ! Subroutine to calculate dQ/dx
         ! Using central differences
         integer, intent(in) :: Nx, Ny
         real(real64), dimension(Nx,Ny), intent(in) :: Q
+        real(real64), dimension(Nx,4), intent(in) :: Q_halo
         real(real64), intent(in) :: dy
         real(real64), dimension(Nx,Ny), intent(out) :: dQy
         real(real64) :: dy_inv
@@ -195,11 +197,12 @@ contains
 
     end subroutine dQ_dy
 
-    subroutine dQ_dx(dQx,Q,dx,Nx,Ny)
+    subroutine dQ_dx(dQx,Q,dx,Nx,Ny,Q_halo)
         ! Subroutine to calculate dQ/dx
         ! Using central differences
         integer, intent(in) :: Nx, Ny
         real(real64), dimension(Nx,Ny), intent(in) :: Q
+        real(real64), dimension(Nx,4), intent(in) :: Q_halo
         real(real64), intent(in) :: dx
         real(real64), dimension(Nx,Ny), intent(out) :: dQx
         real(real64) :: dx_inv
@@ -224,11 +227,12 @@ contains
     end subroutine dQ_dx
 
 
-    subroutine dM_dy(dMy,M,dy,Nx,Ny)
+    subroutine dM_dy(dMy,M,dy,Nx,Ny,M_halo)
         ! Subroutine to calculate dM/dx
         ! Using central differences
         integer, intent(in) :: Nx, Ny
         real(real64), dimension(Nx,Ny), intent(in) :: M
+        real(real64), dimension(Nx,4), intent(in) :: M_halo
         real(real64), intent(in) :: dy
         real(real64), dimension(Nx,Ny), intent(out) :: dMy
         real(real64) :: dy_inv
@@ -252,11 +256,12 @@ contains
 
     end subroutine dM_dy
 
-    subroutine dM_dx(dMx,M,dx,Nx,Ny)
+    subroutine dM_dx(dMx,M,dx,Nx,Ny,M_halo)
         ! Subroutine to calculate dM/dx
         ! Using central differences
         integer, intent(in) :: Nx, Ny
         real(real64), dimension(Nx,Ny), intent(in) :: M
+        real(real64), dimension(Nx,4), intent(in) :: M_halo
         real(real64), intent(in) :: dx
         real(real64), dimension(Nx,Ny), intent(out) :: dMx
         real(real64) :: dx_inv
@@ -314,10 +319,11 @@ contains
     !!@param dt : time-step
     !!@param Nx, Ny : number of resoloutions in x and y
     !*****************************************************************************
-    subroutine time_evoloution_new(c,c_new,M,Q,dx,dy,dt, Nx, Ny)
+    subroutine time_evolution_new(c,c_new,M,Q,dx,dy,dt, Nx, Ny,Q_halo,M_halo)
       
         integer, intent(in) :: Nx, Ny
         real(real64), intent(in) :: c(Nx,Ny), Q(Nx,Ny), M(Nx,Ny)
+        real(real64), intent(in) :: Q_halo(Nx,4),M_halo(Nx,4)
         real(real64) :: dQ(Nx,Ny), dQx(Nx,Ny), dQy(Nx,Ny)
         real(real64) :: dMx(Nx,Ny), dMy(Nx,Ny)
         real(real64), intent(out) :: c_new(Nx,Ny)
@@ -325,11 +331,11 @@ contains
         real(real64) :: alpha, beta, xbeta, ybeta
         integer :: i,j ! counters
 
-        call del_Q(dQ, Q, dx, dy, Nx, Ny)
-        call dQ_dx(dQx,Q,dx, Nx, Ny)
-        call dQ_dy(dQy,Q,dy, Nx, Ny)
-        call dM_dx(dMx,M,dx, Nx, Ny)
-        call dM_dy(dMy,M,dy, Nx, Ny)
+        call del_Q(dQ, Q, dx, dy, Nx, Ny,Q_halo)
+        call dQ_dx(dQx,Q,dx, Nx, Ny,Q_halo)
+        call dQ_dy(dQy,Q,dy, Nx, Ny,Q_halo)
+        call dM_dx(dMx,M,dx, Nx, Ny,M_halo)
+        call dM_dy(dMy,M,dy, Nx, Ny,M_halo)
 
         !$omp parallel do default(shared) private(i,j,alpha,xbeta,ybeta,beta)
         do j = 1, Ny

@@ -44,11 +44,12 @@ contains
     ! @param dx: spatial grid spacing in x-direction
     ! @param dy: spatial grid spacing in y-direction
     ! @param Kappa: Free energy gradient paramater
-    subroutine total_potential(Q, mu, c, dx, dy, Kappa)
+    subroutine total_potential(Q, mu, c, dx, dy, Kappa,conc_halo)
 
         real(real64), intent(in) :: mu(:,:)
         real(real64), intent(in) :: c(:,:)
         real(real64), intent(in) :: dx, dy, Kappa
+        real(real64), intent(in) :: conc_halo(:,:)
         real(real64) :: Q(:,:)
         real(real64) :: lap_x, lap_y,dx2,dy2
         integer :: nx, ny, i, j
