@@ -33,6 +33,7 @@ program main
     real(real64) :: t_end !end time
     real(real64) :: MA, MB ! Mobility's
     real(real64) :: EA, EB ! exciation energy
+    real(real64) :: local_F,global_F
     real(real64) :: stab !Stabilization_Term
     real(real64) :: bfe, df_tol!Placeholder (These were in the input file but df_tol hasn't been used in any code)
     integer :: Nx, Ny, Nt, Nc
@@ -57,10 +58,6 @@ program main
     Nt = floor(t_end / dt)
     c0 = (c_min+c_max)/2
     c_std = 0
-
-    if (problem == 'Temp') then
-        call grid_init(T, Nx, Ny, T_min, T_max)
-    end if
 
     if (cpi /= "") then
         call read_checkpoint_in(c, mu, T,F_tot, cpi,problem, c0, a, nx, &
@@ -87,11 +84,13 @@ program main
     !Find polynomial coefficients size
     Nc = size(a)
 
-    ! Allocate F_tot
+    ! Allocate F_tot on rank 0
+    
     if (.not. allocated(F_tot)) then
         allocate (F_tot(Nt))
         F_tot = 0.0
     end if
+
 
     ! Check Nx = Ny ie. we have a square grid
 
@@ -123,32 +122,31 @@ program main
     ! Set up Cartesian communicator
     call comms_processor_map()
 
-    ! write(*,'("MPI rank ",I3," has domain coordinates : ",2I3)')my_rank,my_rank_coords
-    ! write(*,'("MPI rank ",I3," has domain neighbours  : ",4I4)')my_rank,my_rank_neighbours
-
     ! Set up local grids
-    call grid_initialise_local(Nx,Ny,p,my_rank,my_rank_coords)
+    call grid_initialise_local(Nx,Ny,c_min,c_max,T_min,T_max,problem,p,my_rank,my_rank_coords)
 
     ! Set up global grid
     ! Initialise global concentration grid
     ! c ~ U(c_min,c_max)
-    call grid_initialise_global(Nx,Ny,c_min,c_max,my_rank)
+    call grid_initialise_global(Nx,Ny,Nt,my_rank)
 
     ! Start calculations
 
     !Get initial bulk free energy for current rank using local grid
     call bulk_free_energy(f_b,local_grid_conc,a)
 
+    !Store concentration from neighbor ranks in halo_swaps
+    call comms_halo_swaps(local_grid_conc,conc_halo)
+
     ! Calculate Initial F(t)
-    call total_free_energy(local_F, c(:, :, 1), f_b, dx, dy, kappa)
+    call total_free_energy(local_F, local_grid_conc, f_b, dx, dy, kappa,conc_halo)
 
     !Gather total free energy
-    call comms_get_global_F(F_tot(1),local_F)
+    call comms_get_global_F(global_F,local_F)
 
-    
-
-
-    deallocate (f_b)
+    if (my_rank == 0) then
+        F_tot(1) = global_F
+    end if
 
     count = 0
 
@@ -173,7 +171,7 @@ program main
         call comms_halo_swaps(M,M_halo)
 
         ! Get new concentrations for current timesteps
-        call time_evolution_new(local_grid_conc,c_new,M,Q,dx,dy,dt, Nx, Ny,Q_halo,M_halo)
+        call time_evolution_new(local_grid_conc,c_new,M,Q,dx,dy,dt,grid_domain_size,grid_domain_size,Q_halo,M_halo)
 
         ! set grid to c_new
         local_grid_conc(:, :) = c_new(:, :)
@@ -189,9 +187,13 @@ program main
         call bulk_free_energy(f_b, c_new, a)
 
         ! Calculate F(t)
-        call total_free_energy(local_F, c_new, f_b, dx, dy, kappa,conc_halo)
+        call total_free_energy(local_F, local_grid_conc, f_b, dx, dy, kappa,conc_halo)
 
-        call comms_get_global_F(F_tot(k),local_F)
+        call comms_get_global_F(global_F,local_F)
+
+        if (my_rank == 0) then
+            F_tot(k) = global_F
+        end if
 
         if (my_rank == 0) then
             if (count >= cint) then
@@ -211,6 +213,10 @@ program main
         end if
 
     end do
+
+    if (my_rank == 0) then
+        call write_netcdf(c, F_tot, a, Nc, Nx, Ny, Nt, dt, c0, MA, MB, kappa)        
+    end if 
 
     ! Deallocate local and global grids
     call local_grid_deallocate(my_rank)
