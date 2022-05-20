@@ -1,6 +1,7 @@
 module cahn_hilliard
 
     use iso_fortran_env
+    use grid
 
     implicit none
 

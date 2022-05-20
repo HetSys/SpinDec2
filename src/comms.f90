@@ -2,6 +2,7 @@ module comms
 
     use iso_fortran_env, dp => real64
     use mpi
+    use grid
 
     implicit none
 
