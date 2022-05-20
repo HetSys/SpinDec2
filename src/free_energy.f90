@@ -57,9 +57,10 @@ contains
     !!@param kappa : gradient term coefficient
     !*****************************************************************************
 
-    subroutine total_free_energy(F, c, f_b, dx, dy, kappa)
+    subroutine total_free_energy(F, c, f_b, dx, dy, kappa,conc_halo)
 
         real(real64), intent(in) :: c(:,:)
+        real(real64), intent(in) :: conc_halo(:,:)
         real(real64) :: f_b(:,:)
         integer :: nx, ny
         integer :: i, j
@@ -81,58 +82,58 @@ contains
         ! Start computing derivatives
         ! Corner nodes
         ! Top-left
-        grad_x = (c(2, 1) -  c(nx, 1)) * dx2
-        grad_y = (c(1, 2) -  c(1, ny)) * dy2
+        grad_x = (c(1, 2) -  conc_halo(1, left)) * dy2
+        grad_y = (c(2, 1) -  conc_halo(1, up)) * dx2
         P = grad_x*grad_x + grad_y*grad_y
         F = F + (f_b(1, 1) + 0.5 * kappa * P ) * dx * dy
 
         ! Bottom-left
-        grad_x = (c(1, 1) - c(nx - 1, 1)) * dx2
-        grad_y = (c(nx, 2) - c(nx, ny)) * dy2
+        grad_x = (c(nx, 2) - conc_halo(nx,left)) * dy2
+        grad_y = (conc_halo(1, down) - c(nx - 1, 1)) * dx2
         P = grad_x*grad_x + grad_y*grad_y
         F = F + (f_b(nx, 1) + 0.5 * kappa * P ) * dx * dy
 
         ! Bottom-right
-        grad_x = (c(1, ny) - c(nx - 1, ny)) * dx2
-        grad_y = (c(nx, 1) - c(nx, ny - 1)) * dy2
+        grad_x = (conc_halo(nx, right) - c(nx, ny - 1)) * dy2
+        grad_y = (conc_halo(nx, down) - c(nx - 1, ny)) * dx2
         P = grad_x*grad_x + grad_y*grad_y
         F = F + (f_b(nx, ny) + 0.5 * kappa * P ) * dx * dy
 
         ! Top-right
-        grad_x = (c(2, ny) - c(nx, ny)) * dx2
-        grad_y = (c(1, 1) - c(1, ny - 1)) * dy2
+        grad_x = (conc_halo(1, right) - c(1, ny - 1)) * dy2
+        grad_y = (c(2, ny) - conc_halo(nx, up)) * dx2
         P = grad_x*grad_x + grad_y*grad_y
         F = F + (f_b(1, ny) + 0.5 * kappa * P ) * dx * dy
 
         ! Boundary nodes
         ! LHS - j = 1
         do i = 2, nx - 1
-            grad_x = (c(i + 1, 1) - c(i - 1, 1)) * dx2
-            grad_y = (c(i, 2) - c(i, ny)) * dy2
+            grad_x = (c(i, 2) - conc_halo(i,left)) * dy2
+            grad_y = (c(i + 1, 1) - c(i - 1, 1)) * dx2
             P = grad_x*grad_x + grad_y*grad_y
             F = F + (f_b(i, 1) + 0.5 * kappa * P ) * dx * dy
         end do
 
         ! RHS - j = ny
         do i = 2, nx - 1
-            grad_x = (c(i + 1, ny) - c(i - 1, ny)) * dx2
-            grad_y = (c(i, 1) - c(i, ny - 1)) * dy2
+            grad_x = (conc_halo(i, right) - c(i, ny - 1)) * dy2
+            grad_y = (c(i + 1, ny) - c(i - 1, ny)) * dx2
             P = grad_x*grad_x + grad_y*grad_y
             F = F + (f_b(i, ny) + 0.5 * kappa * P ) * dx * dy
         end do
 
         ! Top - i = 1
         do j = 2, ny - 1
-            grad_x = (c(2, j) - c(nx, j)) * dx2
-            grad_y = (c(1, j + 1) - c(1, j - 1)) * dy2
+            grad_x = (c(1, j + 1) - c(1, j - 1)) * dy2
+            grad_y = (c(2, j) - conc_halo(j,up)) * dx2
             P = grad_x*grad_x + grad_y*grad_y
             F = F + (f_b(1, j) + 0.5 * kappa * P ) * dx * dy
         end do
 
         ! Bottom - i = nx
         do j = 2, ny - 1
-            grad_x = (c(1, j) - c(nx - 1, j)) * dx2
-            grad_y = (c(nx, j + 1) - c(nx, j - 1)) * dy2
+            grad_x = (c(nx, j + 1) - c(nx, j - 1)) * dy2
+            grad_y = (conc_halo(j,down) - c(nx - 1, j)) * dx2
             P = grad_x*grad_x + grad_y*grad_y
             F = F + (f_b(nx, j) + 0.5 * kappa * P ) * dx * dy
         end do
