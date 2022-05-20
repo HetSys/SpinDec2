@@ -11,7 +11,7 @@ module grid
     real(real64), dimension(:,:), allocatable :: global_grid_conc
     real(real64), dimension(:,:,:), allocatable :: c
     real(real64), dimension(:,:), allocatable :: local_grid_conc
-    real(real64), dimension(:,:), allocatable :: Q, M, mu, c_new, T, f_b
+    real(real64), dimension(:,:), allocatable :: Q, M, mu, c_new, T
     real(real64), dimension(:,:), allocatable :: conc_halo, Q_halo, M_halo
     
     ! Constants to define directions
@@ -22,28 +22,15 @@ module grid
 
 contains
     !******************************************************************************
-    !> grid_initialise_global
+    !> get_seed
     !!
-    !! subroutine to allocate memory for global concentration grid on rank 0
+    !! Subroutine to set random seed based on user input
+    !! if -1 is inputed for seed, a random seed is generated
+    !! otherwise the user provided seed is used
     !!
-    !!@param Nx, Ny : Grid dimensions
-    !!@param my_rank : Current MPI rank
-    !!@param ierr : Error flag
-    !*****************************************************************************   
+    !!@param seed_in : user inputted seed value
+    !******************************************************************************
     subroutine get_seed(seed_in)
-        ! Subroutine that determines random seed used
-        ! If seed provided is -1 a random seed is genera!******************************************************************************
-    !> grid_initialise_global
-    !!
-    !! subroutine to allocate memory for global concentration grid on rank 0
-    !!
-    !!@param Nx, Ny : Grid dimensions
-    !!@param my_rank : Current MPI rank
-    !!@param ierr : Error flag
-    !*****************************************************************************   ted
-        ! Otherwise the provided seed is used
-
-        implicit none
 
         integer :: seed_in
         real(real64) :: u
@@ -62,14 +49,20 @@ contains
         call random_seed(put=seed)
 
     end subroutine get_seed
-    
-    subroutine rand_uniform(x,c_min,c_max)
 
-	! Subroutine to get a standard normal random number
+    !******************************************************************************
+    !> rand_uniform
+    !!
+    !! Subroutine to output a random number from a uniform distribution
+    !! between user provided lower and upper bound values
+    !!
+    !!@param x: random number output
+    !!@param min: user inputted lower bound for uniform distribution
+    !!@param max : user inputted upper bound for uniform distribution
+    !******************************************************************************    
+    subroutine rand_uniform(x,min,max)
 
-	    implicit none
-
-	    real(real64), intent(in) :: c_min, c_max
+	    real(real64), intent(in) :: min, max
 	    real(real64), intent(out) :: x
 	    real(real64) :: u1
 
@@ -77,14 +70,18 @@ contains
 
 	    u1 = 1.0 - u1
 
-	    x = (c_max-c_min)*u1 + c_min
+	    x = (max-min)*u1 + min
  
     end subroutine rand_uniform
 
+    !******************************************************************************
+    !> rand_stdnormal
+    !!
+    !! Subroutine to output a random number from a standard normal distribution
+    !!
+    !!@param x: random number output
+    !******************************************************************************    
     subroutine rand_stdnormal(x)
-        ! Subroutine to get a standard normal random number
-
-        implicit none
 
         real(real64), intent(out) :: x
         real(real64) :: u1, u2
@@ -99,11 +96,18 @@ contains
 
     end subroutine rand_stdnormal
 
-    subroutine rand_normal(x, mean, std)
-        ! Subroutine to get a random number from a normal distribution
-        ! given the mean and standard deviation
 
-        implicit none
+!******************************************************************************
+    !> rand_normal
+    !!
+    !! Subroutine to output a random number from a normal distribution
+    !! with a user provided mean and standard deviation
+    !!
+    !!@param x: random number output
+    !!@param mean: user inputted mean for normal distribution
+    !!@param std : user inputted standard deviation for normal distribution
+    !******************************************************************************    
+    subroutine rand_normal(x, mean, std)
 
         real(real64), intent(in) :: mean, std
         real(real64), intent(out) :: x
@@ -113,8 +117,19 @@ contains
 
     end subroutine
 
-    subroutine grid_init(grid, Nx, Ny, c_min, c_max)
-        ! Subroutine to initialise the concentration grid
+    !******************************************************************************
+    !>  grid_init
+    !!
+    !! Subroutine to initialise a given grid using values sampled from a uniform
+    !! distribution with a given lower and upper bound
+    !!
+    !!@param grid: grid to be populated with random values
+    !!@param Nx, Ny: grid dimensions
+    !!@param min: user inputted lower bound for uniform distribution
+    !!@param max : user inputted upper bound for uniform distribution
+    !******************************************************************************    
+    subroutine grid_init(grid, Nx, Ny, min, max)
+  
         ! The first input is an array with dimensions Nx x Ny to store concentrations
         ! Nx and Ny are the grid dimensions
         ! c_min is the lower bound for the concentration
@@ -125,13 +140,13 @@ contains
 
         integer, intent(in) :: Nx, Ny
         real(real64), dimension(Nx, Ny), intent(out) :: grid
-        real(real64), intent(in) :: c_min, c_max
+        real(real64), intent(in) :: min, max
         real(real64) :: x ! dummy variable for concnetration
         integer :: i, j ! counters
 
         do i = 1, Nx
             do j = 1, Ny
-                call rand_uniform(x,c_min,c_max)
+                call rand_uniform(x,min,max)
                 grid(i, j) = x
             end do
         end do
@@ -238,13 +253,6 @@ contains
             stop
         end if
         mu = 0.0
-
-        ! Allocate local bf_b grid
-        allocate(f_b(grid_domain_size,grid_domain_size),stat=ierr)
-        if (ierr /= 0) then
-            print*, "Error: allocating f_b failed on rank ", my_rank
-            stop
-        end if
 
         ! Allocate local T grid
         allocate(T(grid_domain_size,grid_domain_size),stat=ierr)
@@ -375,14 +383,6 @@ contains
 
         if (ierr /= 0) then
             print*, "Error: deallocating local mu grid failed on rank ", my_rank
-            stop
-        end if
-
-        ! Deallocate memory allocated for each local f_b grid
-        deallocate(f_b, stat=ierr)
-
-        if (ierr /= 0) then
-            print*, "Error: deallocating local f_b grid failed on rank ", my_rank
             stop
         end if
 
