@@ -180,7 +180,7 @@ contains
         real(real64) :: dx_inv
         integer :: i,j ! counters
 
-        dx_inv = 1.0/(2.0*dy)
+        dx_inv = 1.0/(2.0*dx)
 
         ! LHS and RHS Boundary
         do i = 1, Nx
@@ -209,12 +209,12 @@ contains
         real(real64) :: dy_inv
         integer :: i,j ! counters
 
-        dy_inv = 1.0/(2.0*dx)
+        dy_inv = 1.0/(2.0*dy)
 
         ! Top and Bottom Boundary
         do j = 1, Ny
-            dQy(1,j) = (Q(2,j) - Q_halo(j,top))*dy_inv    ! Top
-            dQy(Nx,j) = (Q_halo(j,bottom) - Q(Nx-1,j))*dy_inv ! Bottom
+            dQy(1,j) = (Q(2,j) - Q_halo(j,up))*dy_inv    ! Top
+            dQy(Nx,j) = (Q_halo(j,down) - Q(Nx-1,j))*dy_inv ! Bottom
         end do 
 
         ! Bulk (non-boundary nodes)
@@ -243,8 +243,8 @@ contains
 
         ! Top and Bottom Boundary
         do j = 1, Ny
-            dMy(1,j) = (M(2,j) - M_halo(j,top))*dy_inv    ! Top
-            dMy(Nx,j) = (M_halo(j,bottom) - M(Nx-1,j))*dy_inv ! Bottom
+            dMy(1,j) = (M(2,j) - M_halo(j,up))*dy_inv    ! Top
+            dMy(Nx,j) = (M_halo(j,down) - M(Nx-1,j))*dy_inv ! Bottom
         end do
 
         ! Bulk (non-boundary nodes)
@@ -273,7 +273,7 @@ contains
         ! LHS and RHS Boundary
         do i = 1, Nx
             dMx(i,1) = (M(i,2) - M_halo(i,left))*dx_inv    ! LHS
-            dMx(i,Ny) = (M_halo(i,right) - M(i-1,Ny))*dx_inv ! RHS
+            dMx(i,Ny) = (M_halo(i,right) - M(i,Ny-1))*dx_inv ! RHS
         end do 
 
         ! Bulk (non-boundary nodes)

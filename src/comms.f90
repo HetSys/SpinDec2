@@ -91,6 +91,7 @@ contains
         ! send and receive concs on each side of the grid to neighbour processors
 
         real(dp), dimension(:,:), intent(in) :: grid
+        real(dp), dimension(:,:), intent(out) :: grid_halo
         real(dp), allocatable, dimension(:):: sendbuf, recvbuf
         real(dp), dimension(mpi_status_size):: status
         real(dp):: ix, iy, ierr
@@ -101,13 +102,13 @@ contains
         end if
 
         ! allocate buffers
-        allocate (sendbuf(1:nx), stat = ierr)
+        allocate (sendbuf(1:grid_domain_size), stat = ierr)
         if (ierr /= 0) then
             stop 'error allocating sendbuf x in comms_halo_swaps'
             ! todo remove after debugging
         end if
 
-        allocate (recvbuf(1:nx), stat = ierr)
+        allocate (recvbuf(1:grid_domain_size), stat = ierr)
         if (ierr /= 0) then
             stop 'error allocating recvbuf x in comms_halo_swaps'
             ! todo remove after debugging
@@ -116,29 +117,29 @@ contains
         ! send left hand boundary elements of grid to my_rank_neighbours(left)
         ! and receive from my_rank_neighbours(right) into right of grid_halo
         sendbuf(:) = grid(1, :)
-        call mpi_sendrecv(sendbuf, nx, mpi_double_precision, my_rank_neighbours(left), 11, &
-                          recvbuf, nx, mpi_integer, my_rank_neighbours(right), 11, cart_comm, status, ierr)
+        call mpi_sendrecv(sendbuf, grid_domain_size, mpi_double_precision, my_rank_neighbours(left), 11, &
+                          recvbuf, grid_domain_size, mpi_integer, my_rank_neighbours(right), 11, cart_comm, status, ierr)
         grid_halo(:, right) = recvbuf(:)
 
         ! send right hand boundary elements of grid to my_rank_neighbours(right)
         ! and receive from my_rank_neighbours(left) into left of grid_halo
-        sendbuf(:) = grid(nx, :)
-        call mpi_sendrecv(sendbuf, nx, mpi_double_precision, my_rank_neighbours(right), 12, &
-                          recvbuf, nx, mpi_double_precision, my_rank_neighbours(left), 12, cart_comm, status, ierr)
+        sendbuf(:) = grid(grid_domain_size, :)
+        call mpi_sendrecv(sendbuf, grid_domain_size, mpi_double_precision, my_rank_neighbours(right), 12, &
+                          recvbuf, grid_domain_size, mpi_double_precision, my_rank_neighbours(left), 12, cart_comm, status, ierr)
         grid_halo(:, left) = recvbuf(:)
 
         ! send bottom boundary elements of grid to my_rank_neighbours(down)
         ! and receive from my_rank_neighbours(up) into down of grid_halo
-        sendbuf(:) = grid(:, nx)
-        call mpi_sendrecv(sendbuf, nx, mpi_double_precision, my_rank_neighbours(down), 13, &
-                          recvbuf, nx, mpi_double_precision, my_rank_neighbours(up), 13, cart_comm, status, ierr)
+        sendbuf(:) = grid(:, grid_domain_size)
+        call mpi_sendrecv(sendbuf, grid_domain_size, mpi_double_precision, my_rank_neighbours(down), 13, &
+                          recvbuf, grid_domain_size, mpi_double_precision, my_rank_neighbours(up), 13, cart_comm, status, ierr)
         grid_halo(:, down) = recvbuf(:)
 
         ! send top boundary elements of grid to my_rank_neighbours(up)
         ! and receive from my_rank_neighbours(down) into up of grid_halo
         sendbuf(:) = grid(:, 1)
-        call mpi_sendrecv(sendbuf, nx, mpi_double_precision, my_rank_neighbours(up), 14, &
-                          recvbuf, nx, mpi_double_precision, my_rank_neighbours(down), 14, cart_comm, status, ierr)
+        call mpi_sendrecv(sendbuf, grid_domain_size, mpi_double_precision, my_rank_neighbours(up), 14, &
+                          recvbuf, grid_domain_size, mpi_double_precision, my_rank_neighbours(down), 14, cart_comm, status, ierr)
         grid_halo(:, up) = recvbuf(:)
 
         deallocate (sendbuf, recvbuf, stat = ierr)
