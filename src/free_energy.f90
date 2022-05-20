@@ -80,58 +80,58 @@ contains
         ! Start computing derivatives
         ! Corner nodes
         ! Top-left
-        grad_x = (c(1, 2) -  conc_halo(1, left)) * dy2
-        grad_y = (c(2, 1) -  conc_halo(1, up)) * dx2
+        grad_x = (c(1, 2) -  conc_halo(1, left)) * dx2
+        grad_y = (c(2, 1) -  conc_halo(1, up)) * dy2
         P = grad_x*grad_x + grad_y*grad_y
         F = F + (f_b(1, 1) + 0.5 * kappa * P ) * dx * dy
 
         ! Bottom-left
-        grad_x = (c(nx, 2) - conc_halo(nx,left)) * dy2
-        grad_y = (conc_halo(1, down) - c(nx - 1, 1)) * dx2
+        grad_x = (c(nx, 2) - conc_halo(nx,left)) * dx2
+        grad_y = (conc_halo(1, down) - c(nx - 1, 1)) * dy2
         P = grad_x*grad_x + grad_y*grad_y
         F = F + (f_b(nx, 1) + 0.5 * kappa * P ) * dx * dy
 
         ! Bottom-right
-        grad_x = (conc_halo(nx, right) - c(nx, ny - 1)) * dy2
-        grad_y = (conc_halo(nx, down) - c(nx - 1, ny)) * dx2
+        grad_x = (conc_halo(nx, right) - c(nx, ny - 1)) * dx2
+        grad_y = (conc_halo(nx, down) - c(nx - 1, ny)) * dy2
         P = grad_x*grad_x + grad_y*grad_y
         F = F + (f_b(nx, ny) + 0.5 * kappa * P ) * dx * dy
 
         ! Top-right
-        grad_x = (conc_halo(1, right) - c(1, ny - 1)) * dy2
-        grad_y = (c(2, ny) - conc_halo(nx, up)) * dx2
+        grad_x = (conc_halo(1, right) - c(1, ny - 1)) * dx2
+        grad_y = (c(2, ny) - conc_halo(nx, up)) * dy2
         P = grad_x*grad_x + grad_y*grad_y
         F = F + (f_b(1, ny) + 0.5 * kappa * P ) * dx * dy
 
         ! Boundary nodes
         ! LHS - j = 1
         do i = 2, nx - 1
-            grad_x = (c(i, 2) - conc_halo(i,left)) * dy2
-            grad_y = (c(i + 1, 1) - c(i - 1, 1)) * dx2
+            grad_x = (c(i, 2) - conc_halo(i,left)) * dx2
+            grad_y = (c(i + 1, 1) - c(i - 1, 1)) * dy2
             P = grad_x*grad_x + grad_y*grad_y
             F = F + (f_b(i, 1) + 0.5 * kappa * P ) * dx * dy
         end do
 
         ! RHS - j = ny
         do i = 2, nx - 1
-            grad_x = (conc_halo(i, right) - c(i, ny - 1)) * dy2
-            grad_y = (c(i + 1, ny) - c(i - 1, ny)) * dx2
+            grad_x = (conc_halo(i, right) - c(i, ny - 1)) * dx2
+            grad_y = (c(i + 1, ny) - c(i - 1, ny)) * dy2
             P = grad_x*grad_x + grad_y*grad_y
             F = F + (f_b(i, ny) + 0.5 * kappa * P ) * dx * dy
         end do
 
         ! Top - i = 1
         do j = 2, ny - 1
-            grad_x = (c(1, j + 1) - c(1, j - 1)) * dy2
-            grad_y = (c(2, j) - conc_halo(j,up)) * dx2
+            grad_x = (c(1, j + 1) - c(1, j - 1)) * dx2
+            grad_y = (c(2, j) - conc_halo(j,up)) * dy2
             P = grad_x*grad_x + grad_y*grad_y
             F = F + (f_b(1, j) + 0.5 * kappa * P ) * dx * dy
         end do
 
         ! Bottom - i = nx
         do j = 2, ny - 1
-            grad_x = (c(nx, j + 1) - c(nx, j - 1)) * dy2
-            grad_y = (conc_halo(j,down) - c(nx - 1, j)) * dx2
+            grad_x = (c(nx, j + 1) - c(nx, j - 1)) * dx2
+            grad_y = (conc_halo(j,down) - c(nx - 1, j)) * dy2
             P = grad_x*grad_x + grad_y*grad_y
             F = F + (f_b(nx, j) + 0.5 * kappa * P ) * dx * dy
         end do
@@ -140,8 +140,8 @@ contains
         !$omp parallel do default(shared) private(j,i,grad_x,grad_y,P) reduction(+:F)
         do j = 2, ny - 1
             do i = 2, nx - 1
-                grad_x = (c(i + 1, j) -  c(i - 1, j)) * dx2
-                grad_y = (c(i, j + 1) -  c(i, j - 1)) * dy2
+                grad_x = (c(i, j + 1) -  c(i, j - 1)) * dx2
+                grad_y = (c(i + 1, j) -  c(i - 1, j)) * dy2
                 P = grad_x*grad_x + grad_y*grad_y
                 F = F + (f_b(i, j) + 0.5 * kappa * P ) * dx * dy
             end do

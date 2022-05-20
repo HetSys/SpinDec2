@@ -107,51 +107,51 @@ contains
         ! Start computing derivatives
         ! Corner nodes
         ! Top-left
-        der_x = (Q(2, 1) - 2.0 * Q(1, 1) + Q_halo(1, top)) * dx2
-        der_y = (Q(1, 2) - 2.0 * Q(1, 1) + Q(1, Ny)) * dy2
+        der_x = (Q(1, 2) - 2.0 * Q(1, 1) + Q_halo(1,left)) * dx2
+        der_y = (Q(2, 1) - 2.0 * Q(1, 1) + Q_halo(1, up)) * dy2
         dQ(1, 1) = (der_x + der_y)
 
         ! Bottom-left
-        der_x = (Q(1, 1) - 2.0 * Q(Nx, 1) + Q(Nx - 1, 1)) * dx2
-        der_y = (Q(Nx, 2) - 2.0 * Q(Nx, 1) + Q(Nx, Ny)) * dy2
+        der_x = (Q(Nx, 2) - 2.0 * Q(Nx, 1) + Q_halo(Nx, left)) * dx2
+        der_y = (Q_halo(1,down) - 2.0 * Q(Nx, 1) + Q(Nx - 1, 1)) * dy2
         dQ(Nx, 1) = (der_x + der_y)
 
         ! Bottom-right
-        der_x = (Q(1, Ny) - 2.0 * Q(Nx, Ny) + Q(Nx - 1, Ny)) * dx2
-        der_y = (Q(Nx, 1) - 2.0 * Q(Nx, Ny) + Q(Nx, Ny - 1)) * dy2
+        der_x = (Q_halo(Nx,right) - 2.0 * Q(Nx, Ny) + Q(Nx, Ny - 1)) * dx2
+        der_y = (Q_halo(Nx,down) - 2.0 * Q(Nx, Ny) + Q(Nx - 1, Ny)) * dy2
         dQ(Nx, Ny) = (der_x + der_y)
 
         ! Top-right
-        der_x = (Q(2, Ny) - 2.0 * Q(1, Ny) + Q(Nx, Ny)) * dx2
-        der_y = (Q(1, 1) - 2.0 * Q(1, Ny) + Q(1, Ny - 1)) * dy2
+        der_x = (Q_halo(1,right) - 2.0 * Q(1, Ny) + Q(1, Ny - 1)) * dx2
+        der_y = (Q(2, Ny) - 2.0 * Q(1, Ny) + Q_halo(Nx,up)) * dy2
         dQ(1, Ny) = (der_x + der_y)
 
         ! Boundary nodes
         ! LHS - j = 1
         do i = 2, Nx - 1
-            der_x = (Q(i + 1, 1) - 2.0 * Q(i, 1) + Q(i - 1, 1)) * dx2
-            der_y = (Q(i, 2) - 2.0 * Q(i, 1) + Q(i, Ny)) * dy2
+            der_x = (Q(i, 2) - 2.0 * Q(i, 1) + Q_halo(i,left)) * dx2
+            der_y = (Q(i + 1, 1) - 2.0 * Q(i, 1) + Q(i - 1, 1)) * dy2
             dQ(i, 1) = (der_x + der_y)
         end do
 
         ! RHS - j = Ny
         do i = 2, Nx - 1
-            der_x = (Q(i + 1, Ny) - 2.0 * Q(i, Ny) + Q(i - 1, Ny)) * dx2
-            der_y = (Q(i, 1) - 2.0 * Q(i, Ny) + Q(i, Ny - 1)) * dy2
+            der_x = (Q_halo(i,right) - 2.0 * Q(i, Ny) + Q(i, Ny - 1)) * dx2
+            der_y = (Q(i + 1, Ny) - 2.0 * Q(i, Ny) + Q(i - 1, Ny)) * dy2
             dQ(i, Ny) = (der_x + der_y)
         end do
 
         ! Top - i = 1
         do j = 2, Ny - 1
-            der_x = (Q(2, j) - 2.0 * Q(1, j) + Q(Nx, j)) * dx2
-            der_y = (Q(1, j + 1) - 2.0 * Q(1, j) + Q(1, j - 1)) * dy2
+            der_x = (Q(1, j + 1) - 2.0 * Q(1, j) + Q(1, j - 1)) * dx2
+            der_y = (Q(2, j) - 2.0 * Q(1, j) + Q_halo(j,up)) * dy2
             dQ(1, j) = (der_x + der_y)
         end do
 
         ! Bottom - i = Nx
         do j = 2, Ny - 1
-            der_x = (Q(1, j) - 2.0 * Q(Nx, j) + Q(Nx - 1, j)) * dx2
-            der_y = (Q(Nx, j + 1) - 2.0 * Q(Nx, j) + Q(Nx, j - 1)) * dy2
+            der_x = (Q(Nx, j + 1) - 2.0 * Q(Nx, j) + Q(Nx, j - 1)) * dx2
+            der_y = (Q_halo(j,down) - 2.0 * Q(Nx, j) + Q(Nx - 1, j)) * dy2
             dQ(Nx, j) = (der_x + der_y)
         end do
 
@@ -159,8 +159,8 @@ contains
         !$omp parallel do default(shared) private(i,j,der_x,der_y)
         do i = 2, Nx - 1
             do j = 2, Ny - 1
-                der_x = (Q(i + 1, j) - 2 * Q(i, j) + Q(i - 1, j)) * dx2
-                der_y = (Q(i, j + 1) - 2 * Q(i, j) + Q(i, j - 1)) * dy2
+                der_x = (Q(i, j + 1) - 2 * Q(i, j) + Q(i, j - 1)) * dx2
+                der_y = (Q(i + 1, j) - 2 * Q(i, j) + Q(i - 1, j)) * dy2
                 dQ(i, j) = (der_x + der_y)
             end do
         end do
