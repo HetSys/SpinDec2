@@ -11,7 +11,7 @@ module grid
     real(real64), dimension(:,:), allocatable :: global_grid_conc
     real(real64), dimension(:,:,:), allocatable :: c
     real(real64), dimension(:,:), allocatable :: local_grid_conc
-    real(real64), dimension(:,:), allocatable :: Q, M, mu, c_new, T
+    real(real64), dimension(:,:), allocatable :: Q, M, mu, c_new, T, f_b
     real(real64), dimension(:,:), allocatable :: conc_halo, Q_halo, M_halo
     
     ! Constants to define directions
@@ -239,6 +239,13 @@ contains
         end if
         mu = 0.0
 
+        ! Allocate local bf_b grid
+        allocate(f_b(grid_domain_size,grid_domain_size),stat=ierr)
+        if (ierr /= 0) then
+            print*, "Error: allocating f_b failed on rank ", my_rank
+            stop
+        end if
+
         ! Allocate local T grid
         allocate(T(grid_domain_size,grid_domain_size),stat=ierr)
         if (ierr /= 0) then
@@ -368,6 +375,14 @@ contains
 
         if (ierr /= 0) then
             print*, "Error: deallocating local mu grid failed on rank ", my_rank
+            stop
+        end if
+
+        ! Deallocate memory allocated for each local f_b grid
+        deallocate(f_b, stat=ierr)
+
+        if (ierr /= 0) then
+            print*, "Error: deallocating local f_b grid failed on rank ", my_rank
             stop
         end if
 
