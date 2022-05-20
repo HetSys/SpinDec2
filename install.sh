@@ -21,16 +21,13 @@ compile () {
         exit 2
     fi
 
-    fftw_dir=$(find . -maxdepth 1 -name "fftw*" -type d)
+    fftw_dir=$(find /usr/include/ -name "*fftw*")
 
-    if [[ "$fftw_dir" == *"fftw-3"* ]]; then
-       echo "Found fftw-3 library"
-       echo "Renaming to fftw3"
-       mv "$fftw_dir" fftw3
-    elif [[ "$fftw_dir" == *"fftw3" ]]; then
-       echo "fftw3 library already present"
+    if [[ "$fftw_dir" == *"fftw3"* ]]; then
+       echo "Found fftw3 library in /usr/include/"
+       echo
     elif [[ "$fftw_dir" == "" ]]; then
-       echo "Required fftw-3 library not found"
+       echo "Required fftw3 library not found"
        echo "Ensure this is installed before attempting compilation"
        echo "Exiting compilation"
        exit 1
@@ -72,6 +69,8 @@ compile () {
     if [[ "$1" == "d" || "$1" == "debug" ]]; then
         exit 0
     fi
+
+    echo 'Compilation completed successfully'
 
     # Don't prompt to add to $PATH if already in path
     if grep -Fq "SpinDec2/bin" $HOME/.bashrc; then
@@ -162,6 +161,17 @@ unit_test_compile () {
     # Compile line
     # Only the debug compile line from above to be used
     comp_line="gfortran -fopenmp -O2 -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
+
+    fftw_dir=$(find /usr/include/ -maxdepth 1 -name "fftw*" -type d)
+
+    if [[ "$fftw_dir" == *"fftw3"* ]]; then
+       echo "Found fftw3 library in /usr/include/"
+    elif [[ "$fftw_dir" == "" ]]; then
+       echo "Required fftw3 library not found"
+       echo "Ensure this is installed before attempting compilation"
+       echo "Exiting compilation"
+       exit 1
+    fi
 
     # f90 file directories
     test_files=(test/*.f90)
