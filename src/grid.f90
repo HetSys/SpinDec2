@@ -12,6 +12,9 @@ module grid
     real(real64), dimension(:,:), allocatable :: local_grid_conc
     real(real64), dimension(:,:), allocatable :: conc_halo, Q_halo, M_halo
     
+    ! Constants to define directions
+    integer, parameter :: left=1, right=2, down=3, up=4
+
     integer :: grid_domain_size
     integer, dimension(2) :: grid_domain_start, grid_domain_end
 
