@@ -67,6 +67,84 @@ program main
 
     ! Start calculations
 
+    !Get initial bulk free energy for current rank using local grid
+    call bulk_free_energy(f_b,local_grid_conc,a)
+
+    ! Calculate Initial F(t)
+    call total_free_energy(local_F, c(:, :, 1), f_b, dx, dy, kappa)
+
+    !Gather total free energy
+    call comms_get_global_F(F_tot(1),local_F)
+
+    
+
+
+    deallocate (f_b)
+
+    count = 0
+
+    ! Grid evolution
+    do k = current_iter, Nt
+
+        ! Get bulk chemical potentials
+        call bulk_potential(mu,local_grid_conc, a)
+
+        !Store concentration from neighbor ranks in halo_swaps
+        call comms_halo_swaps(local_grid_conc,conc_halo)
+
+        ! Get total chemical potentials
+        call total_potential(Q, mu,local_grid_conc, dx, dy, Kappa,conc_halo)
+
+        ! Get Mobility Field
+        call Mobility(M,MA,MB, EA, EB, c0, local_grid_conc, T, problem)
+
+        !Store Q and M from neighbor ranks 
+        call comms_halo_swaps(Q,Q_halo)
+
+        call comms_halo_swaps(M,M_halo)
+
+        ! Get new concentrations for current timesteps
+        call time_evoloution_new(local_grid_conc,c_new,M,Q,dx,dy,dt, Nx, Ny,Q_halo,M_halo)
+
+        ! set grid to c_new
+        local_grid_conc(:, :) = c_new(:, :)
+
+        !Get global concentration grid
+        call comms_get_global_grid()
+
+        if (my_rank == 0) then
+            c(:,:,k) = global_grid_conc(:,:)
+        end if
+        
+        ! Get Bulk Free Energy over space
+        call bulk_free_energy(f_b, c_new, a)
+
+        ! Calculate F(t)
+        call total_free_energy(local_F, c_new, f_b, dx, dy, kappa,conc_halo)
+
+        call comms_get_global_F(F_tot(k),local_F)
+
+        deallocate (f_b)
+
+        if (my_rank == 0) then
+            if (count >= cint) then
+                call write_checkpoint_file(c, mu, F_tot, a, cpo, c0, c_std, &
+                                       nx, ny, ma, mb, kappa, bfe, Cint, t_end, dt, k, df_tol, &
+                                       random_seed, ncerr)
+
+                if (ncerr /= nf90_noerr) then
+                    print *, "There was an error writing the checkpoint file."
+                    stop
+                end if
+
+                count = 0
+            end if
+
+            count = count + 1
+        end if
+
+    end do
+
     ! Deallocate local and global grids
     call local_grid_deallocate(my_rank)
     call global_grid_deallocate(my_rank)
