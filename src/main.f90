@@ -39,8 +39,12 @@ program main
     integer :: k, count,thread ! counters
     integer :: cint, random_seed, err, use_input, current_iter, ncerr !checkpointing_interval, random seed,error var
     character(len=128) :: cpi, cpo ! checkpointing files
-    character(len=128) :: problem
+    character(len=128) :: problem='Constant'
     integer :: proot ! sqrt of number of processors
+
+    ! Initialise MPI
+    ! Get my_rank and p
+    call comms_initialise()
 
     !thread =  fftw_init_threads()
     ! Only run files in test for now
@@ -91,6 +95,7 @@ program main
     end if
 
 
+
     ! Check Nx = Ny ie. we have a square grid
 
     if (Nx /= Ny) then
@@ -98,9 +103,6 @@ program main
         stop
     end if
 
-    ! Initialise MPI
-    ! Get my_rank and p
-    call comms_initialise()
 
     ! Square root of number of processors
     proot = int(real(sqrt(real(p,kind=real64)),kind=real64)+0.5)
@@ -132,7 +134,7 @@ program main
     ! Start calculations
 
     !Get initial bulk free energy for current rank using local grid
-    call bulk_free_energy(f_b,local_grid_conc,a)
+    call bulk_free_energy(local_grid_conc,a)
 
     !Store concentration from neighbor ranks in halo_swaps
     call comms_halo_swaps(local_grid_conc,conc_halo)
@@ -161,6 +163,7 @@ program main
         ! Get total chemical potentials
         call total_potential(Q, mu,local_grid_conc, dx, dy, Kappa,conc_halo)
 
+
         ! Get Mobility Field
         call Mobility(M,MA,MB, EA, EB, c0, local_grid_conc, T, problem)
 
@@ -183,7 +186,7 @@ program main
         end if
         
         ! Get Bulk Free Energy over space
-        call bulk_free_energy(f_b, c_new, a)
+        call bulk_free_energy(local_grid_conc, a)
 
         ! Calculate F(t)
         call total_free_energy(local_F, local_grid_conc, f_b, dx, dy, kappa,conc_halo)

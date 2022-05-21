@@ -18,9 +18,9 @@ contains
     !!@param kappa : gradient term coefficient
     !*****************************************************************************
 
-    subroutine bulk_free_energy(f_b, c, a)
+    subroutine bulk_free_energy(c, a)
 
-        real(real64), intent(out), allocatable :: f_b(:, :)
+        !real(real64), intent(out), allocatable :: f_b(:, :)
         real(real64), intent(in) :: c(:, :)
         real(real64), intent(in) :: a(:)
         integer :: nx, ny, n
@@ -43,7 +43,7 @@ contains
             end do
         end do
 
-    end subroutine
+    end subroutine bulk_free_energy
 
     !******************************************************************************
     !> total_free_energy
@@ -148,6 +148,6 @@ contains
             end do
         end do
 
-    end subroutine
+    end subroutine total_free_energy
 
 end module free_energy

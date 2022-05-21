@@ -211,6 +211,7 @@ contains
 
         dy_inv = 1.0/(2.0*dy)
 
+
         ! Top and Bottom Boundary
         do j = 1, Ny
             dQy(1,j) = (Q(2,j) - Q_halo(j,up))*dy_inv    ! Top
@@ -333,9 +334,10 @@ contains
 
         call del_Q(dQ, Q, dx, dy, Nx, Ny,Q_halo)
         call dQ_dx(dQx,Q,dx, Nx, Ny,Q_halo)
-        call dQ_dy(dQy,Q,dy, Nx, Ny,Q_halo)
         call dM_dx(dMx,M,dx, Nx, Ny,M_halo)
         call dM_dy(dMy,M,dy, Nx, Ny,M_halo)
+        call dQ_dy(dQy,Q,dy, Nx, Ny,Q_halo)
+
 
         !$omp parallel do default(shared) private(i,j,alpha,xbeta,ybeta,beta)
         do j = 1, Ny

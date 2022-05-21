@@ -181,6 +181,7 @@ contains
             return
         end if
 
+
         if (my_rank == 0) then
 
             ! Rank 0 first fills out his part of the global grid

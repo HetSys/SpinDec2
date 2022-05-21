@@ -199,7 +199,7 @@ contains
 
         proot = int(real(sqrt(real(p,kind=real64)),kind=real64)+0.5)
 
-        grid_domain_size = (Nx*Ny)/proot
+        grid_domain_size = Nx/proot
         grid_domain_start(:) = 1 + (my_rank_coords(:))*grid_domain_size
         grid_domain_end(:) = grid_domain_start(:) + grid_domain_size - 1
 
@@ -294,7 +294,7 @@ contains
     
         ! Initialise local concentration grid using a uniform distribution 
         ! on current rank
-        call grid_init(global_grid_conc,Nx,Ny,c_min,c_max)
+        call grid_init(local_grid_conc,grid_domain_size,grid_domain_size,c_min,c_max)
 
     end subroutine grid_initialise_local
 
