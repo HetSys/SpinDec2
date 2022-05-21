@@ -4,6 +4,20 @@ module grid
 
     implicit none
 
+    private
+
+    public :: get_seed
+
+    public :: x,y,left,right,down,up
+    public :: local_grid_conc,grid_domain_size,conc_halo, Q_halo, M_halo
+    public :: c,global_grid_conc,grid_domain_start,grid_domain_end
+
+    public :: grid_initialise_local,local_grid_deallocate
+    public :: grid_initialise_global,global_grid_deallocate
+    public :: Q,M,mu,c_new,T,f_b
+
+
+
     ! Define module constants
     real(real64), parameter :: pi = 3.1415926535897932
 

@@ -11,6 +11,9 @@ module comms
     public:: comms_initialise
     public:: comms_processor_map
     public:: comms_finalise
+    public:: comms_halo_swaps
+    public:: comms_get_global_F
+    public:: comms_get_global_grid
 
     public:: p
     public:: my_rank
@@ -48,7 +51,7 @@ contains
         integer:: proot
         integer:: ierr
 
-        proot = int(real(sqrt(real(p, kind = real64)), kind = real64) + 0.5)
+        proot = int(real(sqrt(real(p, kind = dp)), kind = dp) + 0.5)
 
         dims(:) = proot
 
@@ -86,7 +89,7 @@ contains
     end subroutine comms_get_global_F
 
 
-    subroutine comms_halo_swap(grid,grid_halo)
+    subroutine comms_halo_swaps(grid,grid_halo)
 
         ! send and receive concs on each side of the grid to neighbour processors
 
@@ -148,7 +151,7 @@ contains
             ! todo remove after debugging
         end if
 
-    end subroutine comms_halo_swap
+    end subroutine comms_halo_swaps
 
     subroutine comms_finalise()
 
@@ -161,7 +164,7 @@ contains
     subroutine comms_get_global_grid()
 
         ! comms buffer
-        real(real64), allocatable, dimension(:):: combuff
+        real(dp), allocatable, dimension(:):: combuff
 
         ! MPI Status
         integer, dimension(MPI_STATUS_SIZE):: status
