@@ -24,5 +24,20 @@
 */
 var menudata={children:[
 {text:"Main Page",url:"index.html"},
+{text:"Theory",url:"index.html",children:[
+{text:"Spinodal Decomposistion",url:"index.html#spinodaldecomp"},
+{text:"Mobility",url:"mobility.html"},
+{text:"Potentials",url:"potential.html"},
+{text:"Free-Energy",url:"energy.html"},
+]},
+{text:"Solvers",url:"solver.html",children:[
+    {text:"Input File",url:"input.html"},
+    {text:"Explicit Finite-Differences",url:"solver.html"},
+    {text:"Pseudo-Spectral",url:"spectral.html"},
+    {text:"Parallelism",url:"parra.html"},
+    ]},
 {text:"Files",url:"files.html",children:[
-{text:"File List",url:"files.html"}]}]}
+{text:"File List",url:"files.html"}]},
+{text:"User Documentation",url:"user.html"},
+
+]}

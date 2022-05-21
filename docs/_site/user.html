@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.3"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>SpinDec2: Free Energies</title>
+<title>SpinDec2: User Documentation</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -71,7 +71,7 @@ $(function() {
 </div>
 <script type="text/javascript">
 /* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-$(document).ready(function(){initNavTree('energy.html',''); initResizable(); });
+$(document).ready(function(){initNavTree('user.html',''); initResizable(); });
 /* @license-end */
 </script>
 <div id="doc-content">
@@ -92,45 +92,14 @@ $(document).ready(function(){initNavTree('energy.html',''); initResizable(); });
 <div class="header">
   <div class="headertitle"><div class="title"></div></div>
   <!-- start footer part -->
-<h1 id="bulkfree">Bulk Free Energy Density - \(f\)</h1>
-<p> The bulk free energy density \(f\), can be defined in SpinDec2 to be any polynomial which is controlled via the user in the input.txt file. 
-    The user defines the polynomial coefficents such that:
-</p>
-<body>
-    $$ f\left(c_{i,j}\right) = \sum_{m = 0}^{N-1} a_{m} \left(c_{i,j}\right)^{m}, $$
-</body>
-<p> where \(a\) are the polynomial coefficents, and \(c_{i,j}\) is the order paramter at grid point \(i,j\).
-A common form for \(f\) is often a quartic polynomial, which exhibts a double well nature, in whcih the \(A\) and \(B\) rich domains
-are defined by areas in which minmise the bulk free energy density. An exmaple of this is for \(f(c) = Ac(1-c)^2 \), where \(A\) is some scale factor that 
-sets the rough height of the maxima at \(c = 0.5\) w.r.t to the height of the two minimas at \(c = 0\) and \(c = 1\). </p>
-
-<p style="text-align:center;"><img src="bulk_quartic.png" alt="Quartic Potential"  width="500" 
-    height="500" class="center"> </p>
-
-<p> So for this example, we expect the binary alloy to
-decompose into regions which have order paramter values close to 1 or 0, however if the user inputs an alternative polynomial form, these values will differ depending on the
-locaion of the minimas.
-</p>
-
-  <h1 id="totalfree">Total Free Energy - \(F\)</h1>
-  <p>  The total free energy is defined as the volume integral of the sum of the interfacial energy \(\frac{\kappa}{2}(\nabla c)^2\) and bulk free energy density \(f(c)\):
-</p>
-<body>
-    $$     F(t) = \int_{V} \left[ f\left(c(x,y,t)\right) + \frac{1}{2}\kappa \left(\nabla c(x,y,t)\right)^2 \right] \mathrm{d}V. $$
-</body>
-<p> This integral is calculted in SpinDec2 using the trapezium rule:
-</p>
-<body>
-    $$     F(t) = \sum_i \sum_j \left[ f\left(c_{i,j}(t)\right) + \frac{1}{2}\kappa \left(P_{i,j}(t)\right)^2 \right] \Delta x \Delta y, $$
-</body>
-<body>
-    $$     P_{i,j}(t) =  \left(\frac{c_{i+1, j}(t) - c_{i-1, j}(t)}{2\Delta x}\right)^2   + \left(\frac{c_{i, j+1}(t) - c_{i, j-1}(t)}{2\Delta y} \right)^2, $$
-</body>
-<p> where the volume element is taken to be \(dV = dx dy dz = \Delta x \Delta y\). The total free energy is a useful metric for observing at what point the system is in equilibrium, i.e when
-    the change in \(F\) approaches zero.
-</p>
+    
 </div><!--header-->
-<div class="contents">
+
+
+  <h1 id="darken">User Documentation</h1>
+
+
+  <div class="contents">
 </div><!-- contents -->
 </div><!-- doc-content -->
 <p>Authors: Anas Siddiqui, Ben Gosling, Dyaln Morgan, Geraldine Anis, Matyas Parrag</p>

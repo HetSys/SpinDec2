@@ -40,8 +40,9 @@ var NAVTREE =
     ]],
     [ "Files", "files.html", [
       [ "File List", "files.html", "files_dup" ],
-    ] ]
-  ] ]
+    ] ],
+    [ "User Documentation", "user.html", null ],
+  ] ],
 ];
 
 var NAVTREEINDEX =
