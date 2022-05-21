@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.3"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>SpinDec2: Main Page</title>
+<title>SpinDec2: Mobility</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -72,7 +72,7 @@ $(function() {
 </div>
 <script type="text/javascript">
 /* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-$(document).ready(function(){initNavTree('index.html',''); initResizable(); });
+$(document).ready(function(){initNavTree('mobility.html',''); initResizable(); });
 /* @license-end */
 </script>
 <div id="doc-content">
@@ -93,50 +93,76 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <div class="header">
   <div class="headertitle"><div class="title"></div></div>
   <!-- start footer part -->
-<h1 id="introduction">Introduction</h1>
-<p>This software solves the Cahn-Hilliard equation using either finite differnces and explicit time integration, or via spectral methods using fast fourier transforms. 
-  SpinDec2 also has the capability of alterning the definition of the chemical mobility of the system to be dependent on the tempearture or concentration fields or both. 
-  The definition for these mobility fields are described by the Darkens equation and Boltzmann statistics, and are outlined in Y. H. Wang et al., J. Appl. 12 85102 (2019)). 
-  SpinDec2 has also been parralleised using OpenMP and MPI to optimise the code to run with incresed efficincey and uses the netcdf package to write the output and checkpoint files.</p>
+    
+</div><!--header-->
 
-  <h2 id="spinodaldecomp">Spinodal decomposition of a Binary-Alloy system</h2>
-<p>Spinodal decomposition is the mechanism in which a single thermodynamic phase seprates into two without nucleation.
-   This is often observed in binary alloy systems where a mixture of two metal species seperate into two coexisting phases. 
-<p>In a binary alloy system there are two species, one which we label \(A\) and the other \(B\), each with respective concentrations \(c_A\) and \(c_B\). 
-  To simplify the calculations, it is often best to define these concentrations in terms of an order parameter, which we will call \(c\), where:</p>
-  <body>$$c_A = c \,\, ; \,\, c_B = 1-c$$</body>
 
-  <p>where the unit of c is defined as atomic fraction in this code thus \(c_B\) is defined such that mass is conserved, \(c_A + c_B = 1\).</p>
-  <p>The time evoloution of a binary alloy system is commonly modelled using the Cahn-Hilliard equation, which is a non-linear parabolic partial differntial equation:</p>
+  <h1 id="darken">Darkens Equation</h1>
+<p>The Darkens Equation relates the atomic mobility's of the binary alloy species \(M_A, M_B\), to the total difussion mobility \(M\).
+    As we have defined \(c_A = c\), then \(M\) is the diffusion mobility of species \(A\) and is estimated by the Darkens equation:
+</p>
 
-   <body>
-    $$\frac{\partial c}{\partial t} =  \nabla \cdot \left(M \nabla \frac{\delta F}{\delta c} \right),$$
-    </body>
+<bold>
+    $$ M = c_A c_B \left[c_A M_B + c_B M_A\right] = c (1-c)\left[c M_B + (1-c) M_A\right] $$ .
+</bold>
 
-    <p>where \(M\) is the <a href="mobility.html">diffusive mobility</a> and \( \frac{\delta F}{\delta c}\) is known as the  <a href="euler.html#totalchemQ">total chemical potential</a>.</p>
+<p> In SpinDec2, the user can set which definition of mobility they would like to use using the problem string input.
+</p>
+<ul>
+    <li>"Constant" - Mobility is taken to be constant everywhere at all times</li>
+    <li>"NonTemp" - Mobility is dependent on the order paramter c over time</li>
+    <li>"Temp" - The atomic mobilities are defined in terms of local tempeartures</li>
+  </ul> 
 
-  <p>The total chemical potential is defined as the functional derivative (Euler-Lagrange Equation) of the total free energy of the system. Free energies in the presencse of small fluctuactions in
-    the order parameter can be evaluated using the Ginzburg and Landau approximations, in which the free energy can be approximated as an expansion of the order paramter gradient \(\nabla c\). 
-    Given that we are interested in exploring regions towards the minima of the free energy, the lowest order term in the expansion is quadratic given by \(\kappa (\nabla c)^2\), where \(\kappa\)
-    is a parameter that contols the strength of this term. This term also carries physical meaning, as it links to the interfacial tension between the \(A\) rich and \(B\) rich phases, in 
-    which the strength of this interfcial tension being proportional to \(\sqrt{\kappa}\). The Cahn-Hilliard free energy is therefore defined by the integral
+  <h1 id="constantM">Constant Mobility</h1>
+  <p>
+    If the user sets the problem string to "Constant", the diffusive mobility field is constant everywhere and is defined via the Darkens equation for \(c=c_0\):
+  </p>
+  
+  <bold>
+      $$ M = c_0 (1-c_0)\left[c_0 M_B + (1-c_0) M_A\right], $$
+  </bold>
+  <p>
+    where \(c_0\) is the average value of the initial \(c\) grid. This simplfies the Cahn-Hilliard equation as the mobility can be taken out of the divergence operation:
   </p>
 
-  <body>
-    $$   F = \int_{V} \underbrace{\left[ f\left(c\right) + \frac{1}{2}\kappa \left(\nabla c\right)^2 \right]}_{g(c, \nabla c)} \mathrm{d}V , $$
-  </body>
+  <bold>
+    $$\frac{\partial c}{\partial t} =  M\nabla^2 Q$$,
+</bold>
+<p>where \(Q = \frac{\delta F}{\delta c}\).</p>
+  <h1 id="nonconsM">Non-Constant Mobility</h1>
+<p>
+    The Darkens equation shows how the mobility is dependent on the concentration field. This then suggests that the diffusive mobility should also evolve with time inline with the concentration 
+    field. Due to this dependcey on \(c\), the Cahn-Hilliard becomes slightlu more complex with an additional chain rule term:
+</p>
+<bold>
+    $$    \frac{\partial c}{\partial t} = \nabla \cdot (M \nabla Q) = M \left( \frac{\partial^2 Q}{\partial x^2} + \frac{\partial^2 Q}{\partial y^2}\right) + \left( \frac{\partial M}{\partial x}\frac{\partial Q}{\partial x} + \frac{\partial M}{\partial y}\frac{\partial Q}{\partial y} \right).$$
+</bold>
+<p>The model can further evolved by considering how to define the atomic mobilities. In SpinDec2, the user can chose wheter they want to use consatnt values for 
+    \(M_A\) and \(M_B\), by initialsing the problem string to "NonTemp", or to make the atomic mobilities dependent on a local value of tempertaure which remains constant 
+    through out (i.e doesnt evolve via conction of difussion equation).
+</p>
 
-      <p>where \(f(c)\) is the <a href="energy.html">bulk free energy density</a>. </p>
+<h2 id="tempM">Temperature dependcey</h2>
+<p>
+    If the user sets the problem string to "Temp", the atomic mobilities \(M_A\) and \(M_B\) are no longer consatnt and are dependent on a temperture initilased from the 
+    input.txt file. This is done by setting tempertaure_min and temperture_max to some value from which the grid points are set from samples of a unifrom distribution
+    \(\mathcal{U}(\text{temperture_min}, \text{temperture_max})\). The formula used to define the atomic mobilities in this case is taken from Y. H. Wang et al., J. Appl. 12 85102 (2019):
 
-    The total chemical potential can now be found from the Euler-Lagrange equation of the free energy functional:
-      <body>
-     $$ \frac{\delta F}{\delta c} = \frac{\partial g}{\partial c} - \nabla \cdot \frac{\partial g}{\partial \nabla c} = \frac{\mathrm{d} f}{\mathrm{d} c} - \nabla \cdot (\kappa \cdot \nabla c) = \mu(c) - \kappa \nabla^2 c$$
-    </body>
+</p>
+<bold>
+    $$  M_{\alpha} = \frac{1}{R T} \exp \left(\frac{E_{\alpha}}{R T} \right) = \frac{1}{R T} D_{\alpha}, \,\,\, \alpha = A, B  ,$$
+</bold>
+<p>
+    where \(R\) is the molar gas constant, \(T\) is the absolute temperature and \(E_{\alpha}\) is the activation energy for the select species.
+    To simplify notation in the next part, we rename the exponential factor to be \(D_{\alpha}\) and shall be known as the diffusion coefficient for species \(\alpha\). 
+    Therefore the diffusion mobility is redefined as:
+</p>
+<bold>
+    $$  M = \frac{c (1-c)}{RT} \left[D_B c + D_A (1-c) \right].$$
+</bold>
 
-    <p>where \(\mu(c)\) is the <a href="potential.html">bulk chemical potential</a> of atom A, as we are setting \(c_A\) to be equivalent to the order parameter. </p>
-
-</div><!--header-->
-<div class="contents">
+  <div class="contents">
 </div><!-- contents -->
 </div><!-- doc-content -->
 <p>Authors: Anas Siddiqui, Ben Gosling, Dyaln Morgan, Geraldine Anis, Matyas Parrag</p>

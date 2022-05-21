@@ -89,10 +89,36 @@ $(document).ready(function(){initNavTree('input.html',''); initResizable(); });
 </div>
 
 <div class="header">
-  <div class="headertitle"><div class="title">Page 2</div></div>
+  <div class="headertitle"><div class="title">Input file</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock">Attempt at making page 2</div><div class="directory">
+  <h1 id="all-input-is-given-in-the-form-key-value-">Inputs</h1>
+
+  <!-- <a href="https://www.w3schools.com">Inputs</a>  -->
+  
+  <p>Inputs are given in the form form &#39;key=value&#39;
+  <p>Concentration_max=&lt;real&gt;  ==&gt; upper bound of uniform distribution that initialises concentration field</p>
+  <p>Concentration_min=&lt;real&gt;  ==&gt; lower bound of uniform distribution that initialises concentration field</p>
+  <p>Domain_x_size=&lt;real&gt;  ==&gt; size of x space</p>
+  <p>Domain_y_size=&lt;real&gt;  ==&gt; size of y space</p>
+  <p>Mobility_A=&lt;real&gt;  ==&gt; Atomic mobility of species A (for temperature independent mobility)</p>
+  <p>Mobility_B=&lt;real&gt;  ==&gt; Atomic mobility of species B (for temperature independent mobility)</p>
+  <p>free_energy_gradient_parameter=&lt;real&gt;  ==&gt; strength of interfacial term (kappa)</p>
+  <p>Bulk_free_energy=&lt;real&gt;  ==&gt;  bulk free energy scale factor (A) for case f(c) = Ac^2(1-c)^2</p>
+  <p>Checkpointing_interval=&lt;intl&gt;  ==&gt; checkpointing interval</p>
+  <p>Checkpoint_output_file=&lt;str&gt;  ==&gt; checkpoint file name</p>
+  <p>f(c)=&lt;real, real, ...&gt;  ==&gt; list of polynomial coefficient values to set bulk free energy</p>
+  <p>Max_time=&lt;real&gt; ==&gt; End time of simulation</p>
+  <p>dF_tolerance=&lt;real&gt; ==&gt; Tolerence limit in change in total free energy</p>
+  <p>Random_Seed=&lt;real&gt; ==&gt; Seed to reproduce result</p>
+  <p>Use_input=&lt;real&gt; ==&gt;  overwrites checkpoint meta data when set to one</p>
+  <p>Excitation_A=&lt;real&gt; ==&gt;  Exciation energy of species A (for temperature dependent mobility)</p>
+  <p>Excitation_B=&lt;real&gt; ==&gt;  Exciation energy of species B (for temperature dependent mobility)</p>
+  <p>temperature_max=&lt;real&gt;  ==&gt; upper bound of uniform distribution that initialises temperature field</p>
+  <p>temperature_min=&lt;real&gt;  ==&gt; lower bound of uniform distribution that initialises temperature field</p>
+  <p>Problem=&lt;strl&gt;  ==&gt; defines which mobility definition to use (&#39;Consatnt&#39;, &#39;NonTemp&#39;, &#39;Temp&#39;) and for spectral methods ='spectral' </p>
+  <p>Stabilization_Term=&lt;int&gt;  ==&gt; controls the stability of spectral method solver</p>
+  
 
 </table>
 </div><!-- directory -->

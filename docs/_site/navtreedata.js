@@ -25,8 +25,21 @@
 var NAVTREE =
 [
   [ "SpinDec2", "index.html", [
+    [ "Theory", "index.html",[
+    [ "Introduction", "index.html#introduction", null ],
+    [ "Spinodal decomposition", "index.html#spinodaldecomp", null ],
+    [ "Mobility", "mobility.html", null ],
+    [ "Potentials", "potential.html", null ],
+    [ "Free-Energy", "energy.html", null ],
+    ]],
+    [ "Solvers", "solver.html", [
+      [ "Input File", "input.html", null],
+      [ "Explicit Finite-Differences", "solver.html", null],
+      [ "Pseudo-Spectral", "spectral.html", null ],
+      [ "Parallelism", "parra.html", null ],
+    ]],
     [ "Files", "files.html", [
-      [ "File List", "files.html", "files_dup" ]
+      [ "File List", "files.html", "files_dup" ],
     ] ]
   ] ]
 ];
