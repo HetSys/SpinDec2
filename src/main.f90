@@ -11,6 +11,7 @@ program main
     use input_params
     use io
     use potentials
+    use mpi
     !use spectral
 
     implicit none
@@ -41,10 +42,13 @@ program main
     character(len=128) :: cpi, cpo ! checkpointing files
     character(len=128) :: problem='Constant'
     integer :: proot ! sqrt of number of processors
+    real(real64) :: t1,t2
 
     ! Initialise MPI
     ! Get my_rank and p
     call comms_initialise()
+
+    t1 = MPI_Wtime()
 
     !thread =  fftw_init_threads()
     ! Only run files in test for now
@@ -59,8 +63,10 @@ program main
     current_iter = 2
     ! come back to this
     Nt = floor(t_end / dt)
-    c0 = (c_min+c_max)/2
-    c_std = 0
+    !c0 = (c_min+c_max)/2
+    !c_std = 0
+    c_min = c0-c_std
+    c_max = c0+c_std
 
     !if (cpi /= "") then
         !!call read_checkpoint_in(c_check, mu_check, T_check,F_tot, cpi,problem, c0, a, nx, &
@@ -88,7 +94,6 @@ program main
     Nc = size(a)
 
     ! Allocate F_tot on rank 0
-    
     if (.not. allocated(F_tot)) then
         allocate (F_tot(Nt))
         F_tot = 0.0
@@ -126,12 +131,18 @@ program main
     ! Set up local grids
     call grid_initialise_local(Nx,Ny,c_min,c_max,T_min,T_max,problem,p,my_rank,my_rank_coords)
 
+
     ! Set up global grid
     ! Initialise global concentration grid
     ! c ~ U(c_min,c_max)
     call grid_initialise_global(Nx,Ny,Nt,my_rank)
 
     ! Start calculations
+    call comms_get_global_grid()
+
+    if (my_rank==0) then
+        c(:,:,1) = global_grid_conc(:,:)        
+    end if
 
     !Get initial bulk free energy for current rank using local grid
     call bulk_free_energy(local_grid_conc,a)
@@ -140,10 +151,10 @@ program main
     call comms_halo_swaps(local_grid_conc,conc_halo)
 
     ! Calculate Initial F(t)
-    call total_free_energy(local_F, local_grid_conc, f_b, dx, dy, kappa,conc_halo)
+    call total_free_energy(local_F, local_grid_conc, dx, dy, kappa,conc_halo)
 
     !Gather total free energy
-    call comms_get_global_F(global_F,local_F)
+    call comms_get_global_F(local_F,global_F)
 
     if (my_rank == 0) then
         F_tot(1) = global_F
@@ -181,6 +192,7 @@ program main
         !Get global concentration grid
         call comms_get_global_grid()
 
+
         if (my_rank == 0) then
             c(:,:,k) = global_grid_conc(:,:)
         end if
@@ -189,7 +201,7 @@ program main
         call bulk_free_energy(local_grid_conc, a)
 
         ! Calculate F(t)
-        call total_free_energy(local_F, local_grid_conc, f_b, dx, dy, kappa,conc_halo)
+        call total_free_energy(local_F, local_grid_conc, dx, dy, kappa,conc_halo)
 
         call comms_get_global_F(global_F,local_F)
 
@@ -223,6 +235,12 @@ program main
     ! Deallocate local and global grids
     call local_grid_deallocate(my_rank)
     call global_grid_deallocate(my_rank)
+
+    t2 = MPI_Wtime()
+
+    if (my_rank == 0) then
+        print *, t2-t1
+    end if
 
     ! Finalise MPI
     call comms_finalise()
