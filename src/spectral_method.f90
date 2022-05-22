@@ -130,11 +130,7 @@ contains
             ! $OMP END PARALLEL WORKSHARE
         else
             ! $OMP PARALLEL WORKSHARE
-            if(dt > 1) then
-                dt1 = 1
-            else
-                dt1 = dt*0
-            end if
+            dt1 = dt*0
             ans(:,:) = dt1*(-M*k*k4(:,:)*out(:,:) + M*k2(:,:)*out_bulk(:,:))+out(:,:)
             ! $OMP END PARALLEL WORKSHARE
         end if
