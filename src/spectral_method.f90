@@ -53,14 +53,20 @@ contains
         call c_f_pointer(pans, ans, [dims(1),dims(2)])
 
 
+        ! $OMP PARALLEL WORKSHARE
         in(:,:) = c_in(:,:)
+        ! $OMP END PARALLEL WORKSHARE
         call fftw_plan_with_nthreads(no_threads);
+
         plan = fftw_plan_dft_2d(dims(1),dims(2),in,out,FFTW_FORWARD,FFTW_ESTIMATE)
+
         call fftw_execute_dft(plan,in,out)
         !call fftw_destroy_plan(plan)
 
         if(init == 0) then
+            ! $OMP PARALLEL WORKSHARE
             in(:,:) = c_prev_in(:,:)
+            ! $OMP END PARALLEL WORKSHARE
 
             !plan = fftw_plan_dft_2d(dims(1),dims(2),in,out_prev,FFTW_FORWARD,FFTW_ESTIMATE)
             call fftw_execute_dft(plan,in,out_prev)
@@ -69,7 +75,10 @@ contains
 
 
         call bulk_potential(mu, c_in , a)
+
+        ! $OMP PARALLEL WORKSHARE
         in(:,:) = mu(:,:)
+        ! $OMP END PARALLEL WORKSHARE
 
         !plan = fftw_plan_dft_2d(dims(1),dims(2),in,out_bulk,FFTW_FORWARD,FFTW_ESTIMATE)
         call fftw_execute_dft(plan,in,out_bulk)
@@ -78,7 +87,9 @@ contains
 
         if(init == 0) then
             call bulk_potential(mu, c_prev_in , a)
+            ! $OMP PARALLEL WORKSHARE
             in(:,:) = mu(:,:)
+            ! $OMP END PARALLEL WORKSHARE
 
             !plan = fftw_plan_dft_2d(dims(1),dims(2),in,out_bulk_prev,FFTW_FORWARD,FFTW_ESTIMATE)
             call fftw_execute_dft(plan,in,out_bulk_prev)
@@ -86,13 +97,6 @@ contains
 
         end if
 
-
-        out = out
-        out_bulk = out_bulk
-        if(init == 0) then
-            out_bulk_prev = out_bulk_prev
-            out_prev = out_prev
-        end if
 
         dim12 = int(real(dims(1))/2)
         dim22 = int(real(dims(2))/2)
@@ -113,29 +117,12 @@ contains
             k2(i,j)= (-real(i-dims(1)-1)*real(i-dims(1)-1)-real(j-1)*real(j-1))*4*PI*PI!/(dims(1)*dims(1))
         end forall
 
-        !open(unit=1, iostat=stat, file='ksq.dat', status='old')
-        !if (stat == 0) close(1, status='delete')
-        !
-        !open(unit=1, iostat=stat, file='ksq.dat', status='new')
-        !if (stat == 0) then
-        !  do i=1,dims(1)
-        !    do j=1,dims(2)
-        !      write(1,'(F0.10)') k2(i,j)
-        !    end do
-        !  end do
-
-        !  close(1)
-        !end if
-
-
-        !print*, k2
-
 
         forall(i=1:dims(1), j=1:dims(2))
             k4(i,j)=k2(i,j)*k2(i,j)
         end forall
-        !print*, M
-        !print*,k2
+
+
         if(init == 0) then
             ! $OMP PARALLEL WORKSHARE
             ans(:,:) = (2.0*dt/(3.0+2.0*dt*M*k*k4(:,:)+2*dt*c_A*M*k2(:,:)))*(2.0*M*k2(:,:)*out_bulk(:,:)-M*k2(:,:)*&
@@ -143,11 +130,7 @@ contains
             ! $OMP END PARALLEL WORKSHARE
         else
             ! $OMP PARALLEL WORKSHARE
-            if(dt > 1) then
-                dt1 = 1
-            else
-                dt1 = dt**(4/3)
-            end if
+            dt1 = dt*0
             ans(:,:) = dt1*(-M*k*k4(:,:)*out(:,:) + M*k2(:,:)*out_bulk(:,:))+out(:,:)
             ! $OMP END PARALLEL WORKSHARE
         end if
@@ -162,6 +145,7 @@ contains
 
         c_out(:,:) = in(:,:)/(norm*norm)
 
+
         call fftw_free(pin)
         call fftw_free(pans)
         call fftw_free(pout)
@@ -171,6 +155,7 @@ contains
         deallocate(k2)
         deallocate(k4)
         deallocate(mu)
+
         call fftw_cleanup_threads();
 
     end subroutine spectral_method_iter

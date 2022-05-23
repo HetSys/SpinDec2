@@ -51,7 +51,7 @@ program main
 
     current_iter = 2
     ! come back to this
-    Nt = floor(t_end / dt)
+
     c0 = (c_min+c_max)/2
     c_std = 0
 
@@ -77,7 +77,7 @@ program main
 
     ! Set seed
     call get_seed(random_seed)
-
+    Nt = floor(t_end / dt)
     dx = 1.0_real64/real(nx)
     dy = 1.0_real64/real(ny)
 
@@ -93,7 +93,7 @@ program main
     Nc = size(a)
     ! Allocate c grid
     if (.not. allocated(c)) then
-        allocate (c(Nx, Ny, Nt))
+        allocate (c(Nx, Ny, 3))
         c = 0.0
     end if
 
@@ -132,35 +132,40 @@ program main
         c_out = 0.0
     end if
 
-    ! Initialize c grid
-    call grid_init(c(:, :, 1), Nx, Ny, c_min, c_max)
-
-    if (problem == 'Temp') then
-        call grid_init(T, Nx, Ny, T_min, T_max)
-    end if
-
-    ! Get Initial Bulk Free Energy over space
-    call bulk_free_energy(f_b, c(:, :, 1), a)
-
-    ! Calculate Initial F(t)
-    call total_free_energy(F_tot(1), c(:, :, 1), f_b, dx, dy, kappa)
-
-
-    deallocate (f_b)
-
     count = 0
 
+    ! Initialize c grid
+    if (cpi == "") then
+        call grid_init(c(:, :, 2), Nx, Ny, c_min, c_max)
+
+        if (problem == 'Temp') then
+            call grid_init(T, Nx, Ny, T_min, T_max)
+        end if
+
+        ! Get Initial Bulk Free Energy over space
+        call bulk_free_energy(f_b, c(:, :, 2), a)
+
+        ! Calculate Initial F(t)
+        call total_free_energy(F_tot(1), c(:, :, 2), f_b, dx, dy, kappa)
+
+
+        deallocate (f_b)
+
+
+        call write_netcdf_parts_setup(c, F_tot, a, Nc, Nx, Ny, Nt, dt, c0, MA, MB, kappa)
+        call write_netcdf_parts(c(:,:,2), F_tot(1),1)
+    end if
     ! Grid evolution
     do k = current_iter, Nt
 
         ! Get bulk chemical potentials
-        call bulk_potential(mu, c(:, :, k - 1), a)
+        call bulk_potential(mu, c(:, :,2), a)
 
         ! Get total chemical potentials
-        call total_potential(Q, mu, c(:, :, k - 1), dx, dy, Kappa)
+        call total_potential(Q, mu, c(:, :, 2), dx, dy, Kappa)
 
         ! Get Mobility Field
-        call Mobility(M,MA,MB, EA, EB, c0, c(:, :, k-1), T, problem)
+        call Mobility(M,MA,MB, EA, EB, c0, c(:, :, 2), T, problem)
 
         !print*, M(1,1), M(1,2), M(6,7)
 
@@ -168,25 +173,32 @@ program main
 
         if (problem == 'Spectral') then
             if(k == 2) then
-                call spectral_method_iter(c(:, :, 1),c(:, :, 1),a,dt,M(1,1),Kappa,c_out,1,stab)
-                c(:,:,2) = c_out
+                call spectral_method_iter(c(:, :, 2),c(:, :, 2),a,dt,M(1,1),Kappa,c_out,1,stab)
+                c(:,:,3) = c_out
             else
-                call spectral_method_iter(c(:, :, k-1),c(:, :, k-2),a,dt,M(1,1),Kappa,c_out,0,stab)
-                c(:,:,k) = c_out
+                call spectral_method_iter(c(:, :, 2),c(:, :, 1),a,dt,M(1,1),Kappa,c_out,0,stab)
+                c(:,:,3) = c_out
             end if
         else
-            call time_evoloution_new(c(:, :, k-1),c_new,M,Q,dx,dy,dt, Nx, Ny)
+            call time_evoloution_new(c(:, :, 2),c_new,M,Q,dx,dy,dt, Nx, Ny)
 
-            c(:, :, k) = c_new(:, :)
+            c(:, :, 3) = c_new(:, :)
         end if
 
+
+
         ! Get Bulk Free Energy over space
-        call bulk_free_energy(f_b, c(:, :, k), a)
+        call bulk_free_energy(f_b, c(:, :, 3), a)
 
         ! Calculate F(t)
-        call total_free_energy(F_tot(k), c(:, :, k), f_b, dx, dy, kappa)
+        call total_free_energy(F_tot(k), c(:, :, 3), f_b, dx, dy, kappa)
 
         deallocate (f_b)
+
+        call write_netcdf_parts(c(:,:,3), F_tot(k),k)
+
+        c(:,:,1) = c(:,:,2)
+        c(:,:,2) = c(:,:,3)
 
         if (count >= cint) then
             call write_checkpoint_file(c, mu, T,F_tot,problem, a, cpo, c0, &
@@ -206,6 +218,6 @@ program main
     end do
 
     !Writer for using constant M
-    call write_netcdf(c, F_tot, a, Nc, Nx, Ny, Nt, dt, c0, MA, MB, kappa)
+    !call write_netcdf(c, F_tot, a, Nc, Nx, Ny, Nt, dt, c0, MA, MB, kappa)
 
 end program main

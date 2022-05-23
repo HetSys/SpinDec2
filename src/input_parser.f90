@@ -98,7 +98,7 @@ contains
         delta_t = -1
         t = -1
         cpi = ""
-        cpo = "Checkpoint.cpf"
+        cpo = "checkpoint.cpf"
         use_input = 0
         df_tol = -1
         ea = -1
@@ -362,8 +362,8 @@ contains
                     exit
                 end if
 
-                if (random_seed < 0) then
-                    print *, "Random_seed must be >= 0.&
+                if (random_seed < -1) then
+                    print *, "Random_seed must be >= -1.&
                     & Please check you input file and try again"
                     err = -1
                 end if
@@ -529,7 +529,7 @@ contains
                 print*, "Not all required inputs found for problem Spectral"
             end if
         end if
-
+    close(infile)
     end subroutine read_params
 
 end module input_params
