@@ -529,6 +529,8 @@ contains
                 print*, "Not all required inputs found for problem Spectral"
             end if
         end if
+
+
     close(infile)
     end subroutine read_params
 

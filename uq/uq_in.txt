@@ -1,0 +1,16 @@
+Nmin = 50
+Nmax = 50
+NNum = 100
+Kmin = 0.0001
+Kmax = 0.0001
+Knum = 1
+Smax = 0
+Smin = 0
+Snum = 1
+MMax = 4
+MMin = 4
+MNum = 1
+BMin = 1
+BMax = 1
+BNum = 1
+Prob = "Spectral"

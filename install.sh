@@ -1,11 +1,11 @@
-#!/bin/bash 
+#!/bin/bash
 # install.sh
 # Compilation/install script for SpinDec2
 
 # Exit if something fails
 set -e
 
-# Enable recursive globbing 
+# Enable recursive globbing
 # shopt -s globstar
 
 compile () {
@@ -33,13 +33,15 @@ compile () {
        exit 1
     fi
 
-    # Add program files from src 
+    # Add program files from src
     prog_files=(src/*.f90)
 
     # Move main to last item in array
-    main="src/main.f90"
+    main="src/uq_main.f90"
+    mainy="src/main.f90"
     prog_files=("${prog_files[@]/$main}")
     prog_files+=("$main")
+    prog_files=("${prog_files[@]/$mainy}")
 
     # Binary name and location
     bin_files="bin/"
@@ -117,11 +119,11 @@ clean () {
     fi
 
     # Remove globs from $bins if they aren't found
-    for glob in ${bins[@]}; do 
+    for glob in ${bins[@]}; do
         if [[ "$glob" == *'*'* ]]; then
             bins=("${bins[@]/$glob}")
         fi
-    done     
+    done
 
     # Remove binaries
     while true; do
@@ -134,18 +136,18 @@ clean () {
             read -p 'Proceed? [Y/n] ' confirmation
         elif [[ -z "$1" ]]; then
             confirmation="y"
-        else 
+        else
             echo -e "$1 is not a valid option for -C/--clean\n"
             help_message
             exit 2
         fi
-      
+
         if [[ "$confirmation" =~ ^[Yy]$ || "$confirmation" == '' ]]; then
             for file in ${bins[@]}; do
                 rm "$file"
             done
             echo "Cleaned successfully"
-            break 
+            break
         elif [[ "$confirmation" =~ ^[Nn]$ ]]; then
             echo 'Files not removed'
             break
@@ -341,7 +343,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         -T | --test-clean)
             unit_test_clean
-            break 
+            break
             ;;
         -h | --help)
             ascii_art

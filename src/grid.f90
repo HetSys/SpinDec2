@@ -20,20 +20,30 @@ contains
         real(real64) :: u
         integer :: n
         integer, dimension(:), allocatable :: seed
+        integer, dimension(:),allocatable::seed_o
 
         if (seed_in .eq. -1) then
-            call random_number(u)
-            seed_in = int((999999 - 100000) * u + 100000)
+            call random_seed(size=n)
+            allocate (seed(n))
+            allocate (seed_o(n))
+            !call random_seed(put=seed)
+            call random_seed(get=seed_o)
+            seed = seed_o(1)
+            call random_seed(put=seed)
+            !print*, seed
+            seed_in = seed(1)
+        else
+            call random_seed(size=n)
+            allocate (seed(n))
+            seed = seed_in
+            call random_seed(put=seed)
         end if
 
         ! Set seed
-        call random_seed(size=n)
-        allocate (seed(n))
-        seed = seed_in
-        call random_seed(put=seed)
+
 
     end subroutine get_seed
-    
+
     subroutine rand_uniform(x,c_min,c_max)
 
 	! Subroutine to get a standard normal random number
@@ -49,7 +59,7 @@ contains
 	u1 = 1.0 - u1
 
 	x = (c_max-c_min)*u1 + c_min
- 
+
     end subroutine rand_uniform
 
     subroutine rand_stdnormal(x)
