@@ -141,7 +141,7 @@ program main
     call comms_get_global_grid()
 
     if (my_rank==0) then
-        c(:,:,1) = global_grid_conc(:,:)        
+        c(:,:,1) = global_grid_conc(:,:)
     end if
 
     !Get initial bulk free energy for current rank using local grid
@@ -178,7 +178,7 @@ program main
         ! Get Mobility Field
         call Mobility(M,MA,MB, EA, EB, c0, local_grid_conc, T, problem)
 
-        !Store Q and M from neighbor ranks 
+        !Store Q and M from neighbor ranks
         call comms_halo_swaps(Q,Q_halo)
 
         call comms_halo_swaps(M,M_halo)
@@ -196,14 +196,14 @@ program main
         if (my_rank == 0) then
             c(:,:,k) = global_grid_conc(:,:)
         end if
-        
+
         ! Get Bulk Free Energy over space
         call bulk_free_energy(local_grid_conc, a)
 
         ! Calculate F(t)
         call total_free_energy(local_F, local_grid_conc, dx, dy, kappa,conc_halo)
 
-        call comms_get_global_F(global_F,local_F)
+        call comms_get_global_F(local_F,global_F)
 
         if (my_rank == 0) then
             F_tot(k) = global_F
@@ -229,8 +229,8 @@ program main
     end do
 
     if (my_rank == 0) then
-        call write_netcdf(c, F_tot, a, Nc, Nx, Ny, Nt, dt, c0, MA, MB, kappa)        
-    end if 
+        call write_netcdf(c, F_tot, a, Nc, Nx, Ny, Nt, dt, c0, MA, MB, kappa)
+    end if
 
     ! Deallocate local and global grids
     call local_grid_deallocate(my_rank)

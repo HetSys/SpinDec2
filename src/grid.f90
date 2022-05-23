@@ -8,7 +8,7 @@ module grid
 
     public :: get_seed
 
-    public :: x,y,left,right,down,up
+    public :: left,right,down,up
     public :: local_grid_conc,grid_domain_size,conc_halo, Q_halo, M_halo
     public :: c,global_grid_conc,grid_domain_start,grid_domain_end
 
@@ -31,7 +31,7 @@ module grid
     ! Constants to define directions
     integer, parameter :: left=1, right=2, down=3, up=4
     ! Constants to define coordinates
-    integer, parameter :: x=1, y=2
+    !integer, parameter :: x=1, y=2
 
     integer :: grid_domain_size
     integer, dimension(2) :: grid_domain_start, grid_domain_end
@@ -306,12 +306,12 @@ contains
 
         ! Initialise local concentration grid using a uniform distribution
         ! on current rank
-        if(my_rank == 3) then
-            ct_min = c_min
-            ct_max = c_max
+        if(my_rank == 5) then
+            ct_min = real(my_rank)/4.0
+            ct_max = real(my_rank)/4.0
         else
-            ct_min = c_min
-            ct_max = c_max
+            ct_min =c_min!real(my_rank)/4.0
+            ct_max = c_max!real(my_rank)/4.0
         end if
         call grid_init(local_grid_conc,grid_domain_size,grid_domain_size,ct_min,ct_max,Nx*Ny*my_rank)
 

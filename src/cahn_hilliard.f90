@@ -108,51 +108,53 @@ contains
         ! Start computing derivatives
         ! Corner nodes
         ! Top-left
-        der_x = (Q(1, 2) - 2.0 * Q(1, 1) + Q_halo(1,left)) * dx2
-        der_y = (Q(2, 1) - 2.0 * Q(1, 1) + Q_halo(1, up)) * dy2
+        der_x = (Q(2, 1) - 2.0 * Q(1, 1) + Q_halo(1,left)) * dx2
+        der_y = (Q(1, 2) - 2.0 * Q(1, 1) + Q_halo(1, up)) * dy2
         dQ(1, 1) = (der_x + der_y)
 
         ! Bottom-left
-        der_x = (Q(Nx, 2) - 2.0 * Q(Nx, 1) + Q_halo(Nx, left)) * dx2
-        der_y = (Q_halo(1,down) - 2.0 * Q(Nx, 1) + Q(Nx - 1, 1)) * dy2
-        dQ(Nx, 1) = (der_x + der_y)
+        der_x = (Q(2, 1) - 2.0 * Q(1, Ny) + Q_halo(1, left)) * dx2
+        der_y = (Q_halo(1,down) - 2.0 * Q(1, Ny) + Q(1, Ny-1)) * dy2
+        dQ(1, Ny) = (der_x + der_y)
 
         ! Bottom-right
-        der_x = (Q_halo(Nx,right) - 2.0 * Q(Nx, Ny) + Q(Nx, Ny - 1)) * dx2
-        der_y = (Q_halo(Nx,down) - 2.0 * Q(Nx, Ny) + Q(Nx - 1, Ny)) * dy2
+        der_x = (Q_halo(Ny,right) - 2.0 * Q(Nx, Ny) + Q(Nx-1, Ny)) * dx2
+        der_y = (Q_halo(Nx,down) - 2.0 * Q(Nx, Ny) + Q(Nx, Ny-1)) * dy2
         dQ(Nx, Ny) = (der_x + der_y)
 
         ! Top-right
-        der_x = (Q_halo(1,right) - 2.0 * Q(1, Ny) + Q(1, Ny - 1)) * dx2
-        der_y = (Q(2, Ny) - 2.0 * Q(1, Ny) + Q_halo(Nx,up)) * dy2
-        dQ(1, Ny) = (der_x + der_y)
+        der_x = (Q_halo(1,right) - 2.0 * Q(Nx, 1) + Q(Nx-1,1)) * dx2
+        der_y = (Q(Nx,2) - 2.0 * Q(Nx, 1) + Q_halo(Nx,up)) * dy2
+        dQ(Nx, 1) = (der_x + der_y)
+
+        !print*, dQ(1,1)
 
         ! Boundary nodes
-        ! LHS - j = 1
+        ! Top - j = 1
         do i = 2, Nx - 1
-            der_x = (Q(i, 2) - 2.0 * Q(i, 1) + Q_halo(i,left)) * dx2
-            der_y = (Q(i + 1, 1) - 2.0 * Q(i, 1) + Q(i - 1, 1)) * dy2
+            der_y = (Q(i, 2) - 2.0 * Q(i, 1) + Q_halo(i,up)) * dy2
+            der_x = (Q(i + 1, 1) - 2.0 * Q(i, 1) + Q(i - 1, 1)) * dx2
             dQ(i, 1) = (der_x + der_y)
         end do
 
-        ! RHS - j = Ny
+        ! Bottom - j = Ny
         do i = 2, Nx - 1
-            der_x = (Q_halo(i,right) - 2.0 * Q(i, Ny) + Q(i, Ny - 1)) * dx2
-            der_y = (Q(i + 1, Ny) - 2.0 * Q(i, Ny) + Q(i - 1, Ny)) * dy2
+            der_y = (Q_halo(i,down) - 2.0 * Q(i, Ny) + Q(i, Ny - 1)) * dy2
+            der_x = (Q(i + 1, Ny) - 2.0 * Q(i, Ny) + Q(i - 1, Ny)) * dx2
             dQ(i, Ny) = (der_x + der_y)
         end do
 
-        ! Top - i = 1
+        ! LHS - i = 1
         do j = 2, Ny - 1
-            der_x = (Q(1, j + 1) - 2.0 * Q(1, j) + Q(1, j - 1)) * dx2
-            der_y = (Q(2, j) - 2.0 * Q(1, j) + Q_halo(j,up)) * dy2
+            der_y = (Q(1, j + 1) - 2.0 * Q(1, j) + Q(1, j - 1)) * dy2
+            der_x = (Q(2, j) - 2.0 * Q(1, j) + Q_halo(j,left)) * dx2
             dQ(1, j) = (der_x + der_y)
         end do
 
-        ! Bottom - i = Nx
+        ! RHS - i = Nx
         do j = 2, Ny - 1
-            der_x = (Q(Nx, j + 1) - 2.0 * Q(Nx, j) + Q(Nx, j - 1)) * dx2
-            der_y = (Q_halo(j,down) - 2.0 * Q(Nx, j) + Q(Nx - 1, j)) * dy2
+            der_y = (Q(Nx, j + 1) - 2.0 * Q(Nx, j) + Q(Nx, j - 1)) * dy2
+            der_x = (Q_halo(j,right) - 2.0 * Q(Nx, j) + Q(Nx - 1, j)) * dx2
             dQ(Nx, j) = (der_x + der_y)
         end do
 
@@ -160,11 +162,12 @@ contains
         !$omp parallel do default(shared) private(i,j,der_x,der_y)
         do i = 2, Nx - 1
             do j = 2, Ny - 1
-                der_x = (Q(i, j + 1) - 2 * Q(i, j) + Q(i, j - 1)) * dx2
-                der_y = (Q(i + 1, j) - 2 * Q(i, j) + Q(i - 1, j)) * dy2
+                der_y = (Q(i, j + 1) - 2 * Q(i, j) + Q(i, j - 1)) * dy2
+                der_x = (Q(i + 1, j) - 2 * Q(i, j) + Q(i - 1, j)) * dx2
                 dQ(i, j) = (der_x + der_y)
             end do
         end do
+        !$omp end parallel do
 
     end subroutine del_Q
 
@@ -183,18 +186,20 @@ contains
         dx_inv = 1.0/(2.0*dx)
 
         ! LHS and RHS Boundary
-        do i = 1, Nx
-            dQx(i,1) = (Q(i,2) - Q_halo(i,left))*dx_inv    ! LHS
-            dQx(i,Ny) = (Q_halo(i,right) - Q(i,Ny-1))*dx_inv ! RHS
+        do j = 1, Ny
+            dQx(1,j) = (Q(2,j) - Q_halo(j,left))*dx_inv    ! Top
+            dQx(Nx,j) = (Q_halo(j,right) - Q(Nx-1,j))*dx_inv ! Bottom
         end do
 
         ! Bulk (non-boundary nodes)
         !$omp parallel do default(shared) private(i,j)
-        do j = 2, Ny-1
-            do i = 1, Nx
-                dQx(i,j) = (Q(i,j+1) - Q(i,j-1))*dx_inv
+        do j = 1, Ny
+            do i = 2, Nx-1
+                dQx(i,j) = (Q(i+1,j) - Q(i-1,j))*dx_inv
             end do
         end do
+
+        !$omp end parallel do
 
     end subroutine dQ_dx
 
@@ -213,18 +218,19 @@ contains
 
 
         ! Top and Bottom Boundary
-        do j = 1, Ny
-            dQy(1,j) = (Q(2,j) - Q_halo(j,up))*dy_inv    ! Top
-            dQy(Nx,j) = (Q_halo(j,down) - Q(Nx-1,j))*dy_inv ! Bottom
+        do i = 1, Nx
+            dQy(i,1) = (Q(i,2) - Q_halo(i,up))*dy_inv    ! LHS
+            dQy(i,Ny) = (Q_halo(i,down) - Q(i,Ny-1))*dy_inv ! RHS
         end do
 
         ! Bulk (non-boundary nodes)
         !$omp parallel do default(shared) private(i,j)
-        do j = 1, Ny
-            do i = 2, Nx-1
-                dQy(i,j) = (Q(i+1,j) - Q(i-1,j))*dy_inv
+        do j = 2, Ny-1
+            do i = 1, Nx
+                dQy(i,j) = (Q(i,j+1) - Q(i,j-1))*dy_inv
             end do
         end do
+        !$omp end parallel do
 
     end subroutine dQ_dy
 
@@ -255,6 +261,7 @@ contains
                 dMy(i,j) = (M(i,j+1) - M(i,j-1))*dy_inv
             end do
         end do
+        !$omp end parallel do
 
     end subroutine dM_dy
 
@@ -298,6 +305,8 @@ contains
         real(real64), dimension(Nx, Ny), intent(out) :: grid_new
         integer :: i, j ! counters
 
+
+
         do i = 1, Nx
             do j = 1, Ny
                 grid_new(i, j) = grid(i, j) + dt * M * dQ(i, j)
@@ -338,8 +347,8 @@ contains
         call dM_dy(dMy,M,dy, Nx, Ny,M_halo)
         call dQ_dy(dQy,Q,dy, Nx, Ny,Q_halo)
 
-
         !$omp parallel do default(shared) private(i,j,alpha,xbeta,ybeta,beta)
+        !print*, c(50,1)
         do j = 1, Ny
             do i = 1, Nx
 
@@ -347,12 +356,11 @@ contains
                 xbeta = dMx(i,j) * dQx(i,j)
                 ybeta = dMy(i,j) * dQy(i,j)
                 beta = xbeta + ybeta
-
-                !print*, beta
                 c_new(i,j) = c(i,j) + dt*(alpha + beta)
-
             end do
         end do
+        !$omp end parallel do
+
 
     end subroutine time_evolution_new
 
