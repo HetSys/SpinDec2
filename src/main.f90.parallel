@@ -239,7 +239,7 @@ program main
     t2 = MPI_Wtime()
 
     if (my_rank == 0) then
-        print *, t2-t1
+        print *, "Calculation took", t2-t1, "seconds on", p, "MPI threads"
     end if
 
     ! Finalise MPI

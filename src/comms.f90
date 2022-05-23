@@ -30,7 +30,6 @@ contains
 
     subroutine comms_initialise()
 
-        integer:: proot
         integer:: ierr
 
         call mpi_init(ierr)
@@ -112,47 +111,48 @@ contains
         allocate (sendbuf(1:grid_domain_size), stat = ierr)
         if (ierr /= 0) then
             stop 'error allocating sendbuf x in comms_halo_swaps'
-            ! todo remove after debugging
         end if
 
         allocate (recvbuf(1:grid_domain_size), stat = ierr)
         if (ierr /= 0) then
             stop 'error allocating recvbuf x in comms_halo_swaps'
-            ! todo remove after debugging
         end if
 
         ! send left hand boundary elements of grid to my_rank_neighbours(left)
         ! and receive from my_rank_neighbours(right) into right of grid_halo
         sendbuf(:) = grid(1, :)
         call mpi_sendrecv(sendbuf, grid_domain_size, mpi_double_precision, my_rank_neighbours(left), 11, &
-                          recvbuf, grid_domain_size, mpi_double_precision, my_rank_neighbours(right), 11, cart_comm, status, ierr)
+                          recvbuf, grid_domain_size, mpi_double_precision, my_rank_neighbours(right), 11, &
+                          cart_comm, status, ierr)
         grid_halo(:, right) = recvbuf(:)
 
         ! send right hand boundary elements of grid to my_rank_neighbours(right)
         ! and receive from my_rank_neighbours(left) into left of grid_halo
         sendbuf(:) = grid(grid_domain_size, :)
         call mpi_sendrecv(sendbuf, grid_domain_size, mpi_double_precision, my_rank_neighbours(right), 12, &
-                          recvbuf, grid_domain_size, mpi_double_precision, my_rank_neighbours(left), 12, cart_comm, status, ierr)
+                          recvbuf, grid_domain_size, mpi_double_precision, my_rank_neighbours(left), 12, &
+                          cart_comm, status, ierr)
         grid_halo(:, left) = recvbuf(:)
 
         ! send bottom boundary elements of grid to my_rank_neighbours(down)
         ! and receive from my_rank_neighbours(up) into down of grid_halo
         sendbuf(:) = grid(:, grid_domain_size)
         call mpi_sendrecv(sendbuf, grid_domain_size, mpi_double_precision, my_rank_neighbours(down), 13, &
-                          recvbuf, grid_domain_size, mpi_double_precision, my_rank_neighbours(up), 13, cart_comm, status, ierr)
+                          recvbuf, grid_domain_size, mpi_double_precision, my_rank_neighbours(up), 13, &
+                          cart_comm, status, ierr)
         grid_halo(:, up) = recvbuf(:)
 
         ! send top boundary elements of grid to my_rank_neighbours(up)
         ! and receive from my_rank_neighbours(down) into up of grid_halo
         sendbuf(:) = grid(:, 1)
         call mpi_sendrecv(sendbuf, grid_domain_size, mpi_double_precision, my_rank_neighbours(up), 14, &
-                          recvbuf, grid_domain_size, mpi_double_precision, my_rank_neighbours(down), 14, cart_comm, status, ierr)
+                          recvbuf, grid_domain_size, mpi_double_precision, my_rank_neighbours(down), 14, &
+                          cart_comm, status, ierr)
         grid_halo(:, down) = recvbuf(:)
 
         deallocate (sendbuf, recvbuf, stat = ierr)
         if (ierr /= 0) then
             stop 'error releasing memory in comms_halo_swaps'
-            ! todo remove after debugging
         end if
 
     end subroutine comms_halo_swaps
@@ -221,7 +221,8 @@ contains
 
                     ! Receive this column from rank ip
                     ! Insert appropriate MPI call here
-                    call MPI_Recv(combuff, grid_domain_size, MPI_DOUBLE_PRECISION, ip, 888, MPI_COMM_WORLD, status, ierr)
+                    call MPI_Recv(combuff, grid_domain_size, MPI_DOUBLE_PRECISION, ip, 888, &
+                        MPI_COMM_WORLD, status, ierr)
 
                     do ix = 1, grid_domain_size
 
@@ -249,7 +250,8 @@ contains
             do iy = 1, grid_domain_size
 
                 ! Insert appropriate MPI call here
-                call MPI_Send(local_grid_conc(:, iy), grid_domain_size, MPI_DOUBLE_PRECISION, 0, 888, MPI_COMM_WORLD, ierr)
+                call MPI_Send(local_grid_conc(:, iy), grid_domain_size, MPI_DOUBLE_PRECISION, 0, 888, &
+                    MPI_COMM_WORLD, ierr)
 
             end do
 

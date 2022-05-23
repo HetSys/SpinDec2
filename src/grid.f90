@@ -17,7 +17,6 @@ module grid
     public :: Q,M,mu,c_new,T,f_b
 
 
-
     ! Define module constants
     real(real64), parameter :: pi = 3.1415926535897932
 
@@ -49,7 +48,6 @@ contains
     subroutine get_seed(seed_in)
 
         integer :: seed_in
-        real(real64) :: u
         integer :: n
         integer, dimension(:), allocatable :: seed,seed_o
 
@@ -84,60 +82,17 @@ contains
     !******************************************************************************
     subroutine rand_uniform(x,min,max)
 
-	    real(real64), intent(in) :: min, max
-	    real(real64), intent(out) :: x
-	    real(real64) :: u1
-
-	    call random_number(u1)
-
-	    u1 = 1.0 - u1
-
-	    x = (max-min)*u1 + min
-
-    end subroutine rand_uniform
-
-    !******************************************************************************
-    !> rand_stdnormal
-    !!
-    !! Subroutine to output a random number from a standard normal distribution
-    !!
-    !!@param x: random number output
-    !******************************************************************************
-    subroutine rand_stdnormal(x)
-
+        real(real64), intent(in) :: min, max
         real(real64), intent(out) :: x
-        real(real64) :: u1, u2
+        real(real64) :: u1
 
         call random_number(u1)
-        call random_number(u2)
 
-        u1 = 1 - u1
-        u2 = 1 - u2
+        u1 = 1.0 - u1
 
-        x = sqrt(-2 * log(u1)) * cos(2 * pi * u2)
+        x = (max-min)*u1 + min
 
-    end subroutine rand_stdnormal
-
-
-    !******************************************************************************
-    !> rand_normal
-    !!
-    !! Subroutine to output a random number from a normal distribution
-    !! with a user provided mean and standard deviation
-    !!
-    !!@param x: random number output
-    !!@param mean: user inputted mean for normal distribution
-    !!@param std : user inputted standard deviation for normal distribution
-    !******************************************************************************
-    subroutine rand_normal(x, mean, std)
-
-        real(real64), intent(in) :: mean, std
-        real(real64), intent(out) :: x
-
-        call rand_stdnormal(x)
-        x = x * std + mean
-
-    end subroutine
+    end subroutine rand_uniform
 
     !******************************************************************************
     !>  grid_init
@@ -466,9 +421,6 @@ contains
             print*, "Error: deallocating M_halo failed on rank ", my_rank
             stop
         end if
-
-
-
 
     end subroutine local_grid_deallocate
 
