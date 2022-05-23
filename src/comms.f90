@@ -103,8 +103,8 @@ contains
         if (p == 1) then
             grid_halo(:, right) = grid(1,:)
             grid_halo(:, left) = grid(grid_domain_size, :)
-            grid_halo(:, up) = grid(:,1)
-            grid_halo(:, down) = grid(:,grid_domain_size)
+            grid_halo(:, up) = grid(:,grid_domain_size)
+            grid_halo(:, down) = grid(:,1)
             return
         end if
 
@@ -140,14 +140,14 @@ contains
         sendbuf(:) = grid(:, grid_domain_size)
         call mpi_sendrecv(sendbuf, grid_domain_size, mpi_double_precision, my_rank_neighbours(down), 13, &
                           recvbuf, grid_domain_size, mpi_double_precision, my_rank_neighbours(up), 13, cart_comm, status, ierr)
-        grid_halo(:, down) = recvbuf(:)
+        grid_halo(:, up) = recvbuf(:)
 
         ! send top boundary elements of grid to my_rank_neighbours(up)
         ! and receive from my_rank_neighbours(down) into up of grid_halo
         sendbuf(:) = grid(:, 1)
         call mpi_sendrecv(sendbuf, grid_domain_size, mpi_double_precision, my_rank_neighbours(up), 14, &
                           recvbuf, grid_domain_size, mpi_double_precision, my_rank_neighbours(down), 14, cart_comm, status, ierr)
-        grid_halo(:, up) = recvbuf(:)
+        grid_halo(:, down) = recvbuf(:)
 
         deallocate (sendbuf, recvbuf, stat = ierr)
         if (ierr /= 0) then
@@ -193,8 +193,8 @@ contains
                 do ix = 1, grid_domain_size
 
                     ! Global indices
-                    ixg = ix+grid_domain_start(x) - 1
-                    iyg = iy+grid_domain_start(y) - 1
+                    ixg = ix+grid_domain_start(1) - 1
+                    iyg = iy+grid_domain_start(2) - 1
 
                     global_grid_conc(ixg, iyg) = local_grid_conc(ix, iy)
 
@@ -226,8 +226,8 @@ contains
                     do ix = 1, grid_domain_size
 
                         ! Global indices
-                        ixg = ix+remote_domain_start(x) - 1
-                        iyg = iy+remote_domain_start(y) - 1
+                        ixg = ix+remote_domain_start(1) - 1
+                        iyg = iy+remote_domain_start(2) - 1
 
                         ! Store in global_grid_conc
                         global_grid_conc(ixg, iyg) = combuff(ix)
