@@ -48,7 +48,7 @@ var NAVTREE =
         ["Serial Example 1", "euler_example_1.html", null ],
         ["Serial Example 2", "euler_example_2.html", null ],
         ["Serial Example 3", "euler_example_3.html", null ],
-        ["Parrallel Example", "parra_example.html", null ],
+        ["Parallel Example", "parra_example.html", null ],
         ["Checkpointing Example", "cp_example.html", null ],
         ["Pseudo-Spectral Example", "PS_example.html", null],
         ["50/50 Split Example", "test_example.html", null],

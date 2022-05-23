@@ -24,6 +24,10 @@
       DoxygenAwesomeDarkModeToggle.init()
   </script>
 <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script> 
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.3/styles/default.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.3/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -98,8 +102,94 @@ $(document).ready(function(){initNavTree('visualise.html',''); initResizable(); 
 
   <h1 id="vis">Visualise</h1>
 
+  <p>In SpinDec2, a various range of plotting routines are given in the plotter.py file. Multiple plots and animations can be made and are stored in the \(Vis\_CH\) class. 
+    There are numerous functions within the class are described below:</p>
 
 
+    <p>Initialisation function for the class. Requires the name of the output netcdf file (default name is \(CH\_output.nc\) in SpinDec2), as well as the time average
+       period for plotting the free energy (default is \(av\_period\) = 10).</p>
+  <body>
+    <pre><code class="python">
+      def __init__(self,filename,av_period):
+    </code></pre>
+  </body>
+ 
+  <p>The Read and setup function takes in the NetCDF, reads it, and then setups up the system by adding the full-time output concentration field to the class and the total free energy time series. These can be accessed by doing \(class\_name.c\) and  \(class\_name.F\_tot\) respectively. All other metadata, such as grid size, timestep, atomic mobilities etc., are also stored in the class and are printed to the terminal if verbose = True (default). 
+    As large amounts of time iterations are typically performed, we also reduce the amount of concentration grid frames we show in the animations by taking roughly 300 evenly spaced frames (300 is the default) to speed up the animation. These 300 frames are stored as \(self.c\_plot\) for concentration and \(self.F\_anim\) for the total free energy. </p>
+  <body>
+    <pre><code class="python">
+      def read_and_setup(self.filename,verbose=True):
+    </code></pre>
+  </body>
+
+  <p>The dual animation function plots a dual animation of the concentration field and free energy side by side. This may interest the user to observe when equilibrium is achieved in the system (i.e. when phase separation has occurred).</p>
+  <body>
+    <pre><code class="python">
+      def dual_animation(self):
+    </code></pre>
+  </body>
+
+  <p>ree energy animation over time if the user doesn't want the animated grid.</p>
+  <body>
+    <pre><code class="python">
+      def F_animation(self):
+    </code></pre>
+  </body>
+
+  <p>Concentration grid animation over time for if the user doesn't want the animated free energy curve.</p>
+  <body>
+    <pre><code class="python">
+      def grid_animation(self):
+    </code></pre>
+  </body>
+
+  <p>Snapshot of the concentration grid at a certain time. The snapshot argument controls this, an integer mapping to the time iteration you want to view, i.e. plots \(self.c[snapshot]\). The default snapshot value is set to -1 to display the final result.</p>
+
+  <body>
+    <pre><code class="python">
+      def grid_snapshot(self, snapshot = -1):
+    </code></pre>
+  </body>
+
+  <p>Free energy plot (not animated) overall time if the user doesn't want the free energy animated.</p>
+  <body>
+    <pre><code class="python">
+      def F_plot(self):
+    </code></pre>
+  </body>
+
+  <p>Plots an animation of the average bulk free energy trajectory over time in separate regions of the grid. This is to observe which areas of the grid fall into which minima of the bulk free energy polynomial.</p>
+  <body>
+    <pre><code class="python">
+      def bulk_energy_traj(self):
+    </code></pre>
+  </body>
+
+  <p>All that is left to do is to call the class in the python file (which is defaulted as \(res_CH\)), then call the plotting functions you want to visualise, an example is shown below:</p>
+  <body>
+    <pre><code class="python">
+      # Create a class name
+      res_CH = Vis_CH(file = 'CH_output.nc', av_period = 10)
+
+      # Must call the read and set up function before the plotters
+      res_CH.read_and_setup(verbose = True)
+
+      # Then add any of the plots you want to save and create
+      res_CH.F_animation()
+
+      res_CH.grid_animation()
+
+      res_CH.grid_snapshot(snapshot=-1)
+
+      res_CH.F_plot()
+
+      res_CH.bulk_energy_traj()
+
+      res_CH.dual_animation()
+    </code></pre>
+  </body>
+
+  
 
   <div class="contents">
 </div><!-- contents -->

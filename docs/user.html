@@ -99,8 +99,74 @@ $(document).ready(function(){initNavTree('user.html',''); initResizable(); });
   <h1 id="userdocs">User Documentation</h1>
 
   <h2 id="getstarted">Getting Started</h2>
+  <p>To get the source code, the repository can be cloned to your chosen directory by typing the 
+    following command into a terminal (making sure you are in the correct directory):</p>
+    <body>
+      git clone https://github.com/HetSys/SpinDec2
+    </body>
 
-  <h2 id="examples">Eaxmples</h2>
+    <h3 id="install">Installation</h3>
+
+    <p>Once the source code has been obtained, it can be compiled with various options. The compilation options can be viewed by running the install.sh executable 
+      in the directory you have cloned the repository to without any flags. A welcome screen and a list of options are then displayed as shown below:</p>
+
+  <p style="text-align:center;"><img src="welcome.png" alt="Welcome Terminal"  width="500" 
+    height="500" class="center"> </p>
+
+    <p>The examples below show how to run the code in serial as well as in parallel, which will require the compilation to be completed differently.</p>
+
+    <h3 id="serial_install">Serial Installation</h3>
+
+    <p>The code can be compiled to run in serial by running the installation script with the -c flag and no additional arguments as follows:</p>
+    <body>
+      ./install.sh -c
+    </body>
+
+    <h3 id="parra_install">Parallel Installation</h3>
+
+    <p>The code can be compiled to run in parallel with MPI enabled by running the install.sh script with using the -cm argument as follows:</p>
+
+    <body>
+      ./install.sh -cm
+    </body>
+
+    <h3 id="install_clean">Using the clean (-C) option for new compilations</h3>
+
+    <p>For first-time installations, the code can be compiled using the commands above depending on the version of the code (serial or parallel) is needed. 
+      For recompiling the code (eg. after compiling with testing enabled), the install.sh script should be first run with the -C flag, which removes any compiled binaries.</p>
+
+      <h3 id="running_code">Running the code</h3>
+
+    <p>After successfully compiling the code with desired options, the compiled binaries will be stored in a sub-directory "bin" in the original directory the repository was cloned to.
+       To run the code, you will need to first create a directory to which you will copy the "spindec" and "plotter.py" executable files from the bin sub-directory. The created should also contain the input file, 
+       details of which are provided below. The code can be run from the directory containing the input file and the correct executables in a terminal using the following commands:</p>
+
+       <body>
+
+        <ul>
+          <li>./spindec</li>
+        </ul>
+          <p>This uses the parameters provided in the input file to run the simulation in serial and evolve the concentration grid over a the number of timesteps requested.</p>
+
+          <ul>
+            <li>mpirun -np n ./spindec</li>
+          </ul>
+            <p>When the code is compiled with MPI enabled, this command is used to run the code, where n is the number of processes requested (this will be further expanded upon in the examples).</p>
+
+            <ul>
+              <li>python3 plotter.py</li>
+            </ul>
+              <li>Free energy vs. time</li>
+              <li>The evolution of the concentration grid (animation)</li>
+            <ul>
+
+
+          
+        
+
+       </body>
+
+  <h2 id="examples">Examples</h2>
   <p>Below are some simple examples of how to use SpinDec2 for the various cases of methods and Mobilities.</p>
 
 
@@ -109,7 +175,7 @@ $(document).ready(function(){initNavTree('user.html',''); initResizable(); });
     <li>Euler - M = M(c) - Mobility is dependent on the order paramter c over time, <a href="euler_example_2.html">Serial Example 2</a>.</li>
     <li>Euler - M = M(c,T) The atomic mobilities are defined in terms of local tempeartures, <a href="euler_example_3.html">Serial Example 3</a>.</li>
     <li>Validation Example,  <a href="test_example.html">50/50 Split Example </a>.</li>
-    <li> Running in parallel using MPI,  <a href="parra_example.html">Pseudo-Spectral Example </a>.</li>
+    <li> Running in parallel using MPI,  <a href="parra_example.html">Parallel Example </a>.</li>
     <li>Pseudo-Spectral Method,  <a href="PS_example.html">Pseudo-Spectral Example </a>.</li>
     <li>How to use check-pointing,  <a href="PS_example.html">Check-Pointing Example </a>.</li>
   </ul> 
