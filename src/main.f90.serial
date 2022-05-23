@@ -167,10 +167,7 @@ program main
         ! Get Mobility Field
         call Mobility(M,MA,MB, EA, EB, c0, c(:, :, 2), T, problem)
 
-        !print*, M(1,1), M(1,2), M(6,7)
-
         ! Get new concentrations for current timesteps
-
         if (problem == 'Spectral') then
             if(k == 2) then
                 call spectral_method_iter(c(:, :, 2),c(:, :, 2),a,dt,M(1,1),Kappa,c_out,1,stab)
@@ -184,8 +181,6 @@ program main
 
             c(:, :, 3) = c_new(:, :)
         end if
-
-
 
         ! Get Bulk Free Energy over space
         call bulk_free_energy(f_b, c(:, :, 3), a)

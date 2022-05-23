@@ -10,11 +10,26 @@ set -e
 
 compile () {
     ### Compilation ###
-    # Option for choosing the compiler
-    if [[ "$1" == "d" || "$1" == "debug" ]]; then
-        comp_line="gfortran -fopenmp -O2 -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
+    if [[ "$1" == "d" ]] || [[ "$1" == "debug" ]]; then
+        comp_line="mpif90 -fopenmp -O2 -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
+
+    # elif [[ "$1" == "p" ]] || [[ "$1" == "profile" ]]; then
+    #     read -p 'Profile with OpenMP? [y/n] ' omp_profile
+
+        # while true; do
+        #     if [[ "$omp_profile" =~ ^[Yy]$ ]]; then
+        #         comp_line="mpif90 -fopenmp -pg"
+        #         break
+        #     elif [[ "$omp_profile" =~ ^[Nn]$ ]]; then
+        #         comp_line="mpif90 -pg"
+        #         break
+        #     else
+        #         echo -e '\nNot a valid option'
+        #     fi
+        # done
+
     elif [[ -z "$1" ]]; then
-        comp_line="gfortran -fopenmp -O2"
+        comp_line="mpif90 -fopenmp -O2"
     else
         echo -e "$1 is not a valid option for -c/--compile\n"
         help_message
@@ -35,6 +50,11 @@ compile () {
 
     # Add program files from src 
     prog_files=(src/*.f90)
+
+    # Move grid to first item in array
+    grid="src/grid.f90"
+    prog_files=('' "${prog_files[@]}")
+    prog_files[0]="$grid"
 
     # Move main to last item in array
     main="src/main.f90"
@@ -160,7 +180,7 @@ unit_test_compile () {
     ### Compile unit tests ###
     # Compile line
     # Only the debug compile line from above to be used
-    comp_line="gfortran -fopenmp -O2 -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
+    comp_line="mpif90 -fopenmp -O2 -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
 
     fftw_dir=$(find /usr/include/ -maxdepth 1 -name "fftw*" -type d)
 
@@ -176,6 +196,11 @@ unit_test_compile () {
     # f90 file directories
     test_files=(test/*.f90)
     src_files=(src/*.f90)
+
+    # Move grid to first item in array
+    grid="src/grid.f90"
+    src_files=('' "${prog_files[@]}")
+    src_files[0]="$grid"
 
     # Move test main to last item in array
     test_main="test/test.f90"
@@ -265,21 +290,22 @@ ascii_art () {
 
 help_message () {
     echo "usage: spindec [-h]"
-    echo "               [-c DEBUG]"
-    echo "               [-C CONFIRM]"
-    echo "               [-t RUN]"
+    echo "               [-c ARGS]"
+    echo "               [-C ARGS]"
+    echo "               [-t ARGS]"
     echo "               [-T]"
     echo
     echo "options:"
     echo "  -h, --help              show this help message and exit"
-    echo "  -c, --compile DEBUG     compile the code with optional debug option"
-    echo "                          optional DEBUG arguments: [ none | d/debug ] (default=none)"
+    echo "  -c, --compile ARGS      compile the code with optional debug or profile option"
+    echo "                          optional arguments: [ none | o/openmp | d/debug ]"
+    echo "                          (default=none)"
     echo
-    echo "  -C, --clean CONFIRM     remove compiled binaries from repository"
-    echo "                          optional CONFIRM arguments: [ none | c/confirm ] (default=none)"
+    echo "  -C, --clean ARGS        remove compiled binaries from repository"
+    echo "                          optional arguments: [ none | c/confirm ] (default=none)"
     echo
-    echo "  -t, --test RUN          run automated unit tests"
-    echo "                          required RUN arguments: [ c/compile | r/run | b/both ]"
+    echo "  -t, --test ARGS         run automated unit tests"
+    echo "                          required arguments: [ c/compile | r/run | b/both ]"
     echo
     echo "  -T, --test-clean        clean test binaries"
 }
