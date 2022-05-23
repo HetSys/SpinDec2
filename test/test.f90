@@ -6,9 +6,11 @@ program main
     use input_tester
     use checkpoint_tester
     use test_potentials
+    use spectral
     use test_free_energy
     use test_derivatives
     use grid_test
+    use OMP_LIB
     use ch_test
 
     implicit none
@@ -36,7 +38,9 @@ program main
     ! Testing variables
     real(real64) :: mean, std
     real(real64), dimension(:,:), allocatable :: Q_test, dQ_expected
-    real(real64), dimension(:,:), allocatable :: c_test, c_expected
+    real(real64), dimension(:,:), allocatable :: c_test, c_expected,c_in,c_in_p,c_out_exp,c_out
+    real(kind=real64) ,dimension(:), allocatable:: coeffs
+    real(kind=real64) :: k
     integer :: i,j ! counters
     print*,'########################################################'
     print *, "Starting input testing"
@@ -221,7 +225,7 @@ program main
                            0.709132521563533,0.657924059121464,0.803700028541638/),shape(c_expected))
 
     call test_time_evolution(c_new,c_test,c_expected,Nx,Ny,dx,dy,dt,a,Kappa,M)
-    
+
 
     print*,'########################################################'
     print*, "Starting grid test"
@@ -265,7 +269,56 @@ program main
     call test_stdnormal(mean,std)
 
     print*,'########################################################'
+    print*, "Starting spectral test"
+    print*,'--------------------------------------------------------'
+
+    allocate(c_in(3,3))
+    allocate(c_in_p(3,3))
+    allocate(c_out(3,3))
+    allocate(c_out_exp(3,3))
+    allocate(coeffs(4))
+
+    coeffs = 2
+    c_out_exp = 0
+    c_in = 2
+    c_in(2,2) = 4
+    c_in_p = 2
+    c_in_p(2,2) = 5
+
+    M = 0.1
+    k = 0.1
+    dt = 0.1
+
+
+    call spectral_method_iter(c_in,c_in_p,coeffs,dt,M,k,c_out,1,1.0_real64)
+
+    c_out_exp = reshape((/2.3463434502703331, 45.809290092588583,&
+     -7.0049297070283778, 45.809290092588583, -153.91998785683825,&
+    45.809290092588583, -7.0049297070283831, 45.809290092588597, &
+     2.3463434502703282/),shape(c_out_exp))
+
+    !print*, c_out
+
+    if(maxval(c_out-c_out_exp) > 1e-5) then
+        print*, "Test 1 failed"
+    else
+        print*, "Test 1 passed"
+    end if
+
+    call spectral_method_iter(c_in,c_in_p,coeffs,dt,M,k,c_out,0,1.0_real64)
+    c_out_exp = reshape((/2.4698426892921308, 2.2611576236563615, 2.3736714532770624,&
+            2.2611576236563615, 0.93500788690283210, 2.2611576236563611, 2.3736714532770629,&
+            2.2611576236563615, 2.4698426892921304/),shape(c_out_exp))
+
+    if(maxval(c_out-c_out_exp) > 1e-5) then
+        print*, "Test 2 failed"
+    else
+        print*, "Test 2 passed"
+    end if
+    !print*, c_out
+
+    print*,'########################################################'
     print*, 'Tests Complete'
-    
+
 
 end program main

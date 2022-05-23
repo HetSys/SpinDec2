@@ -11,9 +11,7 @@ set -e
 compile () {
     ### Compilation ###
     if [[ "$1" == "d" ]] || [[ "$1" == "debug" ]]; then
-        comp_line="mpif90 -fopenmp -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
-    elif [[ "$1" == "o" ]] || [[ "$1" == "openmp" ]]; then
-        comp_line="mpif90 -fopenmp"
+        comp_line="mpif90 -fopenmp -O2 -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
 
     # elif [[ "$1" == "p" ]] || [[ "$1" == "profile" ]]; then
     #     read -p 'Profile with OpenMP? [y/n] ' omp_profile
@@ -31,11 +29,23 @@ compile () {
         # done
 
     elif [[ -z "$1" ]]; then
-        comp_line="mpif90"
+        comp_line="mpif90 -fopenmp -O2"
     else
         echo -e "$1 is not a valid option for -c/--compile\n"
         help_message
         exit 2
+    fi
+
+    fftw_dir=$(find /usr/include/ -name "*fftw*")
+
+    if [[ "$fftw_dir" == *"fftw3"* ]]; then
+       echo "Found fftw3 library in /usr/include/"
+       echo
+    elif [[ "$fftw_dir" == "" ]]; then
+       echo "Required fftw3 library not found"
+       echo "Ensure this is installed before attempting compilation"
+       echo "Exiting compilation"
+       exit 1
     fi
 
     # Add program files from src 
@@ -56,8 +66,8 @@ compile () {
     obj_files="bin/*.o"
     compd_file="bin/spindec"
 
-    # NetCDF flags
-    flibs=$(nf-config --flibs)
+    # flags
+    flibs="$(nf-config --flibs) -lfftw3_omp -lfftw3 -lm -I/usr/include"
     fflags=$(nf-config --fflags)
 
     # Compile
@@ -76,9 +86,11 @@ compile () {
     # $comp_line $fflags ${prog_files[@]} $flibs -J$mod_files -I$mod_files -o $compd_file
 
     # Don't prompt to add to $PATH if debug option specified
-    if [[ "$1" == "d" ]] || [[ "$1" == "debug" ]]; then
+    if [[ "$1" == "d" || "$1" == "debug" ]]; then
         exit 0
     fi
+
+    echo 'Compilation completed successfully'
 
     # Don't prompt to add to $PATH if already in path
     if grep -Fq "SpinDec2/bin" $HOME/.bashrc; then
@@ -91,9 +103,9 @@ compile () {
         echo
         read -p 'Add binary to $PATH? [Y/n] ' confirmation
 
-        if [[ "$confirmation" =~ ^[Yy]$ ]] || [[ "$confirmation" == '' ]]; then
+        if [[ "$confirmation" =~ ^[Yy]$ || "$confirmation" == '' ]]; then
             if [[ "$SHELL" == *"bash"* ]]; then
-                working_dir=`pwd`
+                working_dir=$(pwd)
                 path_var='$PATH'
                 echo '' >> $HOME/.bashrc
                 echo "export PATH=$working_dir/bin/:$path_var" >> $HOME/.bashrc
@@ -119,7 +131,7 @@ clean () {
     bins=("bin/*.mod" "bin/*.o" "bin/*spindec")
 
     # Check for binaries
-    if [[ `ls bin/* | grep -E 'mod|[.]o|spindec'` == '' ]]; then
+    if [[ $(ls bin/* | grep -E 'mod|[.]o|spindec') == '' ]]; then
         echo "No binaries found"
         exit 1
     fi
@@ -138,7 +150,7 @@ clean () {
         echo
 
         # Ask for confirmation before removing if option provided
-        if [[ "$1" == "c" ]] || [[ "$1" == "confirm" ]]; then
+        if [[ "$1" == "c" || "$1" == "confirm" ]]; then
             read -p 'Proceed? [Y/n] ' confirmation
         elif [[ -z "$1" ]]; then
             confirmation="y"
@@ -148,7 +160,7 @@ clean () {
             exit 2
         fi
       
-        if [[ "$confirmation" =~ ^[Yy]$ ]] || [[ "$confirmation" == '' ]]; then
+        if [[ "$confirmation" =~ ^[Yy]$ || "$confirmation" == '' ]]; then
             for file in ${bins[@]}; do
                 rm "$file"
             done
@@ -168,9 +180,18 @@ unit_test_compile () {
     ### Compile unit tests ###
     # Compile line
     # Only the debug compile line from above to be used
-    # comp_line="gfortran -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
-    # TODO Add openp support
-    comp_line="mpif90 -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
+    comp_line="mpif90 -fopenmp -O2 -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
+
+    fftw_dir=$(find /usr/include/ -maxdepth 1 -name "fftw*" -type d)
+
+    if [[ "$fftw_dir" == *"fftw3"* ]]; then
+       echo "Found fftw3 library in /usr/include/"
+    elif [[ "$fftw_dir" == "" ]]; then
+       echo "Required fftw3 library not found"
+       echo "Ensure this is installed before attempting compilation"
+       echo "Exiting compilation"
+       exit 1
+    fi
 
     # f90 file directories
     test_files=(test/*.f90)
@@ -196,7 +217,7 @@ unit_test_compile () {
     compd_file="test/test_bin/test_spindec"
 
     # NetCDF flags
-    flibs=$(nf-config --flibs)
+    flibs="$(nf-config --flibs) -lfftw3_omp -lfftw3 -lm -I/usr/include"
     fflags=$(nf-config --fflags)
 
     # C H O N K Y  compilation
@@ -227,7 +248,7 @@ unit_test_clean () {
     bins=("test/test_bin/*.mod" "test/test_bin/*.o" "test/test_bin/*test_spindec")
 
     # Check for binaries
-    if [[ `ls test/test_bin/* | grep -E 'mod|[.]o|test_spindec'` == '' ]]; then
+    if [[ $(ls test/test_bin/* | grep -E 'mod|[.]o|test_spindec') == '' ]]; then
         echo "No binaries found"
         exit 1
     fi
@@ -316,12 +337,12 @@ eval set -- "$options"
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -c | --compile)
-            compile $2
+            compile "$2"
             shift 2
             break
             ;;
         -C | --clean)
-            clean $2
+            clean "$2"
             shift 2
             break
             ;;
