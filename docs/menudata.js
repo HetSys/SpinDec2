@@ -38,6 +38,10 @@ var menudata={children:[
     ]},
 {text:"Files",url:"files.html",children:[
 {text:"File List",url:"files.html"}]},
-{text:"User Documentation",url:"user.html"},
+{text:"User Documentation",url:"user.html",children:[
+    {text:"Getting Started",url:"user.html#getsterted"},
+    {text:"Examples",url:"user.html#examples"},
+    {text:"Visualise",url:"visualise.html"},
+]},
 
 ]}
