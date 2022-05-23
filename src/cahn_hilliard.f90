@@ -41,7 +41,7 @@ contains
             !Temp -- Diffusive mobility dependent on c, and atomic mobilities
             !           are dependent on T
             case ("Temp")
-                
+
                 !$omp parallel do default(shared) private(i,j,boltz)
                 do j = 1, Ny
                     do i = 1, Nx
@@ -63,8 +63,8 @@ contains
                     end do
                 end do
 
-            !Constant - Diffve Mobility is taken to be a mixing of the two constant 
-            !           mobilities, and is independent of c 
+            !Constant - Diffve Mobility is taken to be a mixing of the two constant
+            !           mobilities, and is independent of c
             case ("Constant")
 
                 !$omp parallel do default(shared) private(i,j)
@@ -73,13 +73,13 @@ contains
                         M(i,j) = (MA*(1-c0) + MB*c0)*c0*(1-c0)
                     end do
                 end do
-      
+
             ! condition to enforce one of the two setups
             case default
                 print*, "PLEASE INPUT PROBLEM AS 'Temp', 'NonTemp' or 'Cons'"
                 stop "STOPPED"
-      
-            
+
+
             end select
 
     end subroutine
@@ -216,7 +216,7 @@ contains
         do j = 1, Ny
             dQy(1,j) = (Q(2,j) - Q_halo(j,up))*dy_inv    ! Top
             dQy(Nx,j) = (Q_halo(j,down) - Q(Nx-1,j))*dy_inv ! Bottom
-        end do 
+        end do
 
         ! Bulk (non-boundary nodes)
         !$omp parallel do default(shared) private(i,j)
@@ -243,9 +243,9 @@ contains
         dy_inv = 1.0/(2.0*dy)
 
         ! Top and Bottom Boundary
-        do j = 1, Ny
-            dMy(1,j) = (M(2,j) - M_halo(j,up))*dy_inv    ! Top
-            dMy(Nx,j) = (M_halo(j,down) - M(Nx-1,j))*dy_inv ! Bottom
+        do i = 1, Nx
+            dMy(i,1) = (M(i,2) - M_halo(i,up))*dy_inv    ! Top
+            dMy(i,Ny) = (M_halo(i,down) - M(i,Nx-1))*dy_inv ! Bottom
         end do
 
         ! Bulk (non-boundary nodes)
@@ -270,13 +270,11 @@ contains
         integer :: i,j ! counters
 
         dx_inv = 1.0/(2.0*dx)
-
         ! LHS and RHS Boundary
-        do i = 1, Nx
-            dMx(i,1) = (M(i,2) - M_halo(i,left))*dx_inv    ! LHS
-            dMx(i,Ny) = (M_halo(i,right) - M(i,Ny-1))*dx_inv ! RHS
-        end do 
-
+        do j = 1, Ny
+            dMx(1,j) = (M(2,j) - M_halo(j,left))*dx_inv    ! LHS
+            dMx(Nx,j) = (M_halo(j,right) - M(Nx-1,j))*dx_inv ! RHS
+        end do
         ! Bulk (non-boundary nodes)
         !$omp parallel do default(shared) private(i,j)
         do j = 1, Ny
@@ -284,9 +282,11 @@ contains
                 dMx(i,j) = (M(i+1,j) - M(i-1,j))*dx_inv
             end do
         end do
+        !$omp end parallel do
+        !print*, dMx
 
     end subroutine dM_dx
-    
+
 
     subroutine time_evolution(grid, grid_new, dQ, M, dt, Nx, Ny)
         ! Subroutine to perform the time evolution in accordance with
@@ -321,7 +321,7 @@ contains
     !!@param Nx, Ny : number of resoloutions in x and y
     !*****************************************************************************
     subroutine time_evolution_new(c,c_new,M,Q,dx,dy,dt, Nx, Ny,Q_halo,M_halo)
-      
+
         integer, intent(in) :: Nx, Ny
         real(real64), intent(in) :: c(Nx,Ny), Q(Nx,Ny), M(Nx,Ny)
         real(real64), intent(in) :: Q_halo(Nx,4),M_halo(Nx,4)
@@ -348,8 +348,7 @@ contains
                 ybeta = dMy(i,j) * dQy(i,j)
                 beta = xbeta + ybeta
 
-                ! print*, alpha
-            
+                !print*, beta
                 c_new(i,j) = c(i,j) + dt*(alpha + beta)
 
             end do
