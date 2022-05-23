@@ -58,7 +58,7 @@ contains
         ! Get Q grid size
         nx = size(Q, 1)
         ny = size(Q, 2)
-        
+
 
         ! Pre-compute 1.0/(dx^2) and 1.0/(dy^2)
         dx2 = 1.0 / (dx * dx)
@@ -124,6 +124,7 @@ contains
                 Q(i, j) = mu(i, j) - Kappa * (lap_x + lap_y)
             end do
         end do
+        !$omp end parallel do
 
     end subroutine total_potential
 

@@ -101,6 +101,10 @@ contains
 
         ! exit if not in parallel
         if (p == 1) then
+            grid_halo(:, right) = grid(1,:)
+            grid_halo(:, left) = grid(grid_domain_size, :)
+            grid_halo(:, up) = grid(:,1)
+            grid_halo(:, down) = grid(:,grid_domain_size)
             return
         end if
 
