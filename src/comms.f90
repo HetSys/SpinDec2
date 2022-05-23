@@ -79,12 +79,12 @@ contains
         real(kind=dp),intent(out) :: global_F
 
         integer :: ierr              ! Error flag
-
+        !print*, local_F
         ! This is only correct on one processor. You will need
         ! to use a collective communication routine to correct this.
-        global_F = local_F
-
+        !global_F = local_F
         call MPI_Reduce(local_F,global_F,1,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,ierr)
+
 
     end subroutine comms_get_global_F
 

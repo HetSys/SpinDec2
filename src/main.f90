@@ -203,7 +203,7 @@ program main
         ! Calculate F(t)
         call total_free_energy(local_F, local_grid_conc, dx, dy, kappa,conc_halo)
 
-        call comms_get_global_F(global_F,local_F)
+        call comms_get_global_F(local_F,global_F)
 
         if (my_rank == 0) then
             F_tot(k) = global_F
