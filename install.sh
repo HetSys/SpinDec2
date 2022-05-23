@@ -57,8 +57,8 @@ compile () {
     compd_file="bin/spindec"
 
     # NetCDF flags
-    flibs=`nf-config --flibs`
-    fflags=`nf-config --fflags`
+    flibs=$(nf-config --flibs)
+    fflags=$(nf-config --fflags)
 
     # Compile
     echo "Compile line:"
@@ -196,8 +196,8 @@ unit_test_compile () {
     compd_file="test/test_bin/test_spindec"
 
     # NetCDF flags
-    flibs=`nf-config --flibs`
-    fflags=`nf-config --fflags`
+    flibs=$(nf-config --flibs)
+    fflags=$(nf-config --fflags)
 
     # C H O N K Y  compilation
     echo "Compile line:"
