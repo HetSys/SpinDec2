@@ -11,30 +11,27 @@ set -e
 compile () {
     ### Compilation ###
     if [[ "$1" == "d" ]] || [[ "$1" == "debug" ]]; then
-        comp_line="gfortran -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
+        comp_line="mpif90 -fopenmp -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
     elif [[ "$1" == "o" ]] || [[ "$1" == "openmp" ]]; then
-        comp_line="gfortran -fopenmp"
-    elif [[ "$1" == "m" ]] || [[ "$1" == "mpi" ]]; then
-        comp_line="mpif90"
-    elif [[ "$1" == "h" ]] || [[ "$1" == "hybrid" ]]; then
         comp_line="mpif90 -fopenmp"
-    elif [[ "$1" == "p" ]] || [[ "$1" == "profile" ]]; then
-        read -p 'Profile with OpenMP? [y/n] ' omp_profile
 
-        while true; do
-            if [[ "$omp_profile" =~ ^[Yy]$ ]]; then
-                comp_line="gfortran -fopenmp -pg"
-                break
-            elif [[ "$omp_profile" =~ ^[Nn]$ ]]; then
-                comp_line="gfortran -pg"
-                break
-            else
-                echo -e '\nNot a valid option'
-            fi
-        done
+    # elif [[ "$1" == "p" ]] || [[ "$1" == "profile" ]]; then
+    #     read -p 'Profile with OpenMP? [y/n] ' omp_profile
+
+        # while true; do
+        #     if [[ "$omp_profile" =~ ^[Yy]$ ]]; then
+        #         comp_line="mpif90 -fopenmp -pg"
+        #         break
+        #     elif [[ "$omp_profile" =~ ^[Nn]$ ]]; then
+        #         comp_line="mpif90 -pg"
+        #         break
+        #     else
+        #         echo -e '\nNot a valid option'
+        #     fi
+        # done
 
     elif [[ -z "$1" ]]; then
-        comp_line="gfortran"
+        comp_line="mpif90"
     else
         echo -e "$1 is not a valid option for -c/--compile\n"
         help_message
@@ -43,6 +40,11 @@ compile () {
 
     # Add program files from src 
     prog_files=(src/*.f90)
+
+    # Move grid to first item in array
+    grid="src/grid.f90"
+    prog_files=('' "${prog_files[@]}")
+    prog_files[0]="$grid"
 
     # Move main to last item in array
     main="src/main.f90"
@@ -166,11 +168,18 @@ unit_test_compile () {
     ### Compile unit tests ###
     # Compile line
     # Only the debug compile line from above to be used
-    comp_line="gfortran -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
+    # comp_line="gfortran -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
+    # TODO Add openp support
+    comp_line="mpif90 -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
 
     # f90 file directories
     test_files=(test/*.f90)
     src_files=(src/*.f90)
+
+    # Move grid to first item in array
+    grid="src/grid.f90"
+    src_files=('' "${prog_files[@]}")
+    src_files[0]="$grid"
 
     # Move test main to last item in array
     test_main="test/test.f90"
@@ -268,7 +277,7 @@ help_message () {
     echo "options:"
     echo "  -h, --help              show this help message and exit"
     echo "  -c, --compile ARGS      compile the code with optional debug or profile option"
-    echo "                          optional arguments: [ none | o/openmp | m/mpi | h/hybrid | d/debug | p/profile]"
+    echo "                          optional arguments: [ none | o/openmp | d/debug ]"
     echo "                          (default=none)"
     echo
     echo "  -C, --clean ARGS        remove compiled binaries from repository"
