@@ -27,7 +27,7 @@ module grid
     real(real64), dimension(:,:), allocatable :: local_grid_conc
     real(real64), dimension(:,:), allocatable :: Q, M, mu, c_new, T, f_b
     real(real64), dimension(:,:), allocatable :: conc_halo, Q_halo, M_halo
-    
+
     ! Constants to define directions
     integer, parameter :: left=1, right=2, down=3, up=4
     ! Constants to define coordinates
@@ -51,13 +51,19 @@ contains
         integer :: seed_in
         real(real64) :: u
         integer :: n
-        integer, dimension(:), allocatable :: seed
+        integer, dimension(:), allocatable :: seed,seed_o
 
         if (seed_in .eq. -1) then
-            call random_number(u)
-            seed_in = int((999999 - 100000) * u + 100000)
+            call random_seed(size=n)
+            allocate (seed(n))
+            allocate (seed_o(n))
+            !call random_seed(put=seed)
+            call random_seed(get=seed_o)
+            seed = seed_o(1)
+            call random_seed(put=seed)
+            !print*, seed
+            seed_in = seed(1)
         end if
-
         ! Set seed
         call random_seed(size=n)
         allocate (seed(n))
@@ -75,7 +81,7 @@ contains
     !!@param x: random number output
     !!@param min: user inputted lower bound for uniform distribution
     !!@param max : user inputted upper bound for uniform distribution
-    !******************************************************************************    
+    !******************************************************************************
     subroutine rand_uniform(x,min,max)
 
 	    real(real64), intent(in) :: min, max
@@ -87,7 +93,7 @@ contains
 	    u1 = 1.0 - u1
 
 	    x = (max-min)*u1 + min
- 
+
     end subroutine rand_uniform
 
     !******************************************************************************
@@ -96,7 +102,7 @@ contains
     !! Subroutine to output a random number from a standard normal distribution
     !!
     !!@param x: random number output
-    !******************************************************************************    
+    !******************************************************************************
     subroutine rand_stdnormal(x)
 
         real(real64), intent(out) :: x
@@ -122,7 +128,7 @@ contains
     !!@param x: random number output
     !!@param mean: user inputted mean for normal distribution
     !!@param std : user inputted standard deviation for normal distribution
-    !******************************************************************************    
+    !******************************************************************************
     subroutine rand_normal(x, mean, std)
 
         real(real64), intent(in) :: mean, std
@@ -143,9 +149,9 @@ contains
     !!@param Nx, Ny: grid dimensions
     !!@param min: user inputted lower bound for uniform distribution
     !!@param max : user inputted upper bound for uniform distribution
-    !******************************************************************************    
-    subroutine grid_init(grid, Nx, Ny, min, max)
-  
+    !******************************************************************************
+    subroutine grid_init(grid, Nx, Ny, min, max, burn)
+
         ! The first input is an array with dimensions Nx x Ny to store concentrations
         ! Nx and Ny are the grid dimensions
         ! c_min is the lower bound for the concentration
@@ -155,11 +161,16 @@ contains
         implicit none
 
         integer, intent(in) :: Nx, Ny
+        integer, intent(in),optional :: burn
         real(real64), dimension(Nx, Ny), intent(out) :: grid
         real(real64), intent(in) :: min, max
         real(real64) :: x ! dummy variable for concnetration
         integer :: i, j ! counters
-
+        if(present(burn)) then
+            do i = 1, burn
+                call rand_uniform(x,min,max)
+            end do
+        end if
         do i = 1, Nx
             do j = 1, Ny
                 call rand_uniform(x,min,max)
@@ -174,7 +185,7 @@ contains
     !******************************************************************************
     !> grid_initialise_local
     !!
-    !! subroutine to calculate grid subdomain size 
+    !! subroutine to calculate grid subdomain size
     !! and allocate needed memory for local concentration, Q, and M, and mu grids
     !! also allocates memory for corresponding halos
     !!
@@ -193,6 +204,7 @@ contains
         integer, dimension(2), intent(in) :: my_rank_coords
         real(real64), intent(in) :: c_min, c_max
         real(real64), intent(in) :: T_min, T_max
+        real(real64) :: ct_min,ct_max
         character(len=128), intent(in) :: problem
         integer :: proot
         integer :: ierr
@@ -236,7 +248,7 @@ contains
             print*, "Error: allocating Q failed on rank ", my_rank
             stop
         end if
-        Q = 0.0      
+        Q = 0.0
 
         ! Allocate four halo arrays for Q
         allocate(Q_halo(grid_domain_size,4),stat=ierr)
@@ -286,15 +298,22 @@ contains
         end if
         f_b = 0.0
 
-        ! Initialise local temperature grid using a uniform distribution 
+        ! Initialise local temperature grid using a uniform distribution
         ! on current rank
         if (problem == 'Temp') then
             call grid_init(T, Nx, Ny, T_min, T_max)
         end if
-    
-        ! Initialise local concentration grid using a uniform distribution 
+
+        ! Initialise local concentration grid using a uniform distribution
         ! on current rank
-        call grid_init(local_grid_conc,grid_domain_size,grid_domain_size,c_min,c_max)
+        if(my_rank == 3) then
+            ct_min = c_min
+            ct_max = c_max
+        else
+            ct_min = c_min
+            ct_max = c_max
+        end if
+        call grid_init(local_grid_conc,grid_domain_size,grid_domain_size,ct_min,ct_max,Nx*Ny*my_rank)
 
     end subroutine grid_initialise_local
 
@@ -306,7 +325,7 @@ contains
     !!@param Nx, Ny : Grid dimensions
     !!@param my_rank : Current MPI rank
     !!@param ierr : Error flag
-    !*****************************************************************************   
+    !*****************************************************************************
     subroutine grid_initialise_global(Nx,Ny,Nt,my_rank)
 
         integer, intent(in) :: Nx, Ny, Nt, my_rank
@@ -340,7 +359,7 @@ contains
         ! on rank 0
         if (my_rank == 0) then
             deallocate(global_grid_conc, stat=ierr)
-            
+
             if (ierr /= 0) then
                 print*, "Error: deallocating global_grid_conc failed on rank 0"
                 stop
@@ -348,7 +367,7 @@ contains
 
 
             deallocate(c, stat=ierr)
-            
+
             if (ierr /= 0) then
                 print*, "Error: deallocating c failed on rank 0"
                 stop
@@ -366,7 +385,7 @@ contains
     !!@param ierr : error flag
     !*****************************************************************************
     subroutine local_grid_deallocate(my_rank)
-        
+
         integer, intent(in) :: my_rank
         integer :: ierr
 
