@@ -9,11 +9,12 @@ module ch_test
 
     contains
 
-    subroutine test_del_Q(d2Q_finite_diff,Q_test,d2Q_analytical,dx,dy,Nx,Ny)
+    subroutine test_del_Q(d2Q_finite_diff,Q_test,d2Q_analytical,dx,dy,Nx,Ny,Q_halo)
         integer, intent(in) :: Nx, Ny
         real(real64), intent(in) :: dx, dy
         real(real64), dimension(Nx,Ny), intent(in) :: Q_test
         real(real64), dimension(Nx,Ny), intent(out) :: d2Q_finite_diff
+        real(real64), dimension(Nx,4), intent(in) :: Q_halo
         real(real64), dimension(Nx,Ny), intent(out) :: d2Q_analytical
         logical :: res = .TRUE.
         integer :: i,j ! counters
@@ -25,7 +26,7 @@ module ch_test
         d2Q_analytical = 4.0
 
         ! Finite differences
-        call del_Q(d2Q_finite_diff,Q_test,dx,dy,Nx,Ny)
+        call del_Q(d2Q_finite_diff,Q_test,dx,dy,Nx,Ny,Q_halo)
 
         ! Test internal nodes
         do i = 2, Nx-1
@@ -44,10 +45,11 @@ module ch_test
         end if
     end subroutine test_del_Q
 
-    subroutine test_time_evolution(c_new,c_test,c_expected,Nx,Ny,dx,dy,dt,a,Kappa,M)
+    subroutine test_time_evolution(c_new,c_test,c_expected,Nx,Ny,dx,dy,dt,a,Kappa,M,conc_halo,Q_halo)
 
         integer, intent(in) :: Nx, Ny
         real(real64), dimension(Nx,Ny), intent(in) :: c_test, c_expected
+        real(real64), dimension(Nx,4), intent(in) :: conc_halo,Q_halo
         real(real64), intent(in) :: dx, dy, dt, Kappa, M
         real(real64), dimension(:), intent(in) :: a
         real(real64), dimension(Nx,Ny), intent(out) :: c_new
@@ -59,13 +61,13 @@ module ch_test
         ! Get bulk chemical potential
         call bulk_potential(mu,c_test,a)
         ! Get total chemical potential
-        call total_potential(Q,mu,c_test,dx,dy,Kappa)
+        call total_potential(Q,mu,c_test,dx,dy,Kappa,conc_halo)
         ! Get dQ
-        call del_Q(dQ,Q,dx,dy,Nx,Ny)
+        call del_Q(dQ,Q,dx,dy,Nx,Ny,Q_halo)
         ! Get grid at next time step
         call time_evolution(c_test,c_new,dQ,M,dt,Nx,Ny)
 
-        call del_Q(dQ,Q,dx,dy,Nx,Ny)
+        call del_Q(dQ,Q,dx,dy,Nx,Ny,Q_halo)
 
         do i = 1, Nx
             do j = 1 , Ny

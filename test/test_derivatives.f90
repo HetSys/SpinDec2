@@ -15,6 +15,7 @@ module test_derivatives
         real(real64) :: dx_inv, lh_bound, rh_bound
         real(kind=real64), dimension(Nx, Ny) :: test_in,test_out
         real(kind=real64), dimension(Nx, Ny) :: dQx, dMx, dQy, dMy
+        real(kind=real64), dimension(Nx, 4) :: Q_halo, M_halo
         real(kind=real64), dimension(Nx) :: x
         logical :: res = .true.
         real(real64) :: L
@@ -42,7 +43,7 @@ module test_derivatives
             end do
         end do
     
-        call dQ_dx(dQx,test_in,dx,Nx,Ny)
+        call dQ_dx(dQx,test_in,dx,Nx,Ny,Q_halo)
 
         ! test internal, should be the same as analytic
 
@@ -97,7 +98,7 @@ module test_derivatives
 
         ! dM/dx tests
 
-        call dM_dx(dMx,test_in,dx,Nx,Ny)
+        call dM_dx(dMx,test_in,dx,Nx,Ny,M_halo)
 
         ! test internal, should be the same as analytic
 
@@ -153,8 +154,8 @@ module test_derivatives
         !test y derivatives if the grid give zero everywhere
         dy = dx
 
-        call dQ_dy(dQy,test_in,dy,Nx,Ny)
-        call dM_dy(dMy,test_in,dy,Nx,Ny)
+        call dQ_dy(dQy,test_in,dy,Nx,Ny,Q_halo)
+        call dM_dy(dMy,test_in,dy,Nx,Ny,M_halo)
 
         res = .true.
 
@@ -188,6 +189,7 @@ module test_derivatives
         real(real64) :: dy_inv, top_bound, bottom_bound
         real(kind=real64), dimension(Nx, Ny) :: test_in,test_out
         real(kind=real64), dimension(Nx, Ny) :: dQy, dMy, dQx, dMx
+        real(kind=real64), dimension(Nx, 4) :: Q_halo, M_halo
         real(kind=real64), dimension(Ny) :: y
         logical :: res = .true.
         real(real64) :: L
@@ -215,7 +217,7 @@ module test_derivatives
             end do
         end do
     
-        call dQ_dy(dQy,test_in,dy,Nx,Ny)
+        call dQ_dy(dQy,test_in,dy,Nx,Ny,Q_halo)
 
         ! test internal, should be the same as analytic
 
@@ -270,7 +272,7 @@ module test_derivatives
 
         ! dM/dx tests
 
-        call dM_dy(dMy,test_in,dy,Nx,Ny)
+        call dM_dy(dMy,test_in,dy,Nx,Ny,M_halo)
 
         ! test internal, should be the same as analytic
 
@@ -326,8 +328,8 @@ module test_derivatives
         !test y derivatives if the grid give zero everywhere
         dx = dy
 
-        call dQ_dx(dQx,test_in,dx,Nx,Ny)
-        call dM_dx(dMx,test_in,dx,Nx,Ny)
+        call dQ_dx(dQx,test_in,dx,Nx,Ny,Q_halo)
+        call dM_dx(dMx,test_in,dx,Nx,Ny,M_halo)
 
         res = .true.
 
