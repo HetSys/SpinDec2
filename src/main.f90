@@ -43,7 +43,7 @@ program main
     character(len=128) :: cpi, cpo ! checkpointing files
     character(len=128) :: problem
     integer :: proot, file_id,i ! sqrt of number of processors
-    real(real64) :: t1,t2
+    real(real64) :: t1,t2,w1,w2
 
     ! Initialise MPI
     ! Get my_rank and p
@@ -196,6 +196,7 @@ program main
             F_tot(1) = global_F
             print*,global_F,F_tot(1:1)
         end if
+
         if (my_rank == 0) then
             call write_netcdf_parts_setup(c, F_tot, a, Nc, Nx, Ny, Nt, dt, c0, MA, MB, kappa,file_id)
             call write_netcdf_parts(c(:,:,write_int+1:write_int+1), F_tot(1:1),1,file_id)
@@ -269,8 +270,14 @@ program main
 
         if (my_rank == 0) then
             if(write_count == write_int) then
+                w1 = MPI_Wtime()
                 call write_netcdf_parts(c(:,:,2:), F_tot(k-write_int+1:k),k-write_int+1,file_id)
                 write_count = 1
+                w2 = MPI_Wtime()
+
+                if (my_rank == 0) then
+                    print *, "Write took", w2-w1
+                end if
             end if
 
             do i=1,write_int+1
@@ -304,9 +311,11 @@ program main
     end do
     if (my_rank == 0) then
         if(write_count > 2) then
+
             call write_netcdf_parts(c(:,:,4+write_int-write_count:), &
                                 F_tot(Nt-write_count:),Nt-write_count,file_id)
             write_count = 1
+
         end if
     end if
 
