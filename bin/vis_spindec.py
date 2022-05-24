@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.animation as animation
 from scipy.ndimage import uniform_filter1d
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from matplotlib import cm
+import argparse
 
 
 # Pre-set plotting style
@@ -72,7 +72,21 @@ def bulk_energy_extrema(coeffs):
             max_pos = np.append(max_pos, np.round(c[i],2))
 
     return min_pos, max_pos
-    
+
+# Argument parser for saving and viewing the  plot
+parser = argparse.ArgumentParser(description='Visulise spinodal decomposistion in SpinDec2 (DEFAULT: Saves plots)')
+
+# controls snapshot that you can view in grid_snapshot plotter function
+parser.add_argument('-sn', '--snap', type=int, default=-1, metavar = '',help='Select Snapshot Of Grid To Plot')
+
+# controls whether user wants to save plots only
+parser.add_argument('-s', '--save', action='store_true', help='Save plots only')
+# controls whether user wants to view plots only
+parser.add_argument('-d', '--display', action='store_true', help='View plots only')
+
+
+args = parser.parse_args()
+
 
 #Visualisation Code Begins
 class Vis_CH:
@@ -93,8 +107,6 @@ class Vis_CH:
         #concentration order parameter c(t, y, x)
         self.c = np.array([data.variables['c'][:]][0])
         # self.c = np.swapaxes(self.c, 1, 2)
-
-        #### Issue/needs checking - does c need to be transposed?
 
         #free energy over time
         self.F_tot = np.array([data.variables['F_tot'][:]][0])
@@ -126,6 +138,7 @@ class Vis_CH:
 
         #print metadata to terminal
         if (verbose):
+            print('###### SpinDec2 Meta Data ######')
 
             print('\u0394t =', self.dt, 's')
             print('N_x, N_y, N_t =', self.N_x, self.N_y, self.N_t )
@@ -173,6 +186,7 @@ class Vis_CH:
         # For the bounds of the plots
         self.minima, self.maxima  = bulk_energy_extrema(self.coeffs)
 
+
         
 
     
@@ -183,7 +197,6 @@ class Vis_CH:
 
         vmin = np.min(self.minima)
         vmax = np.max(self.minima)
-        # cmap = cm.jet
         pos1 = ax1.imshow(np.zeros(shape=(self.N_y, self.N_x)), vmin=vmin, vmax=vmax, origin='lower')
         div = make_axes_locatable(ax1)
         cax = div.append_axes('right', '5%', '5%')
@@ -205,14 +218,16 @@ class Vis_CH:
             pos1.set_array(self.c_plot[0])
             line.set_data(self.time_anim[0], self.F_anim[0])
             line_av.set_data(self.time_anim[0], self.F_anim_av[0])
-            fig.suptitle('Time = '+str(self.time_anim[0]), fontsize = 20)
+            if (save_plot):
+                fig.suptitle('Time = '+str(self.time_anim[0]), fontsize = 20)
             return [pos1, line, line_av,]
 
         def animate(i):
             pos1.set_array(self.c_plot[i])
             line.set_data(self.time_anim[:i], self.F_anim[:i])
             line_av.set_data(self.time_anim[:i], self.F_anim_av[:i])
-            fig.suptitle('Time = '+str(self.time_anim[i]), fontsize = 20)
+            if (save_plot):
+                fig.suptitle('Time = '+str(self.time_anim[i]), fontsize = 20)
             return [pos1, line, line_av,]
     
         anim = animation.FuncAnimation(fig = fig, func = animate, init_func = init, frames = len(self.c_plot), repeat = False, interval=1,blit=True)
@@ -278,12 +293,14 @@ class Vis_CH:
 
         def init():
             pos1.set_array(self.c_plot[0])
-            fig.suptitle('Time = '+str(self.time_anim[0]), fontsize = 20)
+            if (save_plot):
+                fig.suptitle('Time = '+str(self.time_anim[0]), fontsize = 20)
             return [pos1]
 
         def animate(i):
             pos1.set_array(self.c_plot[i])
-            fig.suptitle('Time = '+str(self.time_anim[i]), fontsize = 20)
+            if (save_plot):
+                fig.suptitle('Time = '+str(self.time_anim[i]), fontsize = 20)
             return [pos1]
     
         anim = animation.FuncAnimation(fig = fig, func = animate, init_func = init, frames = len(self.c_plot), repeat = False, interval=1,blit=True)
@@ -403,17 +420,13 @@ class Vis_CH:
 
             
             else:
-                print('Function Terminated, Error = Size: Plotting Routine can only be used for sqaure grids of size (64,64) ; (128, 128) or (256, 256)')
+                print('Function Terminated, Error = Size: Plotting Routine (bulk_energy_traj) can only be used for sqaure grids of size (64,64) ; (128, 128) or (256, 256)')
                 return None
 
         else:
-            print('Function Terminated, Error = Shape: Plotting Routine can only be used for sqaure grids of size (64,64) ; (128, 128) or (256, 256)')
+            print('Function Terminated, Error = Shape: Plotting Routine (bulk_energy_traj) can only be used for sqaure grids of size (64,64) ; (128, 128) or (256, 256)')
             return None
                 
-
-
-            
-
 
 #run visualisation
 
@@ -422,14 +435,34 @@ res_CH = Vis_CH(file = 'CH_output.nc', av_period=10)
 
 res_CH.read_and_setup(verbose=True)
 
-res_CH.F_animation(save_plot=True)
+# arg parser for saving or viewing
+if args.save:
+    save = True
+if args.display:
+    save = False
+else:
+    save = True
 
-res_CH.grid_animation(save_plot=True)
+res_CH.F_animation(save_plot=save)
+if save:
+    print('Saved Free Energy Animation')
 
-res_CH.grid_snapshot(snapshot=-1, save_plot=True)
+res_CH.grid_animation(save_plot=save)
+if save:
+    print('Saved Grid Animation')
 
-res_CH.F_plot(save_plot=True)
+res_CH.grid_snapshot(snapshot=args.snap, save_plot=save)
+if save:
+    print('Saved Grid Snapshot N_t =' + str(args.snap))
 
-res_CH.bulk_energy_traj(save_plot=True)
+res_CH.F_plot(save_plot=save)
+if save:
+    print('Saved Free Energy plot')
 
-res_CH.dual_animation(save_plot=True)
+res_CH.bulk_energy_traj(save_plot=save)
+if save:
+    print('Saved Bulk Energy Trajectory Plot')
+
+res_CH.dual_animation(save_plot=save)
+if save:
+    print('Saved Dual Animation')
