@@ -16,6 +16,7 @@ contains
         real(real64) :: mu(:, :)
         real(real64), intent(in) :: c(:, :)
         real(real64), intent(in) :: a(:)
+        real(real64) :: val
         integer :: nx, ny, n, i, j, k
 
         !Get mu grid size and number of user input coefficients
@@ -30,8 +31,10 @@ contains
         !$omp parallel do default(shared) private(j,i,k)
         do j = 1, ny
             do i = 1, nx
+                val = 1.0_real64
                 do k = 1, n - 1
-                    mu(i, j) = mu(i, j) + k * a(k + 1) * c(i, j)**(k - 1)
+                    mu(i, j) = mu(i, j) + k * a(k + 1) * val!c(i, j)**(k - 1)
+                    val = val *c(i,j)
                 end do
             end do
         end do

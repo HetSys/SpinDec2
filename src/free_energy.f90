@@ -25,6 +25,7 @@ contains
         real(real64), intent(in) :: a(:)
         integer :: nx, ny, n
         integer :: i, j, k
+        real(real64) :: val
 
         !Get f_b grid size and number of user input coefficients
         Nx = size(c, 1)
@@ -37,8 +38,10 @@ contains
         !$omp parallel do default(shared) private(j,i,k)
         do j = 1, Ny
             do i = 1, Nx
+                val = 1.0_real64
                 do k = 1, n
-                    f_b(i, j) = f_b(i, j) + a(k) * c(i, j)**(k - 1)
+                    f_b(i, j) = f_b(i, j) + a(k) * val
+                    val = val * c(i,j)
                 end do
             end do
         end do
