@@ -12,22 +12,6 @@ compile () {
     ### Compilation ###
     if [[ "$1" == "d" ]] || [[ "$1" == "debug" ]]; then
         comp_line="mpif90 -fopenmp -O2 -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
-
-    # elif [[ "$1" == "p" ]] || [[ "$1" == "profile" ]]; then
-    #     read -p 'Profile with OpenMP? [y/n] ' omp_profile
-
-        # while true; do
-        #     if [[ "$omp_profile" =~ ^[Yy]$ ]]; then
-        #         comp_line="mpif90 -fopenmp -pg"
-        #         break
-        #     elif [[ "$omp_profile" =~ ^[Nn]$ ]]; then
-        #         comp_line="mpif90 -pg"
-        #         break
-        #     else
-        #         echo -e '\nNot a valid option'
-        #     fi
-        # done
-
     elif [[ -z "$1" ]]; then
         comp_line="mpif90 -fopenmp -O2"
     else
@@ -298,8 +282,7 @@ help_message () {
     echo "options:"
     echo "  -h, --help              show this help message and exit"
     echo "  -c, --compile ARGS      compile the code with optional debug or profile option"
-    echo "                          optional arguments: [ none | o/openmp | d/debug ]"
-    echo "                          (default=none)"
+    echo "                          optional arguments: [ none | d/debug ] (default=none)"
     echo
     echo "  -C, --clean ARGS        remove compiled binaries from repository"
     echo "                          optional arguments: [ none | c/confirm ] (default=none)"
