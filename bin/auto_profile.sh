@@ -69,12 +69,12 @@ prepare_profile hybrid_mpi_16 "${hybrid_mpi_16_threads[@]}"
 
 rm input.txt
 
-# Run the computations and print timings to timings.txt
 for i in *; do (
     cd "$i" || exit 1
     for j in *; do (
         cd "$j" || exit 1
 
+        # Run the computations and print timings to timings.txt
         if [[ "$i" == *"omp"* ]]; then
             export OMP_NUM_THREADS="$j" && mpirun -np 1 spindec | tee prof_out.txt
         elif [[ "$i" == "mpi" ]]; then
@@ -87,17 +87,12 @@ for i in *; do (
             echo "An error occurred"
             exit 1
         fi
-    ) done
-) done
 
-# Parse timings for each run
-# Timings are written to ./$1/timings.txt
-for i in *; do (
-    cd "$i" || exit 1
-    for j in *; do (
-        cd "$j" || exit 1
+        # Parse timings for each run
+        # Timings are written to ./$1/timings.txt
         # If anyone sees this, I'm pretty proud of this command
         awk -v type="$i" -v num="$j" -F ' ' 'END{ print $3, "sec on " type " with " num " threads" }' \
             prof_out.txt >> ../../timings.txt
+
     ) done
 ) done
