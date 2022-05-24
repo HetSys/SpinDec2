@@ -24,7 +24,7 @@ module grid
     real(real64), dimension(:,:), allocatable :: global_grid_conc
     real(real64), dimension(:,:,:), allocatable :: c
     real(real64), dimension(:,:), allocatable :: local_grid_conc
-    real(real64), dimension(:,:), allocatable :: Q, M, mu, c_new, T, f_b
+    real(real64), dimension(:,:), allocatable :: Q, M, mu, c_new, T, f_b, c_out
     real(real64), dimension(:,:), allocatable :: conc_halo, Q_halo, M_halo
 
     ! Constants to define directions
@@ -177,11 +177,13 @@ contains
         ! Set up four subdomains on current rank
 
         ! Allocate local concnentration grid on current rank
+
         allocate(local_grid_conc(grid_domain_size,grid_domain_size),stat=ierr)
         if (ierr /= 0) then
             print*, "Error: allocating local_grid_conc failed on rank ", my_rank
             stop
         end if
+
 
         ! Allocate four halo arrays for concentration
         allocate(conc_halo(grid_domain_size,4),stat=ierr)
@@ -229,6 +231,8 @@ contains
         end if
         M_halo = 0.0
 
+
+
         ! Allocate local mu grid
         allocate(mu(grid_domain_size,grid_domain_size),stat=ierr)
         if (ierr /= 0) then
@@ -245,6 +249,7 @@ contains
         end if
         T = 0.0
 
+
         ! Allocate local f_b grid
         allocate(f_b(grid_domain_size,grid_domain_size),stat=ierr)
         if (ierr /= 0) then
@@ -256,19 +261,13 @@ contains
         ! Initialise local temperature grid using a uniform distribution
         ! on current rank
         if (problem == 'Temp') then
-            call grid_init(T, Nx, Ny, T_min, T_max)
+            call grid_init(T, grid_domain_size, grid_domain_size, T_min, T_max,Nx*Ny*my_rank+Nx*Ny*p)
         end if
 
         ! Initialise local concentration grid using a uniform distribution
         ! on current rank
-        if(my_rank == 5) then
-            ct_min = real(my_rank)/4.0
-            ct_max = real(my_rank)/4.0
-        else
-            ct_min =c_min!real(my_rank)/4.0
-            ct_max = c_max!real(my_rank)/4.0
-        end if
-        call grid_init(local_grid_conc,grid_domain_size,grid_domain_size,ct_min,ct_max,Nx*Ny*my_rank)
+
+        call grid_init(local_grid_conc,grid_domain_size,grid_domain_size,c_min,c_max,Nx*Ny*my_rank)
 
     end subroutine grid_initialise_local
 
@@ -285,13 +284,12 @@ contains
 
         integer, intent(in) :: Nx, Ny, Nt, my_rank
         integer :: ierr
-
         ! allocate grid array on rank zero
         if (my_rank == 0) then
             allocate(global_grid_conc(Nx,Ny),stat=ierr)
             if(ierr/=0) stop "Error: allocating global_grid_conc failed"
 
-            allocate(c(Nx,Ny,Nt),stat=ierr)
+            allocate(c(Nx,Ny,3),stat=ierr)
             if(ierr/=0) stop "Error: allocating c failed"
         end if
     end subroutine grid_initialise_global

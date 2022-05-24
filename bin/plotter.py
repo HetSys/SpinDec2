@@ -106,7 +106,7 @@ class Vis_CH:
 
             print(string)
 
-        
+
 
         self.nframes = 300
 
@@ -129,10 +129,10 @@ class Vis_CH:
 
         self.c_plot = np.array(c_plot)
 
-        
-        
 
-    
+
+
+
     #function that plots an animation of both c and F (and its moving average) on the same figure
     def dual_animation(self):
 
@@ -167,19 +167,19 @@ class Vis_CH:
             line.set_data(self.time_anim[:i], self.F_anim[:i])
             line_av.set_data(self.time_anim[:i], self.F_anim_av[:i])
             return [pos1, line, line_av,]
-    
+
         anim = animation.FuncAnimation(fig = fig, func = animate, init_func = init, frames = len(self.c_plot), repeat = False, interval=1,blit=True)
 
         plt.show()
 
-       
+
 
 
     #function that plots an animation of both c and F (and its moving average) on the same figure
     def F_animation(self):
 
         fig, ax = plt.subplots()
-        
+
         line, = ax.plot([], [], '-', label = r'Sim Data', color = 'black')
         line_av, = ax.plot([], [], '--', label = r'Moving Average ($t_{period}$ = ' + str(self.N_t // self.av_period) + r' s)', color = 'red')
         ax.set_xlabel(r'Time (ns)')
@@ -199,10 +199,10 @@ class Vis_CH:
             return [line,line_av,]
 
         anim_traj = animation.FuncAnimation(fig = fig, func = animate, init_func = init, frames = len(self.c_plot), repeat = False, interval=1,blit=True)
-               
+
 
         plt.show()
-    
+
     #function that plots an animation of c
     def grid_animation(self):
 
@@ -225,7 +225,7 @@ class Vis_CH:
         def animate(i):
             pos1.set_array(self.c_plot[i])
             return [pos1]
-    
+
         anim = animation.FuncAnimation(fig = fig, func = animate, init_func = init, frames = len(self.c_plot), repeat = False, interval=1,blit=True)
 
         plt.show()
@@ -290,8 +290,8 @@ class Vis_CH:
             def animate(i):
                 traj.set_data(self.c_av[:i], self.f_b_av[:i])
                 return traj,
-               
-                
+
+
 
             anim_traj = animation.FuncAnimation(fig = fig, func = animate, init_func = init, frames = len(self.c_plot), repeat = False, interval=1,blit=True)
 

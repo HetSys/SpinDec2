@@ -30,9 +30,11 @@ contains
 
     subroutine comms_initialise()
 
-        integer:: ierr
+        integer:: ierr,thr,prov
 
-        call mpi_init(ierr)
+        !call mpi_init(ierr)
+        call mpi_init_thread(MPI_THREAD_FUNNELED,prov,ierr)
+
         call mpi_comm_rank(mpi_comm_world, my_rank, ierr)
         call mpi_comm_size(mpi_comm_world, p, ierr)
 

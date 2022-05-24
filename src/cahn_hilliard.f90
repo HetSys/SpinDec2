@@ -197,9 +197,6 @@ contains
         do j = 1, Ny
             dQx(1, j) = (Q(2, j) - Q_halo(j, left))*dx_inv    ! Top
             dQx(Nx, j) = (Q_halo(j, right) - Q(Nx-1, j))*dx_inv  ! Bottom
-            ! dQx(1, j) = (Q(2, j) - Q(Nx, j))*dx_inv    ! Top
-            ! dQx(Nx, j) = (Q(1, j) - Q(Nx-1, j))*dx_inv  ! Bottom
-            ! TODO ^^Commented out due to merge conflict
         end do
 
         ! Bulk (non-boundary nodes)
@@ -293,10 +290,6 @@ contains
             dMx(1, j) = (M(2, j) - M_halo(j, left))*dx_inv    ! LHS
             dMx(Nx, j) = (M_halo(j, right) - M(Nx-1, j))*dx_inv  ! RHS
         end do
-        !     dMx(1, j) = (M(2, j) - M(Nx, j))*dx_inv    ! Top
-        !     dMx(Nx, j) = (M(1, j) - M(Nx-1, j))*dx_inv  ! Bottom
-        ! end do
-        ! TODO ^^Commented out due to merge conflict
 
         ! Bulk (non-boundary nodes)
         !$omp parallel do default(shared) private(i, j)
@@ -345,8 +338,6 @@ contains
     !!@param Nx, Ny : number of resoloutions in x and y
     !*****************************************************************************
     subroutine time_evolution_new(c, c_new, M, Q, dx, dy, dt, Nx, Ny, Q_halo, M_halo)
-    ! subroutine time_evoloution_new(c, c_new, M, Q, dx, dy, dt, Nx, Ny)
-    ! TODO ^^Commented out due to merge conflict
         integer, intent(in):: Nx, Ny
         real(real64), intent(in):: c(Nx, Ny), Q(Nx, Ny), M(Nx, Ny)
         real(real64), intent(in):: Q_halo(Nx, 4), M_halo(Nx, 4)
