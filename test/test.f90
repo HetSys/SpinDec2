@@ -18,17 +18,21 @@ program main
     real(real64), dimension(3) :: a_1
     real(real64), dimension(3, 3) :: c_1
     real(real64), dimension(3, 3) :: expected_bulk_1, expected_total_1, expected_fb_1
+    real(real64), dimension(3, 4) :: conc_halo_1
     real(real64) :: dx, dy, kappa, dt
     real(real64), dimension(5) :: a_2
     real(real64), dimension(4, 4) :: c_2
     real(real64), dimension(4, 4) :: expected_bulk_2, expected_total_2, expected_fb_2
+    real(real64), dimension(4, 4) :: conc_halo_2
     real(real64), dimension(3) :: a_3
-    real(real64), dimension(3,3)  :: c_3,expected_bulk_3,expected_total_3
+    real(real64), dimension(3, 3)  :: c_3,expected_bulk_3,expected_total_3
+    real(real64), dimension(3, 4) :: conc_halo_1
     real(real64) :: expected_total_F_1, expected_total_F_2
     integer :: test_num
     real(real64), dimension(:,:), allocatable :: c_new ! new conc. grid
     real(real64), dimension(:,:), allocatable :: dQ   ! 2nd derivative of Q
     real(real64), dimension(:), allocatable :: a
+    real(real64), dimension(:,:), allocatable :: Q_halo_1, Q_halo_2, conc_halo_3
     real(real64) :: C_mean, C_std
     real(real64) :: M ! Mobility
     integer :: Nx, Ny
@@ -94,13 +98,13 @@ program main
     kappa = 2.0
     expected_total_1 = reshape((/0.0, 12.0, 18.0, 8.0, 20.0, 62.0, -2.0, 10.0, 34.0/), shape(c_1))
     test_num = 1
-    call test_total_potential(expected_bulk_1, c_1, dx, dx, kappa, expected_total_1, test_num,.false.)
+    call test_total_potential(expected_bulk_1, c_1, dx, dx, kappa, conc_halo_1, expected_total_1, test_num,.false.)
 
     !Test 2 for total potential
     expected_total_2 = reshape((/-0.4902, 0.1380, 0.7517, 3.1837, 2.4189, 1.8470, 8.0138, -3.0764, -0.8056, 2.3637, &
                                  5.0620, 10.7708, -0.3965, 3.1670, -1.9585, 7.6538/), shape(c_2))
     test_num = 2
-    call test_total_potential(expected_bulk_2, c_2, dx, dx, kappa, expected_total_2, test_num,.false.)
+    call test_total_potential(expected_bulk_2, c_2, dx, dx, kappa, expected_total_2, conc_halo_2, test_num,.false.)
 
     !Test 3(analytical) for total potential
     ! c = x^2 + y^2
@@ -110,7 +114,7 @@ program main
     kappa = 2.0
     test_num = 3
     expected_total_3 = expected_bulk_3 - 4.0*kappa
-    call test_total_potential(expected_bulk_3,c_3,dx,dy,kappa,expected_total_3,test_num,.true.)
+    call test_total_potential(expected_bulk_3,c_3,dx,dy,kappa, conc_halo_3, expected_total_3,test_num,.true.)
     !call test_total_potential(mu_3,c_3,dx,dx,kappa,expected_total_3)
 
     print*,'########################################################'
@@ -136,7 +140,7 @@ program main
     test_num = 1
     expected_total_F_1 = 311.71999
 
-    call test_total_free_energy(c_1, expected_fb_1, dx, dy, kappa, expected_total_F_1, test_num)
+    call test_total_free_energy(c_1, expected_fb_1, dx, dy, kappa, conc_halo_1, expected_total_F_1, test_num)
 
     !Test 2 for total free energy
     dx = 0.01
@@ -145,13 +149,13 @@ program main
     test_num = 2
     expected_total_F_2 = 0.939175
 
-    call test_total_free_energy(c_2, expected_fb_2, dx, dy, kappa, expected_total_F_2, test_num)
+    call test_total_free_energy(c_2, expected_fb_2, dx, dy, kappa, conc_halo_2, expected_total_F_2, test_num)
 
     print*,'########################################################'
     print*, "Starting Convergence test for F"
     print*,'--------------------------------------------------------'
 
-    call free_energy_convergence(c_2, expected_fb_2, kappa)
+    call free_energy_convergence(c_2, expected_fb_2, kappa, conc_halo_2)
 
     print*,'########################################################'
     print*, 'Testing First order derivatives - (for Chain rule term)'
@@ -195,6 +199,7 @@ program main
     allocate(dQ(Nx,Ny))
     allocate(Q_test(Nx,Ny))
     allocate(dQ_expected(Nx,Ny))
+    allocate(Q_halo_1(Nx,4))
 
     ! Set test values for Q_test
     do i = 1, Nx
@@ -203,7 +208,7 @@ program main
         end do
     end do
 
-    call test_del_Q(dQ,Q_test,dQ_expected,dx,dy,Nx,Ny)
+    call test_del_Q(dQ,Q_test,dQ_expected,dx,dy,Nx,Ny,Q_halo_1)
 
     ! Test on time_evolution subroutine
 
@@ -214,6 +219,8 @@ program main
     allocate(c_test(Nx,Ny))
     allocate(c_expected(Nx,Ny))
     allocate(c_new(Nx,Ny))
+    allocate(Q_halo_2(Nx,4))
+    allocate(conc_halo_3(Nx,4))
 
     ! initialize concentration grid with test values
     c_test = reshape((/0.82600226343913463,0.73763425858679454,0.75563253296536192, &
@@ -224,7 +231,7 @@ program main
                            0.740158839048355,0.738720099275076,0.690382929167892, &
                            0.709132521563533,0.657924059121464,0.803700028541638/),shape(c_expected))
 
-    call test_time_evolution(c_new,c_test,c_expected,Nx,Ny,dx,dy,dt,a,Kappa,M)
+    call test_time_evolution(c_new,c_test,c_expected,Nx,Ny,dx,dy,dt,a,Kappa,M, conc_halo_3,Q_halo_2)
 
 
     print*,'########################################################'
