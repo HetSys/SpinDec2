@@ -35,6 +35,11 @@ compile () {
     # Add program files from src
     prog_files=(src/*.f90)
 
+    # Move comms to first item in array
+    comms="src/comms.f90"
+    prog_files=('' "${prog_files[@]}")
+    prog_files[0]="$comms"
+    
     # Move grid to first item in array
     grid="src/grid.f90"
     prog_files=('' "${prog_files[@]}")
