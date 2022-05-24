@@ -66,9 +66,9 @@ contains
         call mpi_cart_coords(cart_comm, my_rank, ndims, my_rank_coords, ierr)
 
         ! rank of neighbouring tasks in the four directions
-        call mpi_cart_shift(cart_comm, 0, 1, my_rank_neighbours(1), my_rank_neighbours(2), ierr)
+        call mpi_cart_shift(cart_comm, 0, 1, my_rank_neighbours(4), my_rank_neighbours(3), ierr)
 
-        call mpi_cart_shift(cart_comm, 1, 1, my_rank_neighbours(3), my_rank_neighbours(4), ierr)
+        call mpi_cart_shift(cart_comm, 1, 1, my_rank_neighbours(1), my_rank_neighbours(2), ierr)
 
     end subroutine comms_processor_map
 
@@ -195,8 +195,8 @@ contains
                 do ix = 1, grid_domain_size
 
                     ! Global indices
-                    ixg = ix+grid_domain_start(1) - 1
-                    iyg = iy+grid_domain_start(2) - 1
+                    ixg = ix+grid_domain_start(2) - 1
+                    iyg = iy+grid_domain_start(1) - 1
 
                     global_grid_conc(ixg, iyg) = local_grid_conc(ix, iy)
 
@@ -229,8 +229,8 @@ contains
                     do ix = 1, grid_domain_size
 
                         ! Global indices
-                        ixg = ix+remote_domain_start(1) - 1
-                        iyg = iy+remote_domain_start(2) - 1
+                        ixg = ix+remote_domain_start(2) - 1
+                        iyg = iy+remote_domain_start(1) - 1
 
                         ! Store in global_grid_conc
                         global_grid_conc(ixg, iyg) = combuff(ix)
