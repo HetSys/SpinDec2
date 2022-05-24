@@ -204,8 +204,8 @@ contains
 
 
     subroutine write_netcdf_parts(c, F_tot,PT,file_id)
-        real(kind=real64), dimension(:, :), intent(in) :: c
-        real(kind=real64), intent(in) :: F_tot
+        real(kind=real64), dimension(:, :,:), intent(in) :: c
+        real(kind=real64),dimension(:), intent(in) :: F_tot
         character(len=*), parameter :: filename = 'CH_output.nc'
         integer :: k ,ierr
         integer, dimension(2) :: var_ids
