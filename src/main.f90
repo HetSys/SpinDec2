@@ -19,7 +19,7 @@ program main
 
     real(real64), dimension(:, :, :), allocatable :: c_check ! conc. grid
     !real(real64), dimension(:, :), allocatable :: c_new, c_out ! new conc. grid
-    real(real64), dimension(:, :), allocatable :: mu_check   ! bulk chem. pot.
+    real(real64), dimension(:, :), allocatable :: mu_check ,phold  ! bulk chem. pot.
     real(real64), dimension(:, :), allocatable :: Q_check    ! total chem. pot.
     real(real64), dimension(:, :), allocatable :: M_check    ! Mobility field
     real(real64), dimension(:, :), allocatable :: T_check ! Temp
@@ -41,12 +41,13 @@ program main
     integer :: k, count,thread ! counters
     integer :: cint, random_seed, err, use_input, current_iter, ncerr !checkpointing_interval, random seed,error var
     character(len=128) :: cpi, cpo ! checkpointing files
-    character(len=128) :: problem='Constant'
+    character(len=128) :: problem
     integer :: proot ! sqrt of number of processors
     real(real64) :: t1,t2
 
     ! Initialise MPI
     ! Get my_rank and p
+
     call comms_initialise()
 
     t1 = MPI_Wtime()
@@ -74,21 +75,24 @@ program main
         call omp_set_num_threads(no_threads)
         if(p > 1) then
             if(my_rank == 0) then
-                print*, "Spectral can oly be run with pure OpenMP"    
+                print*, "Spectral can oly be run with pure OpenMP"
             end if
             call comms_finalise()
             stop
         end if
     end if
 
-    !if (cpi /= "") then
-        !!call read_checkpoint_in(c_check, mu_check, T_check,F_tot, cpi,problem, c0, a, nx, &
-        !!                        ny, ma, mb, kappa, bfe, cint, cpo, t_end, dt, df_tol, current_iter, random_seed, use_input, ncerr)
-        !!if (ncerr /= nf90_noerr) then
-        !    print *, "There was an error reading the checkpoint file."
-        !    stop
-        !end if
-    !end if
+    if (cpi /= "") then
+        call read_checkpoint_metadata(cpi,problem, c0, a, nx, &
+                                ny, ma, mb, kappa, bfe, cint, cpo, t_end, dt, df_tol, current_iter, random_seed, use_input, ncerr)
+        if (ncerr /= nf90_noerr) then
+            print *, "There was an error reading the checkpoint file."
+            call comms_finalise()
+            stop
+        end if
+    end if
+
+
 
     ! Set seed
     call get_seed(random_seed)
@@ -140,6 +144,7 @@ program main
     ! Set up Cartesian communicator
     call comms_processor_map()
 
+
     ! Set up local grids
     call grid_initialise_local(Nx,Ny,c_min,c_max,T_min,T_max,problem,p,my_rank,my_rank_coords)
 
@@ -147,40 +152,56 @@ program main
     ! Initialise global concentration grid
     ! c ~ U(c_min,c_max)
 
+
     call grid_initialise_global(Nx,Ny,Nt,my_rank)
 
     ! Start calculations
-    call comms_get_global_grid()
 
+    if(.not. allocated(phold)) then
+        allocate(phold(1,1))
+        phold = 1
+    end if
+
+    if (cpi /= "") then
+        call read_checkpoint_data(c, phold, T,F_tot, cpi,use_input,ncerr)
+        if (ncerr /= nf90_noerr) then
+            print *, "There was an error reading the checkpoint file."
+            call comms_finalise()
+            stop
+        end if
+    end if
+
+    call comms_get_global_grid()
 
 
     if (my_rank==0) then
         c(:,:,2) = global_grid_conc(:,:)
     end if
 
-    !Get initial bulk free energy for current rank using local grid
-    call bulk_free_energy(local_grid_conc,a)
+    if (cpi == "") then
+        !Get initial bulk free energy for current rank using local grid
+        call bulk_free_energy(local_grid_conc,a)
 
-    !Store concentration from neighbor ranks in halo_swaps
-    call comms_halo_swaps(local_grid_conc,conc_halo)
+        !Store concentration from neighbor ranks in halo_swaps
+        call comms_halo_swaps(local_grid_conc,conc_halo)
 
-    ! Calculate Initial F(t)
-    call total_free_energy(local_F, local_grid_conc, dx, dy, kappa,conc_halo)
+        ! Calculate Initial F(t)
+        call total_free_energy(local_F, local_grid_conc, dx, dy, kappa,conc_halo)
 
-    !Gather total free energy
-    call comms_get_global_F(local_F,global_F)
+        !Gather total free energy
+        call comms_get_global_F(local_F,global_F)
 
-    if (my_rank == 0) then
-        F_tot(1) = global_F
-    end if
-    if (my_rank == 0) then
-        call write_netcdf_parts_setup(c, F_tot, a, Nc, Nx, Ny, Nt, dt, c0, MA, MB, kappa)
-        call write_netcdf_parts(c(:,:,2), F_tot(1),1)
+        if (my_rank == 0) then
+            F_tot(1) = global_F
+        end if
+        if (my_rank == 0) then
+            call write_netcdf_parts_setup(c, F_tot, a, Nc, Nx, Ny, Nt, dt, c0, MA, MB, kappa)
+            call write_netcdf_parts(c(:,:,2), F_tot(1),1)
+        end if
     end if
     count = 0
     ! Grid evolution
     do k = current_iter, Nt
-        !print*, k
         ! Get bulk chemical potentials
         call bulk_potential(mu,local_grid_conc, a)
 
@@ -252,7 +273,7 @@ program main
 
         if (my_rank == 0) then
             if (count >= cint) then
-                call write_checkpoint_file(c, mu, T,F_tot,problem, a, cpo, c0, &
+                call write_checkpoint_file(c, phold, T,F_tot,problem, a, cpo, c0, &
                                            nx, ny, ma, mb, kappa, bfe, Cint, t_end, dt, k, df_tol, &
                                            random_seed, ncerr)
 
@@ -275,6 +296,7 @@ program main
     ! Deallocate local and global grids
     call local_grid_deallocate(my_rank)
     call global_grid_deallocate(my_rank)
+    deallocate(phold)
 
     t2 = MPI_Wtime()
 

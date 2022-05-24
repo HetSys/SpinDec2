@@ -2,6 +2,8 @@ module checkpointing
 
     use netcdf
     use iso_fortran_env
+    use grid
+    use comms
 
     implicit none
 
@@ -227,7 +229,7 @@ contains
 
     end subroutine write_checkpoint_file
 
-    subroutine read_checkpoint_in(arr3dim, arr2dim,temp2dim, arr1dim, fn, prob,initial_conc, &
+    subroutine read_checkpoint_metadata(fn, prob,initial_conc, &
                                    coeffs, Nx, Ny, M1, M2, k, bfe, Cint, cpo, t, delta_t, df_tol, &
                                   current_iter, random_seed, use_input, ierr)
 
@@ -239,10 +241,6 @@ contains
                                             t, delta_t, df_tol
         integer, intent(inout) :: current_iter
         real(kind=real64), intent(inout), dimension(:), allocatable :: coeffs
-        real(kind=real64), intent(out), dimension(:, :, :), allocatable :: arr3dim
-        real(kind=real64), intent(out), dimension(:, :), allocatable :: arr2dim
-        real(kind=real64), intent(inout), dimension(:, :), allocatable :: temp2dim
-        real(kind=real64), intent(out), dimension(:), allocatable :: arr1dim
         character(LEN=1), dimension(9) :: dims = (/"x", "y", "t", "c", "a", "b", "f","n","m"/)
         character(LEN=12), dimension(15) :: comp_names = (/"initial_conc", &
                                                            "nx          ", "ny          ", "m1          ", &
@@ -280,72 +278,10 @@ contains
             end if
         end do
 
-        ! allocate
-        allocate (arr3dim(sizes(1), sizes(2), sizes(3)))
-        allocate (arr2dim(sizes(5), sizes(6)))
-        allocate (arr1dim(sizes(7)))
-
-        ! get var ids and read data
-        ierr = nf90_inq_varid(file_id, "data", var_ids(1))
-        if (ierr /= nf90_noerr) then
-            print *, trim(nf90_strerror(ierr))
-            return
-        end if
-
-        ierr = nf90_get_var(file_id, var_ids(1), arr3dim)
-        if (ierr /= nf90_noerr) then
-            print *, trim(nf90_strerror(ierr))
-            return
-        end if
-
-        ierr = nf90_inq_varid(file_id, "mu", var_ids(3))
-        if (ierr /= nf90_noerr) then
-            print *, trim(nf90_strerror(ierr))
-            return
-        end if
-
-        ierr = nf90_get_var(file_id, var_ids(3), arr2dim)
-        if (ierr /= nf90_noerr) then
-            print *, trim(nf90_strerror(ierr))
-            return
-        end if
-
-        ierr = nf90_inq_varid(file_id, "ftot", var_ids(4))
-        if (ierr /= nf90_noerr) then
-            print *, trim(nf90_strerror(ierr))
-            return
-        end if
-
-        ierr = nf90_get_var(file_id, var_ids(4), arr1dim)
-        if (ierr /= nf90_noerr) then
-            print *, trim(nf90_strerror(ierr))
-            return
-        end if
-
         if (use_input == 0) then
             deallocate (coeffs)
             allocate (coeffs(sizes(4)))
             ierr = nf90_inq_varid(file_id, "coeffs", var_ids(2))
-            if (ierr /= nf90_noerr) then
-                print *, trim(nf90_strerror(ierr))
-                return
-            end if
-
-            ierr = nf90_get_var(file_id, var_ids(2), coeffs)
-            if (ierr /= nf90_noerr) then
-                print *, trim(nf90_strerror(ierr))
-                return
-            end if
-
-            deallocate(temp2dim)
-            allocate (temp2dim(sizes(8),sizes(9)))
-            ierr = nf90_inq_varid(file_id, "tempg", var_ids(5))
-            if (ierr /= nf90_noerr) then
-                print *, trim(nf90_strerror(ierr))
-                return
-            end if
-
-            ierr = nf90_get_var(file_id, var_ids(5), temp2dim)
             if (ierr /= nf90_noerr) then
                 print *, trim(nf90_strerror(ierr))
                 return
@@ -451,8 +387,120 @@ contains
             return
         end if
 
-        print *, "Reading checkpoint successful"
+        print *, "Reading checkpoint metadata successful"
 
-    end subroutine read_checkpoint_in
+    end subroutine read_checkpoint_metadata
+
+    subroutine read_checkpoint_data(arr3dim, arr2dim,temp2dim, arr1dim, fn,use_input, ierr)
+
+        integer, intent(in) :: use_input
+        character(len=*), intent(in) :: fn
+        real(kind=real64), intent(inout), dimension(:, :, :), allocatable :: arr3dim
+        real(kind=real64), intent(inout), dimension(:, :), allocatable :: arr2dim
+        real(kind=real64), intent(inout), dimension(:, :), allocatable :: temp2dim
+        real(kind=real64), intent(inout), dimension(:), allocatable :: arr1dim
+        character(LEN=1), dimension(9) :: dims = (/"x", "y", "t", "c", "a", "b", "f","n","m"/)
+        character(LEN=12), dimension(15) :: comp_names = (/"initial_conc", &
+                                                           "nx          ", "ny          ", "m1          ", &
+                                                           "m2          ", "k           ", "bfe         ", "cint        " &
+                                                           , "max_t       ", "time_step   ", "current_time", "df_tol      " &
+                                                           , "random_seed ", "cpo         ","problem     "/)
+        integer :: file_id, i
+        integer, intent(out) :: ierr
+        integer :: ndims = 9
+        integer, dimension(9) :: sizes, dim_ids
+        integer, dimension(5) :: var_ids
+
+        ! Open file
+        ierr = nf90_open(fn, NF90_NOWRITE, file_id)
+        if (ierr /= nf90_noerr) then
+            print *, trim(nf90_strerror(ierr))
+            return
+        end if
+
+        ! Get dimensions
+        do i = 1, ndims
+            ierr = nf90_inq_dimid(file_id, dims(i), dim_ids(i))
+            if (ierr /= nf90_noerr) then
+                print *, trim(nf90_strerror(ierr))
+                return
+            end if
+        end do
+
+        ! Get dimension lengths
+        do i = 1, ndims
+            ierr = nf90_inquire_dimension(file_id, dim_ids(i), len=sizes(i))
+            if (ierr /= nf90_noerr) then
+                print *, trim(nf90_strerror(ierr))
+                return
+            end if
+        end do
+
+        ierr = nf90_inq_varid(file_id, "data", var_ids(1))
+        if (ierr /= nf90_noerr) then
+            print *, trim(nf90_strerror(ierr))
+            return
+        end if
+        ierr = nf90_get_var(file_id, var_ids(1), local_grid_conc,&
+                start=(/grid_domain_start(1),grid_domain_start(2),2/))
+        if (ierr /= nf90_noerr) then
+            print *, trim(nf90_strerror(ierr))
+            return
+        end if
+
+
+        ! get var ids and read data
+        if(my_rank == 0) then
+
+            ierr = nf90_inq_varid(file_id, "mu", var_ids(3))
+            if (ierr /= nf90_noerr) then
+                print *, trim(nf90_strerror(ierr))
+                return
+            end if
+
+            ierr = nf90_get_var(file_id, var_ids(3), arr2dim)
+            if (ierr /= nf90_noerr) then
+                print *, trim(nf90_strerror(ierr))
+                return
+            end if
+
+            ierr = nf90_inq_varid(file_id, "ftot", var_ids(4))
+            if (ierr /= nf90_noerr) then
+                print *, trim(nf90_strerror(ierr))
+                return
+            end if
+
+            ierr = nf90_get_var(file_id, var_ids(4), arr1dim)
+            if (ierr /= nf90_noerr) then
+                print *, trim(nf90_strerror(ierr))
+                return
+            end if
+
+            if (use_input == 0) then
+                ierr = nf90_inq_varid(file_id, "tempg", var_ids(5))
+                if (ierr /= nf90_noerr) then
+                    print *, trim(nf90_strerror(ierr))
+                    return
+                end if
+
+                ierr = nf90_get_var(file_id, var_ids(5), temp2dim)
+                if (ierr /= nf90_noerr) then
+                    print *, trim(nf90_strerror(ierr))
+                    return
+                end if
+            end if
+        end if
+
+        !print*, current_time
+
+        ierr = nf90_close(file_id)
+        if (ierr /= nf90_noerr) then
+            print *, trim(nf90_strerror(ierr))
+            return
+        end if
+
+        print *, "Reading checkpoint data successful"
+
+    end subroutine read_checkpoint_data
 
 end module checkpointing

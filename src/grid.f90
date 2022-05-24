@@ -177,12 +177,15 @@ contains
         ! Set up four subdomains on current rank
 
         ! Allocate local concnentration grid on current rank
-
-        allocate(local_grid_conc(grid_domain_size,grid_domain_size),stat=ierr)
-        if (ierr /= 0) then
-            print*, "Error: allocating local_grid_conc failed on rank ", my_rank
-            stop
+        if (.not. allocated(local_grid_conc)) then
+            allocate(local_grid_conc(grid_domain_size,grid_domain_size),stat=ierr)
+            if (ierr /= 0) then
+                print*, "Error: allocating local_grid_conc failed on rank ", my_rank
+                stop
+            end if
+            call grid_init(local_grid_conc,grid_domain_size,grid_domain_size,c_min,c_max,Nx*Ny*my_rank)
         end if
+
 
 
         ! Allocate four halo arrays for concentration
@@ -242,12 +245,14 @@ contains
         mu = 0.0
 
         ! Allocate local T grid
-        allocate(T(grid_domain_size,grid_domain_size),stat=ierr)
-        if (ierr /= 0) then
-            print*, "Error: allocating T failed on rank ", my_rank
-            stop
+        if (.not. allocated(T)) then
+            allocate(T(grid_domain_size,grid_domain_size),stat=ierr)
+            if (ierr /= 0) then
+                print*, "Error: allocating T failed on rank ", my_rank
+                stop
+            end if
+            T = 0.0
         end if
-        T = 0.0
 
 
         ! Allocate local f_b grid
@@ -267,7 +272,7 @@ contains
         ! Initialise local concentration grid using a uniform distribution
         ! on current rank
 
-        call grid_init(local_grid_conc,grid_domain_size,grid_domain_size,c_min,c_max,Nx*Ny*my_rank)
+
 
     end subroutine grid_initialise_local
 
@@ -288,9 +293,10 @@ contains
         if (my_rank == 0) then
             allocate(global_grid_conc(Nx,Ny),stat=ierr)
             if(ierr/=0) stop "Error: allocating global_grid_conc failed"
-
-            allocate(c(Nx,Ny,3),stat=ierr)
-            if(ierr/=0) stop "Error: allocating c failed"
+            if (.not. allocated(c)) then
+                allocate(c(Nx,Ny,3),stat=ierr)
+                if(ierr/=0) stop "Error: allocating c failed"
+            end if
         end if
     end subroutine grid_initialise_global
 
