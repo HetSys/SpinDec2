@@ -19,29 +19,6 @@ prepare_profile () {
     cd ../
 }
 
-run_computations () {
-    ### Perform computations in each dir ###
-    for i in *; do (
-        cd "$i" || exit 1
-        for j in *; do (
-            cd "$j" || exit 1
-
-            if [[ "$i" == *"omp"* ]]; then
-                export OMP_NUM_THREADS="$j" && mpirun -np 1 spindec | tee prof_out.txt
-            elif [[ "$i" == "mpi" ]]; then
-                export OMP_NUM_THREADS=1 && mpirun -np "$j" spindec | tee prof_out.txt
-            elif [[ "$i" == *"mpi_4"* ]]; then
-                export OMP_NUM_THREADS="$j" && mpirun -np 4 spindec | tee prof_out.txt
-            elif [[ "$i" == *"mpi_16"* ]]; then
-                export OMP_NUM_THREADS="$j" && mpirun -np 16 spindec | tee prof_out.txt
-            else
-                echo "An error occurred"
-                exit 1
-            fi
-        ) done
-    ) done
-}
-
 # Check if user supplied directory to perform computations in
 if [[ -z $1 ]]; then
     echo "Directory argument not specified"
@@ -93,7 +70,25 @@ prepare_profile hybrid_mpi_16 "${hybrid_mpi_16_threads[@]}"
 rm input.txt
 
 # Run the computations and print timings to timings.txt
-run_computations
+for i in *; do (
+    cd "$i" || exit 1
+    for j in *; do (
+        cd "$j" || exit 1
+
+        if [[ "$i" == *"omp"* ]]; then
+            export OMP_NUM_THREADS="$j" && mpirun -np 1 spindec | tee prof_out.txt
+        elif [[ "$i" == "mpi" ]]; then
+            export OMP_NUM_THREADS=1 && mpirun -np "$j" spindec | tee prof_out.txt
+        elif [[ "$i" == *"mpi_4"* ]]; then
+            export OMP_NUM_THREADS="$j" && mpirun -np 4 spindec | tee prof_out.txt
+        elif [[ "$i" == *"mpi_16"* ]]; then
+            export OMP_NUM_THREADS="$j" && mpirun -np 16 spindec | tee prof_out.txt
+        else
+            echo "An error occurred"
+            exit 1
+        fi
+    ) done
+) done
 
 # Parse timings for each run
 # Timings are written to ./$1/timings.txt
