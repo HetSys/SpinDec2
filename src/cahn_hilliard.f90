@@ -148,11 +148,6 @@ contains
             der_y = (Q(i, 2) - 2.0*Q(i, 1) + Q_halo(i, up)) * dy2
             der_x = (Q(i+1, 1) - 2.0*Q(i, 1) + Q(i-1, 1)) * dx2
             dQ(i, 1) = (der_x+der_y)
-        end do
-        !$omp end parallel do
-        ! Bottom-j  = Ny
-        !$omp parallel do default(shared) private(i, der_x, der_y)
-        do i = 2, Nx-1
             der_y = (Q_halo(i, down) - 2.0*Q(i, Ny) + Q(i, Ny-1)) * dy2
             der_x = (Q(i+1, Ny) - 2.0*Q(i, Ny) + Q(i-1, Ny)) * dx2
             dQ(i, Ny) = (der_x+der_y)
@@ -164,11 +159,6 @@ contains
             der_y = (Q(1, j+1) - 2.0*Q(1, j) + Q(1, j-1)) * dy2
             der_x = (Q(2, j) - 2.0*Q(1, j) + Q_halo(j, left)) * dx2
             dQ(1, j) = (der_x+der_y)
-        end do
-        !$omp end parallel do
-        ! RHS-i = Nx
-        !$omp parallel do default(shared) private(j, der_x, der_y)
-        do j = 2, Ny-1
             der_y = (Q(Nx, j+1) - 2.0*Q(Nx, j) + Q(Nx, j-1)) * dy2
             der_x = (Q_halo(j, right) - 2.0*Q(Nx, j) + Q(Nx-1, j)) * dx2
             dQ(Nx, j) = (der_x+der_y)
@@ -206,11 +196,6 @@ contains
         do j = 1, Ny
             dQx(1, j) = (Q(2, j) - Q_halo(j, left))*dx_inv    ! Top
             dQx(Nx, j) = (Q_halo(j, right) - Q(Nx-1, j))*dx_inv  ! Bottom
-        end do
-        !$omp end parallel do
-        ! Bulk (non-boundary nodes)
-        !$omp parallel do default(shared) private(i, j)
-        do j = 1, Ny
             do i = 2, Nx-1
                 dQx(i, j) = (Q(i+1, j) - Q(i-1, j))*dx_inv
             end do
@@ -300,12 +285,6 @@ contains
         do j = 1, Ny
             dMx(1, j) = (M(2, j) - M_halo(j, left))*dx_inv    ! LHS
             dMx(Nx, j) = (M_halo(j, right) - M(Nx-1, j))*dx_inv  ! RHS
-        end do
-        !$omp end parallel do
-
-        ! Bulk (non-boundary nodes)
-        !$omp parallel do default(shared) private(i, j)
-        do j = 1, Ny
             do i = 2, Nx-1
                 dMx(i, j) = (M(i+1, j) - M(i-1, j))*dx_inv
             end do

@@ -47,7 +47,7 @@ program main
 
     ! Initialise MPI
     ! Get my_rank and p
-    no_threads = omp_get_num_threads()
+    !no_threads = omp_get_num_threads()
     call comms_initialise()
 
     t1 = MPI_Wtime()

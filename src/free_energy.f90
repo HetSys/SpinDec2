@@ -115,11 +115,6 @@ contains
             grad_x = (c(i + 1, 1) - c(i - 1, 1)) * dx2
             P = grad_x*grad_x + grad_y*grad_y
             F = F + (f_b(i, 1) + 0.5 * kappa * P ) * dx * dy
-        end do
-        !$omp end parallel do
-        ! Bottom - j = ny
-        !$omp parallel do default(shared) private(i,grad_x,grad_y,P) reduction(+:F)
-        do i = 2, nx - 1
             grad_y = (conc_halo(i, down) - c(i, ny - 1)) * dy2
             grad_x = (c(i + 1, ny) - c(i - 1, ny)) * dx2
             P = grad_x*grad_x + grad_y*grad_y
@@ -133,11 +128,6 @@ contains
             grad_x = (c(2, j) - conc_halo(j,left)) * dx2
             P = grad_x*grad_x + grad_y*grad_y
             F = F + (f_b(1, j) + 0.5 * kappa * P ) * dx * dy
-        end do
-        !$omp end parallel do
-        ! Right - i = nx
-        !$omp parallel do default(shared) private(j,grad_x,grad_y,P) reduction(+:F)
-        do j = 2, ny - 1
             grad_y = (c(nx, j + 1) - c(nx, j - 1)) * dy2
             grad_x = (conc_halo(j,right) - c(nx - 1, j)) * dx2
             P = grad_x*grad_x + grad_y*grad_y
