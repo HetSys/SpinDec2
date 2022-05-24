@@ -28,6 +28,7 @@ contains
         real(real64), intent(in):: EA, EB
         real(real64):: boltz
         real(real64):: c0
+        real(real64):: Mob_A, Mob_B
         real(real64), parameter:: R = 8.314
         integer:: Nx, Ny
         integer:: i, j
@@ -47,9 +48,9 @@ contains
                 do j = 1, Ny
                     do i = 1, Nx
                         boltz = R*T(i, j)
-                        M(i, j) = 1/boltz*exp(-EA/boltz)*(1-c(i, j))
-                        M(i, j) = M(i, j) + 1/boltz*exp(-EB/boltz)*c(i, j)
-                        M(i, j) = M(i, j)*c(i, j)*(1-c(i, j))
+                        Mob_A = 1/boltz*exp(EA/boltz)
+                        Mob_B = 1/boltz*exp(EB/boltz)
+                        M(i, j) = (MA*(1-c(i, j)) + MB*c(i, j))*c(i, j)*(1-c(i, j))
                     end do
                 end do
                 !$omp end parallel do
@@ -352,8 +353,6 @@ contains
                 xbeta = dMx(i, j) * dQx(i, j)
                 ybeta = dMy(i, j) * dQy(i, j)
                 beta = xbeta+ybeta
-
-                ! print*, alpha
 
                 c_new(i, j) = c(i, j) + dt*(alpha+beta)
             end do
