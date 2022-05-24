@@ -101,35 +101,65 @@ $(document).ready(function(){initNavTree('user.html',''); initResizable(); });
   <h2 id="getstarted">Getting Started</h2>
   <p>To get the source code, the repository can be cloned to your chosen directory by typing the 
     following command into a terminal (making sure you are in the correct directory):</p>
-   <center>
+
     <code markup="tt" class=" language-none">$ git clone https://github.com/HetSys/SpinDec2</code>
-   </center>
+   
     
+
+
 
     <h3 id="install">Installation</h3>
 
     <p>Once the source code has been obtained, it can be compiled with various options. The compilation options can be viewed by running the install.sh executable 
       in the directory you have cloned the repository to without any flags. A welcome screen and a list of options are then displayed as shown below:</p>
 
-  <p style="text-align:center;"><img src="welcome.png" alt="Welcome Terminal"  width="500" 
-    height="500" class="center"> </p>
+     
+    <pre><samp>
+       %%%%%%\          %%\        %%%%%%\                    %%%%%%\
+      %%  __%%\         \__|       %%   %%\                        %%\
+      %% /  \__|%%%%%%\ %%\%%%%%%\ %%    %%\ %%%%%%\  %%%%%%%\     %% |
+      \%%%%%%\ %%  __%%\%% %%  _%%\%%    %% %%    %%\%%  _____%%%%%%  |
+       \____%%\%% /  %% %% %% / %% %%    %% %%%%%%%% %% /     %%  ___/
+      %%\   %% %% |  %% %% %% | %% %%   %% /%%   ____%% |     %% |
+       %%%%%%  %%%%%%%  %% %% | %% %%%%%% / \%%%%%%%\\%%%%%%%\%%%%%%%\
+        \______/%%  ____/\__\__| \__\_____/   \_______|\_______\_______|
+                %% |
+                %% |
+                \__|
+         
+          Modelling Spinoidal Decomposition Using a Phase Field Approach
+          _________________________________________________________________
+         
+         usage: spindec [-h]
+                        [-c DEBUG]
+                        [-C CONFIRM]
+                        [-t RUN]
+                        [-T]
+         
+         options:
+           -h, --help              show this help message and exit
+           -c, --compile DEBUG     compile the code with optional debug option
+                                   optional DEBUG arguments: [ none | d/debug ] (default=none)
+         
+           -C, --clean CONFIRM     remove compiled binaries from repository
+                                   optional CONFIRM arguments: [ none | c/confirm ] (default=none)
+         
+           -t, --test RUN          run automated unit tests
+                                   required RUN arguments: [ c/compile | r/run | b/both ]
+         
+           -T, --test-clean        clean test binaries
+    </samp></pre>
+       
 
     <p>The examples below show how to run the code in serial as well as in parallel, which will require the compilation to be completed differently.</p>
 
-    <h3 id="serial_install">Serial Installation</h3>
+    <h3 id="serial_install">Installation</h3>
 
     <p>The code can be compiled to run in serial by running the installation script with the -c flag and no additional arguments as follows:</p>
-    <body>
-      ./install.sh -c
-    </body>
+  
 
-    <h3 id="parra_install">Parallel Installation</h3>
+    <code markup="tt" class=" language-none">$ ./install.sh -c</code>
 
-    <p>The code can be compiled to run in parallel with MPI enabled by running the install.sh script with using the -cm argument as follows:</p>
-
-    <body>
-      ./install.sh -cm
-    </body>
 
     <h3 id="install_clean">Using the clean (-C) option for new compilations</h3>
 
@@ -145,6 +175,7 @@ $(document).ready(function(){initNavTree('user.html',''); initResizable(); });
        <body>
 
         <ul>
+          <li><code markup="tt" class=" language-none">$ ./spindec</code></li>
           <li>./spindec</li>
         </ul>
           <p>This uses the parameters provided in the input file to run the simulation in serial and evolve the concentration grid over a the number of timesteps requested.</p>
