@@ -90,33 +90,37 @@ contains
 
         ! Boundary nodes
         ! Top - j = 1
+        !$omp parallel do default(shared) private(i,lap_x,lap_y)
         do i = 2, nx - 1
             lap_y = (c(i, 2) - 2.0 * c(i, 1) + conc_halo(i, up)) * dy2
             lap_x = (c(i + 1, 1) - 2.0 * c(i, 1) + c(i - 1, 1)) * dx2
             Q(i, 1) = mu(i, 1) - Kappa * (lap_x + lap_y)
         end do
-
+        !$omp end parallel do
         ! Bottom - j = ny
+        !$omp parallel do default(shared) private(i,lap_x,lap_y)
         do i = 2, nx - 1
             lap_y = (conc_halo(i, down) - 2.0 * c(i, ny) + c(i, ny - 1)) * dy2
             lap_x = (c(i + 1, ny) - 2.0 * c(i, ny) + c(i - 1, ny)) * dx2
             Q(i, ny) = mu(i, ny) - Kappa * (lap_x + lap_y)
         end do
-
+        !$omp end parallel do
         ! LHS - i = 1
+        !$omp parallel do default(shared) private(j,lap_x,lap_y)
         do j = 2, ny - 1
             lap_y = (c(1, j + 1) - 2.0 * c(1, j) + c(1, j - 1)) * dy2
             lap_x = (c(2, j) - 2.0 * c(1, j) + conc_halo(j, left)) * dx2
             Q(1, j) = mu(1,j) - Kappa * (lap_x + lap_y)
         end do
-
+        !$omp end parallel do
         ! RHS - i = nx
+        !$omp parallel do default(shared) private(j,lap_x,lap_y)
         do j = 2, ny - 1
             lap_y = (c(nx, j + 1) - 2.0 * c(nx, j) + c(nx, j - 1)) * dy2
             lap_x = (conc_halo(j,right) - 2.0 * c(nx, j) + c(nx - 1, j)) * dx2
             Q(nx, j) = mu(nx, j) - Kappa * (lap_x + lap_y)
         end do
-
+        !$omp end parallel do
         ! Bulk (non-boundary) nodes
         !$omp parallel do default(shared) private(j,i,lap_x,lap_y)
         do i = 2, nx - 1
