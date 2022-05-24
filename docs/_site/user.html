@@ -110,44 +110,45 @@ $(document).ready(function(){initNavTree('user.html',''); initResizable(); });
 
     <h3 id="install">Installation</h3>
 
-    <p>Once the source code has been obtained, it can be compiled with various options. The compilation options can be viewed by running the install.sh executable 
+    <p>Once the source code has been obtained, it can be compiled with various options. The compilation options can be viewed by running the <code markup="tt" class=" language-none">$ ./install.sh </code> executable 
       in the directory you have cloned the repository to without any flags. A welcome screen and a list of options are then displayed as shown below:</p>
 
      
     <pre><samp>
-       %%%%%%\          %%\        %%%%%%\                    %%%%%%\
+      %%%%%%\          %%\        %%%%%%\                    %%%%%%\
       %%  __%%\         \__|       %%   %%\                        %%\
       %% /  \__|%%%%%%\ %%\%%%%%%\ %%    %%\ %%%%%%\  %%%%%%%\     %% |
       \%%%%%%\ %%  __%%\%% %%  _%%\%%    %% %%    %%\%%  _____%%%%%%  |
        \____%%\%% /  %% %% %% / %% %%    %% %%%%%%%% %% /     %%  ___/
       %%\   %% %% |  %% %% %% | %% %%   %% /%%   ____%% |     %% |
-       %%%%%%  %%%%%%%  %% %% | %% %%%%%% / \%%%%%%%\\%%%%%%%\%%%%%%%\
-        \______/%%  ____/\__\__| \__\_____/   \_______|\_______\_______|
-                %% |
-                %% |
-                \__|
-         
-          Modelling Spinoidal Decomposition Using a Phase Field Approach
-          _________________________________________________________________
-         
-         usage: spindec [-h]
-                        [-c DEBUG]
-                        [-C CONFIRM]
-                        [-t RUN]
-                        [-T]
-         
-         options:
-           -h, --help              show this help message and exit
-           -c, --compile DEBUG     compile the code with optional debug option
-                                   optional DEBUG arguments: [ none | d/debug ] (default=none)
-         
-           -C, --clean CONFIRM     remove compiled binaries from repository
-                                   optional CONFIRM arguments: [ none | c/confirm ] (default=none)
-         
-           -t, --test RUN          run automated unit tests
-                                   required RUN arguments: [ c/compile | r/run | b/both ]
-         
-           -T, --test-clean        clean test binaries
+      \%%%%%%  %%%%%%%  %% %% | %% %%%%%% / \%%%%%%%\\%%%%%%%\%%%%%%%\
+       \______/%%  ____/\__\__| \__\_____/   \_______|\_______\_______|
+               %% |
+               %% |
+               \__|
+     
+      Modelling Spinoidal Decomposition Using a Phase Field Approach
+      _________________________________________________________________
+     
+     usage: spindec [-h]
+                    [-c ARGS]
+                    [-C ARGS]
+                    [-t ARGS]
+                    [-T]
+     
+     options:
+       -h, --help              show this help message and exit
+       -c, --compile ARGS      compile the code with optional debug or profile option
+                               optional arguments: [ none | d/debug ] (default=none)
+     
+       -C, --clean ARGS        remove compiled binaries from repository
+                               optional arguments: [ none | c/confirm ] (default=none)
+     
+       -t, --test ARGS         run automated unit tests
+                               required arguments: [ c/compile | r/run | b/both ]
+     
+       -T, --test-clean        clean test binaries
+     
     </samp></pre>
        
 
@@ -176,26 +177,21 @@ $(document).ready(function(){initNavTree('user.html',''); initResizable(); });
 
         <ul>
           <li><code markup="tt" class=" language-none">$ ./spindec</code></li>
-          <li>./spindec</li>
         </ul>
           <p>This uses the parameters provided in the input file to run the simulation in serial and evolve the concentration grid over a the number of timesteps requested.</p>
 
           <ul>
-            <li>mpirun -np n ./spindec</li>
+            <li><code markup="tt" class=" language-none">$ mpirun -np n ./spindec</code></li>
           </ul>
             <p>When the code is compiled with MPI enabled, this command is used to run the code, where n is the number of processes requested (this will be further expanded upon in the examples).</p>
 
             <ul>
-              <li>python3 plotter.py</li>
+              <li><code markup="tt" class=" language-none">$ python3 vis_spindec.py</code></li>
             </ul>
               <li>Free energy vs. time</li>
               <li>The evolution of the concentration grid (animation)</li>
             <ul>
-
-
-          
-        
-
+              
        </body>
 
   <h2 id="examples">Examples</h2>
