@@ -38,7 +38,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.3/styles/default.
   <td id="projectalign">
    <div id="projectname">SpinDec2
    </div>
-   <div id="projectbrief">PX915 group A software development project for HetSys in modelling spinodal decomposition</div>
+   <div id="projectbrief">Software Modelling Spinodal Decomposition</div>
   </td>
  </tr>
  </tbody>
@@ -167,12 +167,12 @@ $(document).ready(function(){initNavTree('visualise.html',''); initResizable(); 
     </code></pre>
   </body>
 
-  <p>In all the plotting functions, the default option is to save all the plots, where pictures are saved as PNG files and animations are saved as an mp4 file using the FFMpeg writer, which can be installed from the terminal by typing "sudo apt install ffmpeg". If the user wants to observe the plot without saving, then set the $save\_plot$ argument to false. </p>
+  <p>In all the plotting functions, the default option is to save all the plots, where pictures are saved as PNG files and animations are saved as an mp4 file using the FFMpeg writer, which can be installed from the terminal by typing "sudo apt install ffmpeg". If the user wants to observe the plot without saving, then set the \(save\_plot\)$ argument to false. </p>
 
-  <p>All that is left to do is to call the class in the python file (which is defaulted as \(res_CH\)), then call the plotting functions you want to visualise, an example is shown below:</p>
+  <p>All that is left to do is to call the class in the python file (which is defaulted as \(res\_CH\)), then call the plotting functions you want to visualise, an example is shown below:</p>
   <body>
     <pre><code class="python">
-      # Create a class name
+# Create a class name
 res_CH = Vis_CH(file = 'CH_output.nc', av_period=10)
 
 # Must call the read and set up function before the plotters

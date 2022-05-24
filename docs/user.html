@@ -34,7 +34,7 @@
   <td id="projectalign">
    <div id="projectname">SpinDec2
    </div>
-   <div id="projectbrief">PX915 group A software development project for HetSys in modelling spinodal decomposition</div>
+   <div id="projectbrief">Software Modelling Spinodal Decomposition</div>
   </td>
  </tr>
  </tbody>
@@ -99,23 +99,28 @@ $(document).ready(function(){initNavTree('user.html',''); initResizable(); });
   <h1 id="userdocs">User Documentation</h1>
 
   <h2 id="getstarted">Getting Started</h2>
+
+  <h3 id="download">Download</h3>
   <p>To get the source code, the repository can be cloned to your chosen directory by typing the 
     following command into a terminal (making sure you are in the correct directory):</p>
 
     <code markup="tt" class=" language-none">$ git clone https://github.com/HetSys/SpinDec2</code>
-   
-    
 
+  
 
+ 
 
     <h3 id="install">Installation</h3>
 
-    <p>Once the source code has been obtained, it can be compiled with various options. The compilation options can be viewed by running the <code markup="tt" class=" language-none">$ ./install.sh </code> executable 
-      in the directory you have cloned the repository to without any flags. A welcome screen and a list of options are then displayed as shown below:</p>
+    <!-- <p>Once the source code has been obtained, it can be compiled with various options. The compilation options can be viewed by running the <code markup="tt" class=" language-none"> ./install.sh </code> script 
+      in the directory you have cloned the repository to without any flags. A welcome screen and a list of options are then displayed as shown below:</p> -->
+
+      <p>An installation script is provided with the repository. This can be used with several flags.
+        To view the flags, run <code markup="tt" class=" language-none"> ./install.sh -h</code> or just <code markup="tt" class=" language-none"> ./install.sh</code> when inside the repository. A help screen will be displayed as shown below:</p>
 
      
     <pre><samp>
-      %%%%%%\          %%\        %%%%%%\                    %%%%%%\
+       %%%%%%\          %%\        %%%%%%\                    %%%%%%\
       %%  __%%\         \__|       %%   %%\                        %%\
       %% /  \__|%%%%%%\ %%\%%%%%%\ %%    %%\ %%%%%%\  %%%%%%%\     %% |
       \%%%%%%\ %%  __%%\%% %%  _%%\%%    %% %%    %%\%%  _____%%%%%%  |
@@ -151,28 +156,37 @@ $(document).ready(function(){initNavTree('user.html',''); initResizable(); });
      
     </samp></pre>
        
-
-    <p>The examples below show how to run the code in serial as well as in parallel, which will require the compilation to be completed differently.</p>
-
-    <h3 id="serial_install">Installation</h3>
-
-    <p>The code can be compiled to run in serial by running the installation script with the -c flag and no additional arguments as follows:</p>
+    <p>The code can be compiled with the installation script as follows:</p>
   
-
     <code markup="tt" class=" language-none">$ ./install.sh -c</code>
 
+    <p>If the <code markup="tt" class=" language-none"> $PATH</code> to the <code markup="tt" class=" language-none"> spindec</code> binary isn't already in  <code markup="tt" class=" language-none"> ~/.bashrc</code> ,
+      a prompt will appear asking if the user wishes to add the <code markup="tt" class=" language-none"> /bin</code>  location to 
+      <code markup="tt" class=" language-none"> $PATH </code>. The shell will then need to be reloaded using <code markup="tt" class=" language-none"> source ~/.bashrc</code>  for <code markup="tt" class=" language-none"> spindec</code>
+       to appear as executable.
+    </p>
 
-    <h3 id="install_clean">Using the clean (-C) option for new compilations</h3>
+    <h3 id="install_clean">Using the clean flag to remove compiled binaries</h3>
 
-    <p>For first-time installations, the code can be compiled using the commands above depending on the version of the code (serial or parallel) is needed. 
-      For recompiling the code (eg. after compiling with testing enabled), the install.sh script should be first run with the -C flag, which removes any compiled binaries.</p>
+    <!-- <p>For first-time installations, the code can be compiled using the commands above depending on the version of the code (serial or parallel) is needed. 
+      For recompiling the code (eg. after compiling with testing enabled), the install.sh script should be first run with the -C flag, which removes any compiled binaries.</p> -->
+
+      <!-- # Remove the above and replace with the below -->
+
+      <p>To recompile the code, or just to remove binaries from a previous compilation, the clean flag can be used:</p>
+
+      <p> <code markup="tt" class=" language-none"> $ ./install.sh -C</code></p>
+      
 
       <h3 id="running_code">Running the code</h3>
 
-    <p>After successfully compiling the code with desired options, the compiled binaries will be stored in a sub-directory "bin" in the original directory the repository was cloned to.
-       To run the code, you will need to first create a directory to which you will copy the "spindec" and "plotter.py" executable files from the bin sub-directory. The created should also contain the input file, 
-       details of which are provided below. The code can be run from the directory containing the input file and the correct executables in a terminal using the following commands:</p>
+    <p>After compilation of the code, the compiled binaries will be stored in the sub-directory <code markup="tt" class=" language-none">/bin</code> from the repository home.
+       To execute the code, it is highly recommended to use the approach of creating a directory per calculation. This directory should contain an input file called <code markup="tt" class=" language-none"> input.txt</code>
+       which is discussed further <a href="input.html"> here</a>. The following syntax is used to run the computation in the directory where the input file is located:</p>
 
+       <p><code markup="tt" class=" language-none"> $ mpirun -np n spindec </code></p>
+
+       <p>where <code markup="tt" class=" language-none"> n</code> is the number of processors to run with.</p>
        <body>
 
         <ul>
@@ -191,7 +205,7 @@ $(document).ready(function(){initNavTree('user.html',''); initResizable(); });
               <li>Free energy vs. time</li>
               <li>The evolution of the concentration grid (animation)</li>
             <ul>
-              
+
        </body>
 
   <h2 id="examples">Examples</h2>

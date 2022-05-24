@@ -34,7 +34,7 @@
   <td id="projectalign">
    <div id="projectname">SpinDec2
    </div>
-   <div id="projectbrief">PX915 group A software development project for HetSys in modelling spinodal decomposition</div>
+   <div id="projectbrief">Software Modelling Spinodal Decomposition</div>
   </td>
  </tr>
  </tbody>
@@ -95,33 +95,135 @@ $(document).ready(function(){initNavTree('input.html',''); initResizable(); });
 <div class="contents">
   <h1 id="all-input-is-given-in-the-form-key-value-">Inputs</h1>
 
-  <p>Inputs are given in the form form &#39;key=value&#39;</p>
+
+<p>In SpinDec2, the user can specify the values many of the physical varibales when modelling
+  spindoal decomposition as well as controlling the checkpointing and version of the code. This must be done 
+  via an <code markup="tt" class=" language-none"> input.txt</code> that has to be in the same directory as your 
+  <code markup="tt" class=" language-none"> spindec</code> executable. 
+</p>
+
+<p>A list of all the user inputs are outlined below with there respective names and types</p>
+<ul> 
+<li><p><code markup="tt" class=" language-none"> Concentration_max = value (real) </code>  \( \rightarrow \) Upper bound of uniform distribution that initialises concentration field. Thus \(c(:,:,1) = \mathcal{U}(\text{Concentration_min}, \text{Concentration_max})\).</p></li>
+</ul>
+<br>
+<ul> 
+  <li><p><code markup="tt" class=" language-none"> Concentration_min = value (real) </code> \( \rightarrow \) Lower bound of uniform distribution that initialises concentration field. Thus \(c(:,:,1) = \mathcal{U}(\text{Concentration_min}, \text{Concentration_max})\). </p></li>
+  </ul>
+  <br>
+<ul> 
+  <li><p><code markup="tt" class=" language-none"> Domain_x_size = value (int) </code>  \( \rightarrow \) Number of grid cells in the x dimesnion \(N_x\).</p></li>
+  </ul>
+  <br>
+<ul> 
+  <li><p><code markup="tt" class=" language-none"> Domain_y_size = value (int) </code>  \( \rightarrow \) Number of grid cells in the y dimesnion \(N_y\).</p></li>
+  </ul>
+  <br>
+<ul> 
+  <li><p><code markup="tt" class=" language-none"> Mobility_A = value (real) </code>  \( \rightarrow \) Atomic mobility of species A, \(M_A\), (for constant and temperature independent mobility).</p></li>
+  </ul>
+  <br>
+<ul> 
+  <li><p><code markup="tt" class=" language-none"> Mobility_B = value (real) </code>  \( \rightarrow \) Atomic mobility of species B, \(M_B\), (for constant and temperature independent mobility).</p></li>
+  </ul>
+  <br>
+<ul> 
+  <li><p><code markup="tt" class=" language-none"> free_energy_gradient_parameter = value (real) </code>  \( \rightarrow \) Strength of inter-facial term \(\kappa\).</p></li>
+  </ul>
+  <br>
+<ul> 
+  <li><p><code markup="tt" class=" language-none"> Bulk_free_energy = value (real) </code>  \( \rightarrow \) Bulk free energy scale factor (\(A\)) for case \(f(c) = Ac^2(1-c)^2\).</p></li>
+  </ul>
+  <br>
+<ul> 
+  <li><p><code markup="tt" class=" language-none"> Checkpointing_interval = value (int) </code>  \( \rightarrow \) Check-pointing interval.</p></li>
+  </ul>
+  <br>
+<ul> 
+  <li><p><code markup="tt" class=" language-none"> Checkpoint_output_file = "value" (str) </code>  \( \rightarrow \) Check-point output file name.</p></li>
+  </ul>
+  <br>
+<ul> 
+  <li><p><code markup="tt" class=" language-none"> Checkpoint_input_file = "value" (str)</code>  \( \rightarrow \) Input check-point file (optional)</p></li>
+  </ul>
+  <br>
+<ul> 
+  <li><p><code markup="tt" class=" language-none"> f(c) = value, value, value, ... (real, real, real, ...)</code>  \( \rightarrow \) List of polynomial coefficient values to set bulk free energy.</p></li>
+  </ul>
+  <br>
+<ul> 
+  <li><p><code markup="tt" class=" language-none"> Max_time = value (real) </code>  \( \rightarrow \) End time of simulation.</p></li>
+  </ul>
+  <br>
+<ul> 
+  <li><p><code markup="tt" class=" language-none"> dF_tolerance = value (real) </code>  \( \rightarrow \) Tolerance limit in change in total free energy.</p></li>
+  </ul>
+  <br>
+<ul> 
+  <li><p><code markup="tt" class=" language-none"> Random_Seed = value (int) </code>  \( \rightarrow \) Seed to reproduce random grid initialised from previous run.</p></li>
+  </ul>
+  <br>
+<ul> 
+  <li><p><code markup="tt" class=" language-none"> Use_input = value (int) </code>  \( \rightarrow \) Overwrites checkpoint meta data when set to one.</p></li>
+  </ul>
+  <br>
+<ul> 
+  <li><p><code markup="tt" class=" language-none"> Excitation_A = value (real) </code>  \( \rightarrow \) Excitation energy of species A, \(E_A\), (for temperature dependent mobility).</p></li>
+  </ul>
+  <br>
+<ul> 
+  <li><p><code markup="tt" class=" language-none"> Excitation_B = value (real) </code>  \( \rightarrow \) Excitation energy of species B, \(E_B\), (for temperature dependent mobility).</p></li>
+  </ul>
+  <br>
+<ul> 
+  <li><p><code markup="tt" class=" language-none"> temperature_max = value (real) </code>  \( \rightarrow \) Upper bound of uniform distribution that initialises temperature field. Thus \(T = \mathcal{U}(\text{temperature_min}, \text{temperature_max})\).</p></li>
+  </ul>
+  <br>
+<ul> 
+  <li><p><code markup="tt" class=" language-none"> temperature_min = value (real) </code>  \( \rightarrow \) Lower bound of uniform distribution that initialises temperature field. Thus \(T = \mathcal{U}(\text{temperature_min}, \text{temperature_max})\)</p></li>
+  </ul>
+  <br>
+<ul> 
+  <li><p><code markup="tt" class=" language-none"> Problem = "value" (str) </code>  \( \rightarrow \) Defines which mobility definition to use either <code markup="tt" class=" language-none"> "Constant"</code>;, <code markup="tt" class=" language-none"> "NonTemp"</code>;, <code markup="tt" class=" language-none"> "Temp"</code>, and for spectral methods <code markup="tt" class=" language-none"> "spectral"</code></p></li>
+  </ul>
+  <br>
+<ul> 
+  <li><p><code markup="tt" class=" language-none">  Stabilization_Term = value (int) </code>  \( \rightarrow \) Controls the stability of spectral method solver (must be negative).</p></li>
+  </ul>
+  <br>
+<p>An example of <code markup="tt" class=" language-none"> input.txt</code> that can be used in SpinDec2 is shown below:</p>
 
 
-  <ul>   
-  <li>Concentration_max=&lt;real&gt;  ==&gt; upper bound of uniform distribution that initialises concentration field.</li>
-  <li>Concentration_min=&lt;real&gt;  ==&gt; lower bound of uniform distribution that initialises concentration field.</li>
-  <li>Domain_x_size=&lt;int&gt;  ==&gt; size of x space.</li>
-  <li>Domain_y_size=&lt;int&gt;  ==&gt; size of y space.</li>
-  <li>Mobility_A=&lt;real&gt;  ==&gt; Atomic mobility of species A \(M_A\), (for constant and temperature independent mobility).</li>
-  <li>Mobility_B=&lt;real&gt;  ==&gt; Atomic mobility of species B \(M_B\), (for constant and temperature independent mobility).</li>
-  <li>free_energy_gradient_parameter=&lt;real&gt;  ==&gt; strength of inter-facial term \(\kappa\).</li>
-  <li>Bulk_free_energy=&lt;real&gt;  ==&gt;  bulk free energy scale factor (\(A\)) for case \(f(c) = Ac^2(1-c)^2\).</li>
-  <li>Checkpointing_interval=&lt;int&gt;  ==&gt; check-pointing interval.</li>
-  <li>Checkpoint_output_file=&lt;str&gt;  ==&gt; check-point file name.</li>
-  <li>Checkpoint_input_file=&lt;str&gt;  ==&gt; input check-point file (optional).</li>
-  <li>f(c)=&lt;real, real, ...&gt;  ==&gt; list of polynomial coefficient values to set bulk free energy.</li>
-  <li>Max_time=&lt;real&gt; ==&gt; End time of simulation.</li>
-  <li>dF_tolerance=&lt;real&gt; ==&gt; Tolerance  limit in change in total free energy.</li>
-  <li>Random_Seed=&lt;int&gt; ==&gt; Seed to reproduce result.</li>
-  <li>Use_input=&lt;int&gt; ==&gt;  overwrites checkpoint meta data when set to one.</li>
-  <li>Excitation_A=&lt;real&gt; ==&gt;   Excitation  energy of species A \(E_A\), (for temperature dependent mobility).</li>
-  <li>Excitation_B=&lt;real&gt; ==&gt;   Excitation  energy of species B \(E_B\), (for temperature dependent mobility).</li>
-  <li>temperature_max=&lt;real&gt;  ==&gt; upper bound of uniform distribution that initialises temperature field.</li>
-  <li>temperature_min=&lt;real&gt;  ==&gt; lower bound of uniform distribution that initialises temperature field.</li>
-  <li>Problem=&lt;strl&gt;  ==&gt; defines which mobility definition to use (&#39;Constant&#39;, &#39;NonTemp&#39;, &#39;Temp&#39;) and for spectral methods ='spectral'.</li>
-  <li>Stabilization_Term=&lt;int&gt;  ==&gt; controls the stability of spectral method solver (must be negative).</li>
-</ul> 
+<samp><pre>  
+  
+Concentration_min = 0.3
+Concentration_max = 0.9
+Domain_x_size = 500
+Domain_y_size = 500
+Mobility_A = 4
+Mobility_B = 4
+free_energy_gradient_parameter = 0.00005
+Bulk_free_energy = 1.7
+Checkpointing_interval = 5000
+Checkpoint_output_file = "Out.cp"
+Checkpoint_input_file = "Out.cp"
+f(c) = 5,0,0,1,-2,1
+Max_time = 1e-1
+time_step = 1e-4
+dF_tolerance = 2.0
+Random_seed = 12345356
+Use_input = 0
+Exitation_A = 0.1
+Exitation_B = 0.2
+Temperature_min = 800
+Temperature_max = 1000
+Problem = "Spectral"
+Stabilization_Term = -1
+
+
+</samp></pre>
+
+
 
 </table>
 </div><!-- directory -->
