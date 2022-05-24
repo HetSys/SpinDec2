@@ -39,7 +39,7 @@ compile () {
     comms="src/comms.f90"
     prog_files=('' "${prog_files[@]}")
     prog_files[0]="$comms"
-    
+
     # Move grid to first item in array
     grid="src/grid.f90"
     prog_files=('' "${prog_files[@]}")
