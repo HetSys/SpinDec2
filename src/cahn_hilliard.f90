@@ -2,6 +2,7 @@ module cahn_hilliard
 
     use iso_fortran_env
     use grid
+    use omp_lib
 
     implicit none
 
@@ -51,6 +52,7 @@ contains
                         M(i, j) = M(i, j)*c(i, j)*(1-c(i, j))
                     end do
                 end do
+                !$omp end parallel do
 
             !NonTemp-- Diffusive mobility still dependent on c, but atomic mobilities
             !           are independent on T
@@ -62,6 +64,7 @@ contains
                         M(i, j) = (MA*(1-c(i, j)) + MB*c(i, j))*c(i, j)*(1-c(i, j))
                     end do
                 end do
+                !$omp end parallel do
 
             !Constant-Diffve Mobility is taken to be a mixing of the two constant
             !           mobilities, and is independent of c
@@ -73,6 +76,7 @@ contains
                         M(i, j) = (MA*(1-c0) + MB*c0)*c0*(1-c0)
                     end do
                 end do
+                !$omp end parallel do
 
             case ("Spectral")
 
@@ -206,7 +210,6 @@ contains
                 dQx(i, j) = (Q(i+1, j) - Q(i-1, j))*dx_inv
             end do
         end do
-
         !$omp end parallel do
 
     end subroutine dQ_dx
@@ -358,7 +361,7 @@ contains
         !print*, c(50, 1)
         do j = 1, Ny
             do i = 1, Nx
-
+                !print*, omp_get_num_threads()
                 alpha = M(i, j)*dQ(i, j)
                 xbeta = dMx(i, j) * dQx(i, j)
                 ybeta = dMy(i, j) * dQy(i, j)

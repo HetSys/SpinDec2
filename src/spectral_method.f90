@@ -26,7 +26,7 @@ contains
         real(kind=real64) :: norm, c_A,dt1
         real(kind=real64), parameter ::PI= 4*atan(1.0_real64)
 
-        no_threads = omp_get_max_threads()
+        no_threads = omp_get_num_threads()
         dims = shape(c_in)
         allocate(mu(dims(1),dims(2)))
         allocate(k2(dims(1),dims(2)))

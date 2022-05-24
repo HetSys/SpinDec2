@@ -47,12 +47,11 @@ program main
 
     ! Initialise MPI
     ! Get my_rank and p
-
+    no_threads = omp_get_num_threads()
     call comms_initialise()
 
     t1 = MPI_Wtime()
-    call omp_set_num_threads(1)
-    no_threads = omp_get_max_threads()
+
 
     thread =  fftw_init_threads()
     ! Only run files in test for now
@@ -202,6 +201,7 @@ program main
     count = 0
     ! Grid evolution
     do k = current_iter, Nt
+        !print*, k
         ! Get bulk chemical potentials
         call bulk_potential(mu,local_grid_conc, a)
 
