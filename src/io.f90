@@ -123,7 +123,7 @@ contains
     end subroutine write_netcdf
 
 
-    subroutine write_netcdf_parts_setup(c, F_tot, a, Nc, Nx, Ny, Nt, dt, c0, MA, MB, kappa)
+    subroutine write_netcdf_parts_setup(c, F_tot, a, Nc, Nx, Ny, Nt, dt, c0, MA, MB, kappa,file_id)
 
         integer, intent(in) :: Nx, Ny, Nt, Nc
         real(kind=real64), dimension(Nx, Ny, Nt), intent(in) :: c
@@ -138,7 +138,8 @@ contains
         character(len=*), parameter :: F_tot_dims = "F_t", a_dims = "a_i"
         character(len=*), parameter :: filename = 'CH_output.nc'
         real(kind=real64), intent(in) :: dt, MA, MB, kappa, c0
-        integer :: k, file_id
+        integer :: k
+        integer, intent(out) :: file_id
 
         !define size of arrays
         size_c = shape(c)
@@ -195,27 +196,21 @@ contains
         call check(nf90_put_var(file_id, a_var_id, a))
 
         !close the file
-        call check(nf90_close(file_id))
+        !call check(nf90_close(file_id))
 
         print *, "Sucessfully setup netcdf file"
 
     end subroutine write_netcdf_parts_setup
 
 
-    subroutine write_netcdf_parts(c, F_tot,PT)
+    subroutine write_netcdf_parts(c, F_tot,PT,file_id)
         real(kind=real64), dimension(:, :), intent(in) :: c
         real(kind=real64), intent(in) :: F_tot
         character(len=*), parameter :: filename = 'CH_output.nc'
-        integer :: k, file_id,ierr
+        integer :: k ,ierr
         integer, dimension(2) :: var_ids
         integer,intent(in) :: PT
-
-
-
-
-
-        !Create the file, overwriting if it exists
-        call check(nf90_open(filename, NF90_WRITE, file_id))
+        integer, intent(inout) :: file_id
 
 
         ierr = nf90_inq_varid(file_id, "F_tot", var_ids(2))
@@ -242,10 +237,14 @@ contains
         end if
 
 
-        call check(nf90_close(file_id))
-
         !print *, "Sucessfully written netcdf file"
 
     end subroutine write_netcdf_parts
+
+    subroutine close_netcdf(file_id)
+        integer, intent(in) :: file_id
+        call check(nf90_close(file_id))
+    end subroutine close_netcdf
+
 
 end module io

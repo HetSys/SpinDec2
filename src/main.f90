@@ -42,7 +42,7 @@ program main
     integer :: cint, random_seed, err, use_input, current_iter, ncerr !checkpointing_interval, random seed,error var
     character(len=128) :: cpi, cpo ! checkpointing files
     character(len=128) :: problem
-    integer :: proot ! sqrt of number of processors
+    integer :: proot, file_id ! sqrt of number of processors
     real(real64) :: t1,t2
 
     ! Initialise MPI
@@ -194,8 +194,8 @@ program main
             F_tot(1) = global_F
         end if
         if (my_rank == 0) then
-            call write_netcdf_parts_setup(c, F_tot, a, Nc, Nx, Ny, Nt, dt, c0, MA, MB, kappa)
-            call write_netcdf_parts(c(:,:,2), F_tot(1),1)
+            call write_netcdf_parts_setup(c, F_tot, a, Nc, Nx, Ny, Nt, dt, c0, MA, MB, kappa,file_id)
+            call write_netcdf_parts(c(:,:,2), F_tot(1),1,file_id)
         end if
     end if
     count = 0
@@ -265,7 +265,7 @@ program main
         end if
 
         if (my_rank == 0) then
-            call write_netcdf_parts(c(:,:,3), F_tot(k),k)
+            call write_netcdf_parts(c(:,:,3), F_tot(k),k,file_id)
 
             c(:,:,1) = c(:,:,2)
             c(:,:,2) = c(:,:,3)
@@ -292,7 +292,6 @@ program main
     end do
 
 
-
     ! Deallocate local and global grids
     call local_grid_deallocate(my_rank)
     call global_grid_deallocate(my_rank)
@@ -301,6 +300,7 @@ program main
     t2 = MPI_Wtime()
 
     if (my_rank == 0) then
+        call close_netcdf(file_id)
         print *, "Calculation took", t2-t1, "seconds on", p, "MPI threads"
     end if
 
