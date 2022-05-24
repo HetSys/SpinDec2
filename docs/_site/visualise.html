@@ -110,7 +110,7 @@ $(document).ready(function(){initNavTree('visualise.html',''); initResizable(); 
        period for plotting the free energy (default is \(av\_period\) = 10).</p>
   <body>
     <pre><code class="python">
-      def __init__(self,filename,av_period):
+      def __init__(self,filename,av_period, save_plot=True):
     </code></pre>
   </body>
  
@@ -118,28 +118,28 @@ $(document).ready(function(){initNavTree('visualise.html',''); initResizable(); 
     As large amounts of time iterations are typically performed, we also reduce the amount of concentration grid frames we show in the animations by taking roughly 300 evenly spaced frames (300 is the default) to speed up the animation. These 300 frames are stored as \(self.c\_plot\) for concentration and \(self.F\_anim\) for the total free energy. </p>
   <body>
     <pre><code class="python">
-      def read_and_setup(self.filename,verbose=True):
+      def read_and_setup(self.filename,verbose=True, save_plot=True):
     </code></pre>
   </body>
 
   <p>The dual animation function plots a dual animation of the concentration field and free energy side by side. This may interest the user to observe when equilibrium is achieved in the system (i.e. when phase separation has occurred).</p>
   <body>
     <pre><code class="python">
-      def dual_animation(self):
+      def dual_animation(self, save_plot=True):
     </code></pre>
   </body>
 
   <p>ree energy animation over time if the user doesn't want the animated grid.</p>
   <body>
     <pre><code class="python">
-      def F_animation(self):
+      def F_animation(self, save_plot=True):
     </code></pre>
   </body>
 
   <p>Concentration grid animation over time for if the user doesn't want the animated free energy curve.</p>
   <body>
     <pre><code class="python">
-      def grid_animation(self):
+      def grid_animation(self, save_plot=True):
     </code></pre>
   </body>
 
@@ -147,45 +147,49 @@ $(document).ready(function(){initNavTree('visualise.html',''); initResizable(); 
 
   <body>
     <pre><code class="python">
-      def grid_snapshot(self, snapshot = -1):
+      def grid_snapshot(self, snapshot = -1, save_plot=True):
     </code></pre>
   </body>
 
   <p>Free energy plot (not animated) overall time if the user doesn't want the free energy animated.</p>
   <body>
     <pre><code class="python">
-      def F_plot(self):
+      def F_plot(self, save_plot=True):
     </code></pre>
   </body>
 
-  <p>Plots an animation of the average bulk free energy trajectory over time in separate regions of the grid. This is to observe which areas of the grid fall into which minima of the bulk free energy polynomial.</p>
+  <p>Trajectory of the average bulk free energy over time in 16 subsections of the grid. This is to observe which areas of the grid fall into which minima of the bulk free energy polynomial.
+    This plotting tool can only be used for square grids of size (64, 64); (128, 128) and (256, 256).
+  </p>
   <body>
     <pre><code class="python">
-      def bulk_energy_traj(self):
+      def bulk_energy_traj(self, save_plot=True):
     </code></pre>
   </body>
+
+  <p>In all the plotting functions, the default option is to save all the plots, where pictures are saved as PNG files and animations are saved as an mp4 file using the FFMpeg writer, which can be installed from the terminal by typing "sudo apt install ffmpeg". If the user wants to observe the plot without saving, then set the $save\_plot$ argument to false. </p>
 
   <p>All that is left to do is to call the class in the python file (which is defaulted as \(res_CH\)), then call the plotting functions you want to visualise, an example is shown below:</p>
   <body>
     <pre><code class="python">
       # Create a class name
-      res_CH = Vis_CH(file = 'CH_output.nc', av_period = 10)
+res_CH = Vis_CH(file = 'CH_output.nc', av_period=10)
 
-      # Must call the read and set up function before the plotters
-      res_CH.read_and_setup(verbose = True)
+# Must call the read and set up function before the plotters
+res_CH.read_and_setup(verbose=True)
 
-      # Then add any of the plots you want to save and create
-      res_CH.F_animation()
+# Then add any of the plots you want to save and create
+res_CH.F_animation(save_plot=True)
 
-      res_CH.grid_animation()
+res_CH.grid_animation(save_plot=True)
 
-      res_CH.grid_snapshot(snapshot=-1)
+res_CH.grid_snapshot(snapshot=-1, save_plot=True)
 
-      res_CH.F_plot()
+res_CH.F_plot(save_plot=True)
 
-      res_CH.bulk_energy_traj()
+res_CH.bulk_energy_traj(save_plot=True)
 
-      res_CH.dual_animation()
+res_CH.dual_animation(save_plot=True)
     </code></pre>
   </body>
 
