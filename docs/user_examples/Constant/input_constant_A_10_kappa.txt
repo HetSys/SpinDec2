@@ -1,0 +1,22 @@
+Concentration_max = 0.6
+Concentration_min = 0.4
+Domain_x_size = 128
+Domain_y_size = 128
+Mobility_A = 4
+Mobility_B = 4
+free_energy_gradient_parameter = 0.0001
+Bulk_free_energy = 10
+Checkpointing_interval = 5000
+Checkpoint_output_file = "Out.cp"
+kCheckpoint_input_file = "Out.cp"
+Max_time = 4e-3
+time_step = 1e-7
+Random_seed = 1234
+Use_input = 0
+Exitation_A = 1
+Exitation_B = 1
+Temperature_min = 950
+Temperature_max = 1050
+Problem = "Constant"
+Stabilization_Term = 0
+

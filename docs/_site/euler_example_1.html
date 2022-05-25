@@ -95,22 +95,231 @@ $(document).ready(function(){initNavTree('euler_example_1.html',''); initResizab
     
 </div><!--header-->
 
+<h1 id="bulkfree">Example - Running Serial With Constant Mobility</h1>
 
-  <h1 id="userdocs">User Documentation</h1>
+<p>To run the code with a constant mobility field, the problem variable in your input.txt file needs to be set to "Constant".
+Along with this, you must make sure you set the variables \(Mobility\_A\) and \(Mobility\_B\) to the values you want to simulate. In our example we shall set them to \(Mobility\_A\) = 4 and
+\(Mobility\_B\) = 4. The forward Euler solver is very sensitive to the value of the input parameters, so some suggested values are given in the example input file picture below:</p>
 
-  <h2 id="getstarted">Getting Started</h2>
+<pre><samp>
+  Concentration_max = 0.6
+  Concentration_min = 0.4
+  Domain_x_size = 128
+  Domain_y_size = 128
+  Mobility_A = 4
+  Mobility_B = 4
+  free_energy_gradient_parameter = 0.0001
+  Bulk_free_energy = 1
+  Checkpointing_interval = 5000
+  Checkpoint_output_file = "Out.cp"
+  Checkpoint_input_file = "Out.cp"
+  Max_time = 4e-2
+  time_step = 1e-6
+  Random_seed = 1234
+  Use_input = 0
+  Exitation_A = 1
+  Exitation_B = 1
+  Temperature_min = 950
+  Temperature_max = 1050
+  Problem = "Constant"
+  Stabilization_Term = 0
 
-  <h2 id="examples">Eaxmples</h2>
-  <p>Below are some simple examples of how to use SpinDec2 for the various cases of methods and Mobilities.</p>
+</samp></pre>
+<p>The input file shows all the inputs that the user must specify, however
+  only the mobility parameters will affect how \(M\) is calculated for this case. 
+</p>
+
+<p>The results from the above input file are shown below, and you should expect similar results
+  if you try it yourself: </p>
+<center>
+<p> <img src="user_examples/Constant/constant_start_46_A_1.png"  width="300" height="300">
+   <img src="user_examples/Constant/constant_quarter_46_A_1.png"  width="300" height="300"> 
+   <img src="user_examples/Constant/constant_end_46_A_1.png"  width="300" height="300">  
+   <img src="user_examples/Constant/F_46_A_1.png"  width="300" height="300"></p>
+  </center>
+
+  <h2>Changing \(A\) and \(kappa\)</h2>
+  <p> In SpinDec2, you are able to change the bulk free energy scale factor \(A\) for the case where 
+    \(f(c) Ac^2(1-c)^2\). Interestingly, you should find that if you increase the scale factor and the free energy gradient parameter
+  by a factor of 10, you should get the same result as the one above, but at a time a tenth of that above. An example input file is shown
+  below:</p>
+
+  <pre><samp>
+  Concentration_max = 0.6
+  Concentration_min = 0.4
+  Domain_x_size = 128
+  Domain_y_size = 128
+  Mobility_A = 4
+  Mobility_B = 4
+  free_energy_gradient_parameter = 0.001
+  Bulk_free_energy = 10
+  Checkpointing_interval = 5000
+  Checkpoint_output_file = "Out.cp"
+  Checkpoint_input_file = "Out.cp"
+  Max_time = 4e-3
+  time_step = 1e-7
+  Random_seed = 1234
+  Use_input = 0
+  Exitation_A = 1
+  Exitation_B = 1
+  Temperature_min = 950
+  Temperature_max = 1050
+  Problem = "Constant"
+  Stabilization_Term = 0
+  </samp></pre>
+  <p>The results from the above input file are shown below, and you should expect similar results
+    if you try it yourself: </p>
+
+  <center>
+    <p> <img src="user_examples/Constant/constant_start_46_A_10.png"  width="300" height="300">
+       <img src="user_examples/Constant/constant_quarter_46_A_10.png"  width="300" height="300"> 
+       <img src="user_examples/Constant/constant_end_46_A_10.png"  width="300" height="300">  
+       <img src="user_examples/Constant/F_46_A_10.png"  width="300" height="300"></p>
+      </center>
+
+      <h2>Changing only \(\kappa\)</h2>
+      <p>If you however decide that you want to increase \(A\) by ten but don't increase (\kappa\) by the same 
+      factor, you find that the mixing of the two alloys becomes less smooth as the
+      interfacial tension reduces in strength.An example input file is shown
+      below:</p>
+
+  <pre><samp>
+  Concentration_max = 0.6
+  Concentration_min = 0.4
+  Domain_x_size = 128
+  Domain_y_size = 128
+  Mobility_A = 4
+  Mobility_B = 4
+  free_energy_gradient_parameter = 0.001
+  Bulk_free_energy = 10
+  Checkpointing_interval = 5000
+  Checkpoint_output_file = "Out.cp"
+  Checkpoint_input_file = "Out.cp"
+  Max_time = 4e-3
+  time_step = 1e-7
+  Random_seed = 1234
+  Use_input = 0
+  Exitation_A = 1
+  Exitation_B = 1
+  Temperature_min = 950
+  Temperature_max = 1050
+  Problem = "Constant"
+  Stabilization_Term = 0
+  </samp></pre>
+
+  <p>The results from the above input file are shown below, and you should expect similar results
+    if you try it yourself: </p>
+
+      <center>
+        <p> <img src="user_examples/Constant/constant_start_46_A_10_kappa.png"  width="300" height="300">
+           <img src="user_examples/Constant/constant_mid_46_A_10_kappa.png"  width="300" height="300"> 
+           <img src="user_examples/Constant/constant_end_46_A_10_kappa.png"  width="300" height="300"> 
+           <img src="user_examples/Constant/F_kappa.png"  width="300" height="300"> </p>
+          </center>
+
+          <h2>Changing The Initial Concentration Range</h2>
+
+          <p>The starting initial concentration grid will effect the end state of the system. In the previous examples, we have used an initial range 
+          of 0.4 to 0.6, which equates to a 50/50 mixture of the two species, as the initial average concentration \(c_0\), is 0.5. 
+          If we were to change this to be more biased towards species \(A\) (\(c_0 \approx 0.6\)) or species \(B\), (\(c_0 \approx 0.4\)), then we
+          would expect to have less of a 50/50 split at the end of the simulation, and have clumps of the less dominate element in a sea of the more dominant element.
+          Example input files and expected reults for these cases are shown below:</p>
+
+<pre><samp>
+Concentration_max = 0.65
+Concentration_min = 0.64
+Domain_x_size = 128
+Domain_y_size = 128
+Mobility_A = 4
+Mobility_B = 4
+free_energy_gradient_parameter = 0.0001
+Bulk_free_energy = 1
+Checkpointing_interval = 5000
+Checkpoint_output_file = "Out.cp"
+Checkpoint_input_file = "Out.cp"
+Max_time = 4e-2
+time_step = 1e-6
+Random_seed = 1234
+Use_input = 0
+Exitation_A = 1
+Exitation_B = 1
+Temperature_min = 950
+Temperature_max = 1050
+Problem = "Constant"
+Stabilization_Term = 0
+</samp></pre>
+
+          <center>
+            <p> <img src="user_examples/Constant/constant_end_6465.png"  width="300" height="300">
+              </p>
+              </center>
+
+<pre><samp>
+Concentration_max = 0.32
+Concentration_min = 0.31
+Domain_x_size = 128
+Domain_y_size = 128
+Mobility_A = 4
+Mobility_B = 4
+free_energy_gradient_parameter = 0.0001
+Bulk_free_energy = 1
+Checkpointing_interval = 5000
+Checkpoint_output_file = "Out.cp"
+Checkpoint_input_file = "Out.cp"
+Max_time = 4e-2
+time_step = 1e-6
+Random_seed = 1234
+Use_input = 0
+Exitation_A = 1
+Exitation_B = 1
+Temperature_min = 950
+Temperature_max = 1050
+Problem = "Constant"
+Stabilization_Term = 0
+</samp></pre>
+
+              <center>
+                <p> <img src="user_examples/Constant/constant_end_3132.png"  width="300" height="300">
+                  </p>
+                  </center>
+
+ <h2>Changing \(A\) and \(kappa\)</h2>
+  <p> In SpinDec2, you are able to define the bulk free energy polynomial yourself. This is done using the <code markup="tt" class=" language-none"> f(c)</code> 
+  variable in the input file. The bulk free energy polynomial is crucial in defining how your binary alloy system is going to behave. In particular, the location of the minima
+will effect the range of values that \(c\) can take. In the previous example, we have used a polynomial where the minimas lie at \(c=0\) and \(c=1\), which is why the 
+range in \(c\) the prevous results have been between 0 and 1 in the final output. If we change the polynomial to be \(f(c) = c^4 - 2c^2 +1\), the minimas are now located at
+-1 and 1, with the local maxima (i.e the mixed state), now located at \(c = 0\) rather than 0.5.
+ An example input file and expected reults for this case is given below:</p>
 
 
-  <ul>
-    <li>Euler - constant M - Mobility is taken to be constant everywhere at all times, <a href="euler_example_1.html">Euler Example 1</a>.</li>
-    <li>Euler - M = M(c) - Mobility is dependent on the order paramter c over time, <a href="euler_example_2.html">Euler Example 2</a>.</li>
-    <li>Euler - M = M(c,T) The atomic mobilities are defined in terms of local tempeartures, <a href="euler_example_3.html">Euler Example 3</a>.</li>
-    <li>Pseudo-Spectral Method,  <a href="PS_example.html">Pseudo-Spectral Example </a>.</li>
-  </ul> 
-
+ <pre><samp>
+  Concentration_max = 0.32
+  Concentration_min = 0.31
+  Domain_x_size = 128
+  Domain_y_size = 128
+  Mobility_A = 4
+  Mobility_B = 4
+  free_energy_gradient_parameter = 0.0001
+  Bulk_free_energy = 1
+  Checkpointing_interval = 5000
+  Checkpoint_output_file = "Out.cp"
+  Checkpoint_input_file = "Out.cp"
+  Max_time = 4e-2
+  time_step = 1e-6
+  Random_seed = 1234
+  Use_input = 0
+  Exitation_A = 1
+  Exitation_B = 1
+  Temperature_min = 950
+  Temperature_max = 1050
+  Problem = "Constant"
+  Stabilization_Term = 0 
+</samp></pre>
+          
+      <center>
+        <p> <img src="user_examples/Constant/constant_end_new_pol.png"  width="300" height="300"> 
+          <img src="user_examples/Constant/F_new_pol.png"  width="300" height="300"> </p>
+          </center>
   <div class="contents">
 </div><!-- contents -->
 </div><!-- doc-content -->
