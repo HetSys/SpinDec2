@@ -45,11 +45,12 @@ module ch_test
         end if
     end subroutine test_del_Q
 
-    subroutine test_time_evolution(c_new,c_test,c_expected,Nx,Ny,dx,dy,dt,a,Kappa,M,conc_halo,Q_halo)
+    subroutine test_time_evolution(c_new,c_test,c_expected,Nx,Ny,dx,dy,dt,a,Kappa,M,conc_halo)
 
         integer, intent(in) :: Nx, Ny
         real(real64), dimension(Nx,Ny), intent(in) :: c_test, c_expected
-        real(real64), dimension(Nx,4), intent(in) :: conc_halo,Q_halo
+        real(real64), dimension(Nx,4), intent(in) :: conc_halo
+        real(real64), dimension(Nx,4) :: Q_halo
         real(real64), intent(in) :: dx, dy, dt, Kappa, M
         real(real64), dimension(:), intent(in) :: a
         real(real64), dimension(Nx,Ny), intent(out) :: c_new
@@ -62,6 +63,12 @@ module ch_test
         call bulk_potential(mu,c_test,a)
         ! Get total chemical potential
         call total_potential(Q,mu,c_test,dx,dy,Kappa,conc_halo)
+
+        Q_halo(:, right) = Q(1,:)
+        Q_halo(:, left) = Q(Nx, :)
+        Q_halo(:, up) = Q(:,Ny)
+        Q_halo(:, down) = Q(:,1)
+
         ! Get dQ
         call del_Q(dQ,Q,dx,dy,Nx,Ny,Q_halo)
         ! Get grid at next time step

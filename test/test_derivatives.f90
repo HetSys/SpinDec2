@@ -46,8 +46,8 @@ module test_derivatives
 
         Q_halo(:, right) = test_in(1,:)
         Q_halo(:, left) = test_in(Nx, :)
-        Q_halo(:, up) = test_in(:,1)
-        Q_halo(:, down) = test_in(:,Ny)
+        Q_halo(:, up) = test_in(:,Ny)
+        Q_halo(:, down) = test_in(:,1)
     
         call dQ_dx(dQx,test_in,dx,Nx,Ny,Q_halo)
 
@@ -97,7 +97,7 @@ module test_derivatives
         end do
 
         if (res) then
-            print *, 'dQ_dx PBC test succeded'
+            print *, 'dQ_dx PBC test succeeded'
         else
             print *, 'dQ_dx PBC test Failed'
         end if
@@ -153,7 +153,7 @@ module test_derivatives
         end do
 
         if (res) then
-            print *, 'dM_dx PBC test succeded'
+            print *, 'dM_dx PBC test succeeded'
         else
             print *, 'dM_dx PBC test Failed'
         end if
@@ -226,8 +226,8 @@ module test_derivatives
 
         Q_halo(:, right) = test_in(1,:)
         Q_halo(:, left) = test_in(Nx, :)
-        Q_halo(:, up) = test_in(:,1)
-        Q_halo(:, down) = test_in(:,Ny)
+        Q_halo(:, up) = test_in(:,Ny)
+        Q_halo(:, down) = test_in(:,1)
     
         call dQ_dy(dQy,test_in,dy,Nx,Ny,Q_halo)
 
@@ -277,7 +277,7 @@ module test_derivatives
         end do
 
         if (res) then
-            print *, 'dQ_dy PBC test succeded'
+            print *, 'dQ_dy PBC test succeeded'
         else
             print *, 'dQ_dy PBC test Failed'
         end if
@@ -333,7 +333,7 @@ module test_derivatives
         end do
 
         if (res) then
-            print *, 'dM_dy PBC test succeded'
+            print *, 'dM_dy PBC test succeeded'
         else
             print *, 'dM_dy PBC test Failed'
         end if

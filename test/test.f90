@@ -33,9 +33,9 @@ program main
     real(real64), dimension(:,:), allocatable :: dQ   ! 2nd derivative of Q
     real(real64), dimension(:), allocatable :: a
     real(real64), dimension(:,:), allocatable :: Q_halo_1
-    real(real64), dimension(:,:), allocatable :: Q_halo_2
     real(real64), dimension(:,:), allocatable :: conc_halo_4
     real(real64) :: C_mean, C_std
+    real(real64) :: C_min, C_max
     real(real64) :: M_constant ! Mobility
     integer :: Nx, Ny
     integer :: t_max ! number of timesteps
@@ -227,6 +227,11 @@ program main
         end do
     end do
 
+    Q_halo_1(:, right) = Q_test(1,:)
+    Q_halo_1(:, left) = Q_test(Nx, :)
+    Q_halo_1(:, up) = Q_test(:,Ny)
+    Q_halo_1(:, down) = Q_test(:,1)
+
     call test_del_Q(dQ,Q_test,dQ_expected,dx,dy,Nx,Ny,Q_halo_1)
 
     ! Test on time_evolution subroutine
@@ -238,7 +243,6 @@ program main
     allocate(c_test(Nx,Ny))
     allocate(c_expected(Nx,Ny))
     allocate(c_new_1(Nx,Ny))
-    allocate(Q_halo_2(Nx,4))
     allocate(conc_halo_4(Nx,4))
 
     ! initialize concentration grid with test values
@@ -250,7 +254,12 @@ program main
                            0.740158839048355,0.738720099275076,0.690382929167892, &
                            0.709132521563533,0.657924059121464,0.803700028541638/),shape(c_expected))
 
-    call test_time_evolution(c_new_1,c_test,c_expected,Nx,Ny,dx,dy,dt,a,Kappa,M_constant,conc_halo_4,Q_halo_2)
+    conc_halo_4(:, right) = c_test(1,:)
+    conc_halo_4(:, left) = c_test(Nx, :)
+    conc_halo_4(:, up) = c_test(:,Ny)
+    conc_halo_4(:, down) = c_test(:,1)
+
+    call test_time_evolution(c_new_1,c_test,c_expected,Nx,Ny,dx,dy,dt,a,Kappa,M_constant,conc_halo_4)
 
 
     print*,'########################################################'
@@ -270,8 +279,8 @@ program main
 
     M_constant = 1.5
 
-    C_mean = 0.7
-    C_std = 0.01
+    C_min = 0.2
+    C_max = 0.7
 
     seed_in = -1
 
@@ -288,7 +297,7 @@ program main
 
     ! TESTS
 
-    call test_grid_init(c_grid,Nx,Ny,C_mean,C_std,mean,std)
+    call test_grid_init(c_grid,Nx,Ny,C_min,C_max)
 
     ! call test_rand_normal(mean,std,C_mean,C_std)
 

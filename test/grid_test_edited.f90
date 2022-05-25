@@ -118,14 +118,14 @@ end subroutine test_rand_seed
 ! end subroutine test_rand_normal
 
 
-subroutine test_grid_init(grid,Nx,Ny,C_mean,C_std,mean,std)
+subroutine test_grid_init(grid,Nx,Ny,C_min,C_max)
     ! Subroutine to test the concentration grid
     ! is initialized with the correct distribution
 
     integer, intent(in) :: Nx, Ny
     real(real64), dimension (Nx,Ny) :: grid
-    real(real64), intent(in) :: C_mean, C_std
-    real(real64), intent(out) :: mean, std
+    real(real64), intent(in) :: C_min, C_max
+    real(real64) :: C_mean, C_std, mean,std
     real(real64) :: sum, diff
     integer :: i,j ! counters
 
@@ -134,7 +134,10 @@ subroutine test_grid_init(grid,Nx,Ny,C_mean,C_std,mean,std)
     diff = 0.0
 
     ! initialize grid for test
-    call grid_init(grid,Nx,Ny,C_mean,C_std)
+    call grid_init(grid,Nx,Ny,C_min,C_max)
+
+    C_mean = (C_max+C_min)/2.0
+    C_std = sqrt((C_max-C_min)*(C_max-C_min)/12.0)
 
     do i = 1, Nx
         do j = 1, Ny
