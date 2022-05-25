@@ -77,7 +77,8 @@ def bulk_energy_extrema(coeffs):
 # Argument parser for saving and viewing the  plot
 parser = argparse.ArgumentParser(description='Visulise spinodal decomposistion in SpinDec2')
 
-parser.add_argument('-sn', '--snap', type=int, default=-1, metavar = '',help='Select Snapshot Of Grid To Plot')
+parser.add_argument('-sn', '--snap', type=int, default=-1, metavar = '',help='Option to select snapshot of grid to plot')
+parser.add_argument('-fr', '--frame', type=int, default=-1, metavar = '',help='Option to set number of frames when saving to mp4')
 
 plots = parser.add_mutually_exclusive_group(required=True)
 
@@ -131,7 +132,7 @@ class Vis_CH:
 
 
         #time array
-        self.time = np.arange(self.t_end//self.dt) * self.dt
+        self.time = np.arange(self.t_end//self.dt + 1) * self.dt
 
          #moving average of F
         if (self.N_t>1):
@@ -173,7 +174,9 @@ class Vis_CH:
             # Number of frames for the aniamtion
             self.nframes = 300
 
-            if self.N_t < self.nframes:
+            print(len(self.time))
+
+            if len(self.time) < self.nframes:
                 self.modulo = 1
             else:
                 self.modulo = int(self.N_t/self.nframes)
@@ -195,6 +198,14 @@ class Vis_CH:
         # For the bounds of the plots
         self.minima, self.maxima  = bulk_energy_extrema(self.coeffs)
 
+        # For saving to Mp4
+
+        if args.frame:
+            self.frame = args.frame
+        else:
+            self.frame = 50
+
+        print(self.frame)
 
         
 
@@ -258,11 +269,11 @@ class Vis_CH:
 
         if (save_plot):
 
-            FFwriter = animation.FFMpegWriter(fps = 50)
+            FFwriter = animation.FFMpegWriter(fps = self.frame)
             anim.save('Dual_Animation.mp4', writer = FFwriter)
 
         if (both):
-            FFwriter = animation.FFMpegWriter(fps = 50)
+            FFwriter = animation.FFMpegWriter(fps = self.frame)
             anim.save('Dual_Animation.mp4', writer = FFwriter)
             plt.show()
 
@@ -302,12 +313,12 @@ class Vis_CH:
 
         if (save_plot):
         
-            FFwriter = animation.FFMpegWriter(fps = 50)
+            FFwriter = animation.FFMpegWriter(fps = self.frame)
             anim_traj.save('Free_Energy_Animation.mp4', writer = FFwriter)
 
         if (both):
         
-            FFwriter = animation.FFMpegWriter(fps = 50)
+            FFwriter = animation.FFMpegWriter(fps = self.frame)
             anim_traj.save('Free_Energy_Animation.mp4', writer = FFwriter)
             plt.show()
                
@@ -360,11 +371,11 @@ class Vis_CH:
 
         if (save_plot):
 
-            FFwriter = animation.FFMpegWriter(fps = 50)
+            FFwriter = animation.FFMpegWriter(fps = self.frame)
             anim.save('Grid_Animation.mp4', writer = FFwriter)
 
         if (both):
-            FFwriter = animation.FFMpegWriter(fps = 50)
+            FFwriter = animation.FFMpegWriter(fps = self.frame)
             anim.save('Grid_Animation.mp4', writer = FFwriter)
             plt.show()
 
@@ -404,9 +415,9 @@ class Vis_CH:
     #Function that plots F (and its moving average)
     def F_plot(self, save_plot = False, both = False):
         fig, ax = plt.subplots()
-        ax.plot(self.time,self.F_tot, scaley=True, scalex=True, color="blue", label = r'CH Data')
+        ax.plot(self.time[::self.N_t],self.F_tot, scaley=True, scalex=True, color="blue", label = r'CH Data')
         if self.N_t>1:
-            ax.plot(self.time,self.F_av, scaley=True, scalex=True, color="red", label = r'Moving Average ($t_{period}$ = ' + str(self.N_t // self.av_period) + r' s)')
+            ax.plot(self.time[::self.N_t],self.F_av, scaley=True, scalex=True, color="red", label = r'Moving Average ($t_{period}$ = ' + str(self.N_t // self.av_period) + r' s)')
         ax.set_xlabel(r'Time (s)')
         ax.set_ylabel(r"Total Free Energy - $F(t)$")
         ax.set_ylim(0.9*self.F_tot.min(), 1.1*self.F_tot.max())
@@ -521,6 +532,11 @@ if args.both:
     save = False
     both = True
 
+
+if (res_CH.N_t == 0):
+    print('Error: Nt must be an integer greater than zero. Make sure that write_frequency isnt larger than t_end/dt')
+
+
 if (res_CH.N_t > 1):
 
     res_CH.F_animation(save_plot=save, both = both)
@@ -552,5 +568,3 @@ if (res_CH.N_t == 1):
     if save:
         print('Saved Grid Snapshot')
 
-else:
-    print('Error: Nt must be an integer greater than zero')
