@@ -41,19 +41,20 @@ mkdir "$1" && cd "$1" || exit 1
 # Create input file to use
 echo "concentration_max = 0.9
 concentration_min = 0.1
-domain_size = $3
+domain_x_size = $3
+domain_y_size = $3
 mobility_a = 4
 mobility_b = 4
 free_energy_gradient_parameter = 0.0001
 bulk_free_energy = 1
-checkpointing_interval = 1000
+checkpoint_interval = 1000
 write_frequency = 500
 max_time = 1e-4
 time_step = 1e-8
 random_seed = 12345356
 use_input = 0
-exitation_a = 0.1
-exitation_b = 0.2
+excitation_a = 0.1
+excitation_b = 0.2
 temperature_min = 900
 temperature_max = 1000
 problem = "$2"

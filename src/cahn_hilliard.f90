@@ -7,19 +7,16 @@ module cahn_hilliard
     implicit none
 
 contains
+ 
+    !> Subroutine to calculate diffusive mobility field.
+    !!
+    !!@param M ouput diffusive mobility field
+    !!@param MA, MB user inputted atomic mobilities (one for each species)
+    !!@param c0 user inputted mean of initial concentration field
+    !!@param c concentration field at time step
+    !!@param T temperature field
+    !!@param problem character string that selects specific definition of M
 
-    !******************************************************************************
-    !> Mobility
-    !!
-    !! subroutine to calculate diffusive mobility field
-    !!
-    !!@param M : ouput diffusive mobility field
-    !!@param MA, MB : user inputted atomic mobilities (one for ecah species)
-    !!@param c0 : user inputted mean of initial concentration field
-    !!@param c : concentration field at time step
-    !!@param T : Temperature field
-    !!@param problem : character string that selects specific definition of M
-    !*****************************************************************************
     subroutine Mobility(M, MA, MB, EA, EB, c0, c, T, problem)
 
         real(real64), intent(inout):: M(:,:)
@@ -96,13 +93,17 @@ contains
 
     end subroutine
 
-    subroutine del_Q(dQ, Q, dx, dy, Nx, Ny, Q_halo)
-        ! Subroutine to perform spatial dervative of Q
-        ! dQ is a 2D grid to store the derivatives of Q
-        ! Q is the 2D grid of total chemical potentials
-        ! M is the mobility of the species
-        ! dx and dy are the spatial grid spacings in x and y
 
+    !> Subroutine to calculate second dervative of Q
+    !! using central differences
+    !!
+    !! @param dQ a 2D grid to store the second derivative of Q
+    !! @param Q a 2D grid of total chemical potentials
+    !! @param dx, dy the spatial grid spacings in x and y
+    !! @param Nx, Ny grid size in x and y
+    !! @param Q_halo array storing boundary neighbour values
+
+    subroutine del_Q(dQ, Q, dx, dy, Nx, Ny, Q_halo)
 
         integer, intent(in):: Nx, Ny
         real(real64), dimension(Nx, Ny), intent(in):: Q
@@ -177,6 +178,14 @@ contains
 
     end subroutine del_Q
 
+    !> Subroutine to calculate the first dervative of Q
+    !! with respect to x using central differences
+    !!
+    !! @param dQx a 2D grid to store the first derivative of Q
+    !! @param Q a 2D grid of total chemical potentials
+    !! @param dx, dy the spatial grid spacings in x and y
+    !! @param Nx, Ny grid size in x and y
+    !! @param Q_halo array storing boundary neighbour values
 
     subroutine dQ_dx(dQx, Q, dx, Nx, Ny, Q_halo)
         ! Subroutine to calculate dQ/dx
@@ -203,6 +212,15 @@ contains
         !$omp end parallel do
 
     end subroutine dQ_dx
+
+    !> Subroutine to calculate the first dervative of Q
+    !! with respect to y using central differences
+    !!
+    !! @param dQy a 2D grid to store the first derivative of Q
+    !! @param Q a 2D grid of total chemical potentials
+    !! @param dx, dy the spatial grid spacings in x and y
+    !! @param Nx, Ny grid size in x and y
+    !! @param Q_halo array storing boundary neighbour values
 
     subroutine dQ_dy(dQy, Q, dy, Nx, Ny, Q_halo)
         ! Subroutine to calculate dQ/dx
@@ -237,9 +255,17 @@ contains
     end subroutine dQ_dy
 
 
+    !> Subroutine to calculate the first dervative of M
+    !! with respect to y using central differences
+    !!
+    !! @param dMy a 2D grid to store the first derivative of M
+    !! @param M a 2D grid of mobilities
+    !! @param dx, dy the spatial grid spacings in x and y
+    !! @param Nx, Ny grid size in x and y
+    !! @param M_halo array storing boundary neighbour values
+
     subroutine dM_dy(dMy, M, dy, Nx, Ny, M_halo)
-        ! Subroutine to calculate dM/dx
-        ! Using central differences
+
         integer, intent(in):: Nx, Ny
         real(real64), dimension(Nx, Ny), intent(in):: M
         real(real64), dimension(Nx, 4), intent(in):: M_halo
@@ -268,6 +294,15 @@ contains
 
     end subroutine dM_dy
 
+    !> Subroutine to calculate the first dervative of Q
+    !! with respect to y using central differences
+    !!
+    !! @param dMx a 2D grid to store the first derivative of Q
+    !! @param M a 2D grid of mobilities
+    !! @param dx, dy the spatial grid spacings in x and y
+    !! @param Nx, Ny grid size in x and y
+    !! @param M_halo array storing boundary neighbour values
+
     subroutine dM_dx(dMx, M, dx, Nx, Ny, M_halo)
         ! Subroutine to calculate dM/dx
         ! Using central differences
@@ -294,40 +329,16 @@ contains
 
     end subroutine dM_dx
 
-    subroutine time_evolution(grid, grid_new, dQ, M, dt, Nx, Ny)
-        ! Subroutine to perform the time evolution in accordance with
-        ! the Cahn-Hilliard equation
-
-        integer, intent(in):: Nx, Ny
-        real(real64), dimension(Nx, Ny), intent(in):: grid, dQ
-        real(real64), intent(in):: M, dt
-        real(real64), dimension(Nx, Ny), intent(out):: grid_new
-        integer:: i, j  ! counters
-
-
-
-        do i = 1, Nx
-            do j = 1, Ny
-                grid_new(i, j) = grid(i, j) + dt*M * dQ(i, j)
-            end do
-        end do
-
-    end subroutine time_evolution
-
-
-    !******************************************************************************
-    !> time_evoloution
+    !> Subroutine to perform forward Euler (explicit) time integration
     !!
-    !! subroutine to perform forward Euler (explicit) time integration
-    !!
-    !!@param c : concentration field at previous step
-    !!@param c_new : concentration field at next step
-    !!@param M : diffusive mobility field
-    !!@param Q : total chemical potential
-    !!@param dx, dy : grid spacings in x and y
-    !!@param dt : time-step
-    !!@param Nx, Ny : number of resoloutions in x and y
-    !*****************************************************************************
+    !!@param c oncentration field at previous step
+    !!@param c_new concentration field at next step
+    !!@param M diffusive mobility field
+    !!@param Q total chemical potential
+    !!@param dx, dy grid spacings in x and y
+    !!@param dt time-step
+    !!@param Nx, Ny grid sizes in x and y
+
     subroutine time_evolution_new(c, c_new, M, Q, dx, dy, dt, Nx, Ny, Q_halo, M_halo)
         integer, intent(in):: Nx, Ny
         real(real64), intent(in):: c(Nx, Ny), Q(Nx, Ny), M(Nx, Ny)
