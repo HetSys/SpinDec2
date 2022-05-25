@@ -38,12 +38,12 @@ program main
     real(real64) :: stab !Stabilization_Term
     real(real64) :: bfe, df_tol!Placeholder (These were in the input file but df_tol hasn't been used in any code)
     integer :: Nx, Ny, Nt, Nc,no_threads
-    integer :: k, count,thread ! counters
+    integer :: k, count,thread ,write_count,write_prev! counters
     integer :: cint, random_seed, err, use_input, current_iter, ncerr !checkpointing_interval, random seed,error var
     character(len=128) :: cpi, cpo ! checkpointing files
     character(len=128) :: problem
-    integer :: proot ! sqrt of number of processors
-    real(real64) :: t1,t2
+    integer :: proot, file_id,i ! sqrt of number of processors
+    real(real64) :: t1,t2,w1,w2
 
     ! Initialise MPI
     ! Get my_rank and p
@@ -54,6 +54,7 @@ program main
 
 
     thread =  fftw_init_threads()
+
     ! Only run files in test for now
     call read_params("input.txt",problem, c_min, c_max, a, nx, &
                      ny, ma, mb,ea,eb,T_min,T_max, kappa, bfe, cint, cpi, cpo, t_end, dt, df_tol,stab, random_seed, use_input, err)
@@ -68,10 +69,10 @@ program main
     ! come back to this
     Nt = floor(t_end / dt)
     c0 = (c_min+c_max)/2
-
+    write_int = 1000
 
     if(problem == "Spectral") then
-        call omp_set_num_threads(no_threads)
+        !call omp_set_num_threads(no_threads)
         if(p > 1) then
             if(my_rank == 0) then
                 print*, "Spectral can oly be run with pure OpenMP"
@@ -171,11 +172,14 @@ program main
     end if
 
     call comms_get_global_grid()
-
+    if(my_rank == 0) then
+        write_count = 1
+    end if
 
     if (my_rank==0) then
-        c(:,:,2) = global_grid_conc(:,:)
+        c(:,:,write_count) = global_grid_conc(:,:)
     end if
+
 
     if (cpi == "") then
         !Get initial bulk free energy for current rank using local grid
@@ -192,14 +196,18 @@ program main
 
         if (my_rank == 0) then
             F_tot(1) = global_F
+            print*,global_F,F_tot(1:1)
         end if
+
         if (my_rank == 0) then
-            call write_netcdf_parts_setup(c, F_tot, a, Nc, Nx, Ny, Nt, dt, c0, MA, MB, kappa)
-            call write_netcdf_parts(c(:,:,2), F_tot(1),1)
+            call write_netcdf_parts_setup(c, F_tot, a, Nc, Nx, Ny, Nt, dt, c0, MA, MB, kappa,file_id)
+            call write_netcdf_parts(c(:,:,write_count:write_count), F_tot(1:1),1,file_id)
         end if
     end if
     count = 0
+
     ! Grid evolution
+
     do k = current_iter, Nt
         !print*, k
         ! Get bulk chemical potentials
@@ -214,7 +222,7 @@ program main
 
         ! Get Mobility Field
         call Mobility(M,MA,MB, EA, EB, c0, local_grid_conc, T, problem)
-
+        
         !Store Q and M from neighbor ranks
         call comms_halo_swaps(Q,Q_halo)
 
@@ -231,20 +239,25 @@ program main
 
 
             if (my_rank == 0) then
-                c(:,:,3) = global_grid_conc(:,:)
+                c(:,:,write_count+1) = global_grid_conc(:,:)
             end if
         else
             if(k == 2) then
-                call spectral_method_iter(c(:, :, 2),c(:, :, 2),a,dt,M(1,1),Kappa,c_new,1,stab)
-                c(:,:,3) = c_new(:,:)
+                call spectral_method_iter(c(:, :, write_count),c(:, :,write_count),a,dt,M(1,1),Kappa,c_new,1,stab)
+                c(:,:,write_count+1) = c_new(:,:)
             else
-                call spectral_method_iter(c(:, :, 2),c(:, :, 1),a,dt,M(1,1),Kappa,c_new,0,stab)
-                c(:,:,3) = c_new(:,:)
+                if(write_count == 1) then
+                    write_prev = write_int+1
+                else
+                    write_prev = write_count-1
+                end if
+                call spectral_method_iter(c(:, :, write_count),c(:, :,write_prev),a,dt,M(1,1),Kappa,c_new,0,stab)
+                c(:,:,write_count+1) = c_new(:,:)
             end if
         end if
 
         if(p == 1) then
-            local_grid_conc(:,:) = c(:,:,3)
+            local_grid_conc(:,:) = c(:,:,write_count+1)
         end if
 
 
@@ -265,10 +278,16 @@ program main
         end if
 
         if (my_rank == 0) then
-            call write_netcdf_parts(c(:,:,3), F_tot(k),k)
+            if(write_count == write_int) then
+                w1 = MPI_Wtime()
+                call write_netcdf_parts(c(:,:,:), F_tot(k-write_int+1:k),k-write_int+1,file_id)
+                write_count = 0
+                w2 = MPI_Wtime()
 
-            c(:,:,1) = c(:,:,2)
-            c(:,:,2) = c(:,:,3)
+                if (my_rank == 0) then
+                    print *, "Write took", w2-w1
+                end if
+            end if
         end if
 
         if (my_rank == 0) then
@@ -285,12 +304,24 @@ program main
 
                 count = 0
             end if
-
+            if(my_rank == 0) then
+                write_count = write_count +1
+            end if
+            if(write_count > write_int) then
+                write_count = 1
+            end if
             count = count + 1
         end if
 
     end do
+    if (my_rank == 0) then
+        if(write_count > 1) then
 
+            call write_netcdf_parts(c(:,:,:write_count), &
+                                F_tot(Nt-write_count:),Nt-write_count,file_id)
+
+        end if
+    end if
 
 
     ! Deallocate local and global grids
@@ -301,6 +332,7 @@ program main
     t2 = MPI_Wtime()
 
     if (my_rank == 0) then
+        call close_netcdf(file_id)
         print *, "Calculation took", t2-t1, "seconds on", p, "MPI threads"
     end if
 

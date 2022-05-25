@@ -14,7 +14,7 @@ module grid
 
     public :: grid_initialise_local,local_grid_deallocate
     public :: grid_initialise_global,global_grid_deallocate
-    public :: Q,M,mu,c_new,T,f_b
+    public :: Q,M,mu,c_new,T,f_b,write_int
 
 
     ! Define module constants
@@ -26,7 +26,7 @@ module grid
     real(real64), dimension(:,:), allocatable :: local_grid_conc
     real(real64), dimension(:,:), allocatable :: Q, M, mu, c_new, T, f_b, c_out
     real(real64), dimension(:,:), allocatable :: conc_halo, Q_halo, M_halo
-
+    integer :: write_int
     ! Constants to define directions
     integer, parameter :: left=1, right=2, down=3, up=4
     ! Constants to define coordinates
@@ -294,7 +294,7 @@ contains
             allocate(global_grid_conc(Nx,Ny),stat=ierr)
             if(ierr/=0) stop "Error: allocating global_grid_conc failed"
             if (.not. allocated(c)) then
-                allocate(c(Nx,Ny,3),stat=ierr)
+                allocate(c(Nx,Ny,write_int+1),stat=ierr)
                 if(ierr/=0) stop "Error: allocating c failed"
             end if
         end if
