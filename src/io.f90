@@ -124,7 +124,7 @@ contains
     end subroutine write_netcdf
 
 
-    subroutine write_netcdf_parts_setup(c, F_tot, a, Nc, Nx, Ny, Nt, dt, c0, MA, MB, kappa,file_id)
+    subroutine write_netcdf_parts_setup(c, F_tot, a, Nc, Nx, Ny, Nt, dt, c0, MA, MB, kappa,t_end,file_id)
 
         integer, intent(in) :: Nx, Ny, Nt, Nc
         real(kind=real64), dimension(Nx, Ny, Nt), intent(in) :: c
@@ -138,7 +138,7 @@ contains
         character(len=*), dimension(3), parameter :: c_dims = (/"c_x", "c_y", "c_t"/)
         character(len=*), parameter :: F_tot_dims = "F_t", a_dims = "a_i"
         character(len=*), parameter :: filename = 'CH_output.nc'
-        real(kind=real64), intent(in) :: dt, MA, MB, kappa, c0
+        real(kind=real64), intent(in) :: dt, MA, MB, kappa, c0,t_end
         integer :: k
         integer, intent(out) :: file_id
 
@@ -190,6 +190,8 @@ contains
 
         !initial average concentration
         call check(nf90_put_att(file_id, NF90_GLOBAL, "c0", c0))
+
+        call check(nf90_put_att(file_id, NF90_GLOBAL, "t_end", t_end))
 
         !Finish defining metadata
         call check(nf90_enddef(file_id))

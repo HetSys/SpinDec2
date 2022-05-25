@@ -37,9 +37,9 @@ program main
     real(real64) :: local_F,global_F
     real(real64) :: stab !Stabilization_Term
     real(real64) :: bfe, df_tol!Placeholder (These were in the input file but df_tol hasn't been used in any code)
-    integer :: Nx, Ny, Nt, Nc,no_threads
+    integer :: Nx, Ny, Nt, Nc,no_threads,write_num
     integer :: k, count,thread ,write_count,write_prev,write_next! counters
-    integer :: cint, random_seed, err, use_input, current_iter, ncerr !checkpointing_interval, random seed,error var
+    integer :: cint, random_seed, err, use_input, current_iter, ncerr,singl, write_freq !checkpointing_interval, random seed,error var
     character(len=128) :: cpi, cpo ! checkpointing files
     character(len=128) :: problem
     integer :: proot, file_id,i ! sqrt of number of processors
@@ -57,7 +57,8 @@ program main
 
     ! Only run files in test for now
     call read_params("input.txt",problem, c_min, c_max, a, nx, &
-                     ny, ma, mb,ea,eb,T_min,T_max, kappa, bfe, cint, cpi, cpo, t_end, dt, df_tol,stab, random_seed, use_input, err)
+                     ny, ma, mb,ea,eb,T_min,T_max, kappa, bfe, cint, &
+                     cpi, cpo, t_end, dt, df_tol,stab, random_seed, use_input,singl,write_freq,err)
 
     if (err == -1) then
         print *, "There was an issue with the input file please check and try again"
@@ -200,7 +201,12 @@ program main
         end if
 
         if (my_rank == 0) then
-            call write_netcdf_parts_setup(c, F_tot, a, Nc, Nx, Ny, Nt, dt, c0, MA, MB, kappa,file_id)
+            if(write_freq == 0) then
+                write_num = 1
+            else
+                write_num = Nt
+            end if
+            call write_netcdf_parts_setup(c, F_tot, a, Nc, Nx, Ny, write_num, dt, c0, MA, MB, kappa,t_end,file_id)
             !call write_netcdf_parts(c(:,:,write_count:write_count), F_tot(1:1),1,file_id)
         end if
     end if
@@ -285,8 +291,11 @@ program main
         end if
 
         if (my_rank == 0) then
-            if(write_count == write_int-1) then
+            if(write_count == write_int-1 .and. write_freq>0) then
                 w1 = MPI_Wtime()
+                if(singl == 1) then
+                    c = sngl(c)
+                end if
                 call write_netcdf_parts(c(:,:,:), F_tot(k-write_int+1:k),k-write_int+1,file_id)
                 w2 = MPI_Wtime()
 
@@ -321,11 +330,16 @@ program main
 
     end do
     if (my_rank == 0) then
-        if(write_count /= write_int) then
-
+        if(write_count /= write_int .and. write_freq>0) then
+            if(singl == 1) then
+                c = sngl(c)
+            end if
             call write_netcdf_parts(c(:,:,:write_count), &
                                 F_tot(Nt-write_count:),Nt-write_count,file_id)
 
+        end if
+        if(write_freq == 0) then
+            call write_netcdf_parts(c(:,:,write_count:write_count), F_tot(Nt:Nt),1,file_id)
         end if
     end if
 

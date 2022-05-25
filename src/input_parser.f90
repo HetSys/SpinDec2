@@ -72,13 +72,13 @@ contains
     end function read_poly
 
     subroutine read_params(fn,prob, conc_min, conc_max, coeffs, Nx, Ny, M1, M2,EA,EB,temp_min,temp_max, k, bfe, &
-                           Cint, cpi, cpo, t, delta_t, df_tol,stab, random_seed, use_input, err)
+                           Cint, cpi, cpo, t, delta_t, df_tol,stab, random_seed, use_input,singl,write_freq ,err)
 
         integer, parameter :: infile = 15
         character(len=128) :: name, var
         character(*), intent(in) :: fn
         integer :: read_counter, i, iostat, ierr
-        integer, intent(out) :: nx, ny, cint, random_seed, use_input
+        integer, intent(out) :: nx, ny, cint, random_seed, use_input,singl,write_freq
         integer, intent(out) :: err
         character(len=128), intent(out) :: cpi, cpo,prob
         real(kind=real64), intent(out) :: conc_min, conc_max, m1, m2, k, bfe, t, &
@@ -106,6 +106,8 @@ contains
         temp_max = -1
         temp_min = -1
         stab = -1
+        write_freq=1
+        singl = 0
 
         ! reading file
         ! There is a large amount of if statements below to ensure values are
@@ -364,6 +366,31 @@ contains
 
                 if (random_seed < -1) then
                     print *, "Random_seed must be >= -1.&
+                    & Please check you input file and try again"
+                    err = -1
+                end if
+            else if (name == "Single_Precision") then
+                read (var, *, iostat=ierr) singl
+
+                if (ierr /= 0) then
+                    print *, "An error occured reading Single_Precision. &
+                    &Please check input file and try again"
+                    err = -1
+                    exit
+                end if
+
+            else if (name == "Write_Frequency") then
+                read (var, *, iostat=ierr) write_freq
+
+                if (ierr /= 0) then
+                    print *, "An error occured reading Write_Frequency. &
+                    &Please check input file and try again"
+                    err = -1
+                    exit
+                end if
+
+                if (write_freq < 0) then
+                    print *, "Write_Frequency must be >= 0.&
                     & Please check you input file and try again"
                     err = -1
                 end if
