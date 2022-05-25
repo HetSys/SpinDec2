@@ -49,8 +49,8 @@ free_energy_gradient_parameter = 0.0001
 bulk_free_energy = 1
 checkpoint_interval = 1000
 write_frequency = 500
-max_time = 1e-4
-time_step = 1e-8
+max_time = 1e-6
+time_step = 1e-10
 random_seed = 12345356
 use_input = 0
 excitation_a = 0.1
@@ -94,7 +94,7 @@ for i in *; do (
         # Timings are written to ./$1/timings.txt
         # If anyone sees this, I'm pretty proud of this command
         awk -v type="$i" -v num="$j" -F ' ' 'END{ print $3, "sec on " type " with " num " threads" }' \
-            prof_out.txt >> ../../timings.txt
+            prof_out.txt >> ../../"$2"_timings.txt
 
     ) done
 ) done
