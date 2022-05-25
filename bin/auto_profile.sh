@@ -1,6 +1,6 @@
 #!/bin/bash
 # Automate testing in parallel for SpinDec
-# Usage: ./auto_profile <dir_name> <problem_type>
+# Usage: ./auto_profile <dir_name> <problem_type> <grid_size>
 
 trap "exit" INT
 
@@ -39,26 +39,25 @@ module load GCC/7.3.0-2.30 OpenMPI/3.1.1 netCDF-Fortran/4.4.4 FFTW/3.3.8
 mkdir "$1" && cd "$1" || exit 1
 
 # Create input file to use
-echo "Concentration_max = 0.9
-Concentration_min = 0.1
-Domain_x_size = 600
-Domain_y_size = 600
-Mobility_A = 4
-Mobility_B = 4
+echo "concentration_max = 0.9
+concentration_min = 0.1
+domain_size = $3
+mobility_a = 4
+mobility_b = 4
 free_energy_gradient_parameter = 0.0001
-Bulk_free_energy = 1
-Checkpointing_interval = 5000000
-Max_time = 1e-5
+bulk_free_energy = 1
+checkpointing_interval = 1000
+write_frequency = 500
+max_time = 1e-4
 time_step = 1e-8
-dF_tolerance = 2.0
-Random_seed = 12345356
-Use_input = 0
-Exitation_A = 0.1
-Exitation_B = 0.2
-Temperature_min = 800
-Temperature_max = 1000
-Problem = "$2"
-Stabilization_Term = -1" > input.txt
+random_seed = 12345356
+use_input = 0
+exitation_a = 0.1
+exitation_b = 0.2
+temperature_min = 900
+temperature_max = 1000
+problem = "$2"
+stabilization_term = 0" > input.txt
 
 # Create test dirs
 mkdir omp mpi hybrid_mpi_4 hybrid_mpi_16
