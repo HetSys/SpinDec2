@@ -1,3 +1,5 @@
+!> Free energy module contains routines to 
+!! calculate bulk and total free energy
 module free_energy
 
     use iso_fortran_env
@@ -7,17 +9,10 @@ module free_energy
 
 contains
 
-    !******************************************************************************
-    !> bulk_free_energy
-    !!
-    !! subroutine to calculate Bulk Free Energy at time t
-    !!
-    !!@param f_b: bulk free energy array at time t
-    !!@param c: 2D concentration grid - c(x,y)
-    !!@param a: 1D array storing coefficients provided by user
-    !!@param kappa : gradient term coefficient
-    !*****************************************************************************
-
+    !> Subroutine to calculate Bulk Free Energy.
+    !! @param f_b 2D grid for bulk free energy 
+    !! @param c 2D concentration grid - c(x,y)
+    !! @param a 1D array storing coefficients provided by user
     subroutine bulk_free_energy(f_b, c, a)
 
         real(real64), intent(out) :: f_b(:, :)
@@ -49,17 +44,14 @@ contains
 
     end subroutine bulk_free_energy
 
-    !******************************************************************************
-    !> total_free_energy
-    !!
-    !! subroutine to calculate Total Free Energy at time t
-    !!
-    !!@param F: total free energy at time t
-    !!@param c: 2D concentration grid - c(x,y)
-    !!@param dx,dy: spatial step sizes in x and y
-    !!@param kappa : gradient term coefficient
-    !*****************************************************************************
-
+    !> Subroutine to calculate Total Free Energy
+    !! @param F total free energy at time t
+    !! @param c 2D concentration grid - c(x,y)
+    !! @param f_b 2D grid storing bulk free energy 
+    !! @param dx Spatial step size in x
+    !! @param dy Spatial step size in y
+    !! @param kappa Free energy gradient paramater
+    !! @param conc_halo Concentration halo storing neighbour rank boundary data
     subroutine total_free_energy(F, c, f_b, dx, dy, kappa,conc_halo)
 
         real(real64), intent(in) :: c(:,:)

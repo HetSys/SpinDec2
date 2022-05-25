@@ -286,4 +286,4 @@ contains
 
     end subroutine comms_get_global_grid
 
-end module comms
+end module commsc
