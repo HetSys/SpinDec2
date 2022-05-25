@@ -12,7 +12,6 @@ def read_timings():
 
     with open('./timings.txt', 'r') as timings:
         times = []
-        threads = []
 
         for line in timings:
             spl = line.split()
@@ -23,18 +22,6 @@ def read_timings():
                 continue
 
             times.append(time)
-
-            if 'omp' == spl[3]:
-                pass
-                # something to do with associating time as mpi/omp/hybrid
-                # Maybe dictionary or another list or something
-            elif 'mpi' == spl[3]:
-                pass
-            elif 'hybrid' in spl[3]:
-                pass
-
-            threads.append(spl[-2])
-
 
     time_hybrid = times[0:4]
     time_mpi = times[4:8]
