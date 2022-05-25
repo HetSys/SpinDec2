@@ -1,5 +1,3 @@
-
-  
 #!/usr/bin/env python3
 
 import netCDF4 as NC
@@ -199,6 +197,11 @@ class Vis_CH:
 
         vmin = np.min(self.minima)
         vmax = np.max(self.minima)
+
+        if vmax - vmin < 1e-1:
+            vmin = np.min(self.c_plot[-1])
+            vmax = np.max(self.c_plot[-1])
+
         pos1 = ax1.imshow(np.zeros(shape=(self.N_y, self.N_x)), vmin=vmin, vmax=vmax, origin='lower')
         div = make_axes_locatable(ax1)
         cax = div.append_axes('right', '5%', '5%')
@@ -284,6 +287,11 @@ class Vis_CH:
         fig, ax = plt.subplots()
         vmin = np.min(self.minima)
         vmax = np.max(self.minima)
+
+        if vmax - vmin < 1e-1:
+            vmin = np.min(self.c_plot[-1])
+            vmax = np.max(self.c_plot[-1])
+        
         pos1 = ax.imshow(np.zeros(shape=(self.N_y, self.N_x)), vmin=vmin, vmax=vmax, origin='lower')
         div = make_axes_locatable(ax)
         cax = div.append_axes('right', '5%', '5%')
@@ -309,7 +317,7 @@ class Vis_CH:
 
         if (save_plot):
 
-            FFwriter = animation.FFMpegWriter(fps = 50)
+            FFwriter = animation.FFMpegWriter(fps = 10)
             anim.save('Grid_Animation.mp4', writer = FFwriter)
 
         else:
@@ -453,18 +461,18 @@ res_CH.grid_animation(save_plot=save)
 if save:
     print('Saved Grid Animation')
 
-res_CH.grid_snapshot(snapshot=args.snap, save_plot=save)
-if save:
-    print('Saved Grid Snapshot N_t =' + str(args.snap))
+# res_CH.grid_snapshot(snapshot=args.snap, save_plot=save)
+# if save:
+#     print('Saved Grid Snapshot N_t =' + str(args.snap))
 
-res_CH.F_plot(save_plot=save)
-if save:
-    print('Saved Free Energy plot')
+# res_CH.F_plot(save_plot=save)
+# if save:
+#     print('Saved Free Energy plot')
 
-res_CH.bulk_energy_traj(save_plot=save)
-if save:
-    print('Saved Bulk Energy Trajectory Plot')
+# res_CH.bulk_energy_traj(save_plot=save)
+# if save:
+#     print('Saved Bulk Energy Trajectory Plot')
 
-res_CH.dual_animation(save_plot=save)
-if save:
-    print('Saved Dual Animation')
+# res_CH.dual_animation(save_plot=save)
+# if save:
+#     print('Saved Dual Animation')
