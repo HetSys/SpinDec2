@@ -26,15 +26,16 @@ program main
     real(real64), dimension(4, 4) :: conc_halo_2
     real(real64), dimension(3) :: a_3
     real(real64), dimension(3, 3)  :: c_3,expected_bulk_3,expected_total_3
-    real(real64), dimension(3, 4) :: conc_halo_1
     real(real64) :: expected_total_F_1, expected_total_F_2
     integer :: test_num
-    real(real64), dimension(:,:), allocatable :: c_new ! new conc. grid
+    real(real64), dimension(:,:), allocatable :: c_new_1 ! new conc. grid
     real(real64), dimension(:,:), allocatable :: dQ   ! 2nd derivative of Q
     real(real64), dimension(:), allocatable :: a
-    real(real64), dimension(:,:), allocatable :: Q_halo_1, Q_halo_2, conc_halo_3
+    real(real64), dimension(:,:), allocatable :: Q_halo_1
+    real(real64), dimension(:,:), allocatable :: Q_halo_2
+    real(real64), dimension(:,:), allocatable :: conc_halo_3
     real(real64) :: C_mean, C_std
-    real(real64) :: M ! Mobility
+    real(real64) :: M_constant ! Mobility
     integer :: Nx, Ny
     integer :: t_max ! number of timesteps
     real(real64), dimension(:,:), allocatable :: c_grid ! conc. grid
@@ -42,7 +43,7 @@ program main
     ! Testing variables
     real(real64) :: mean, std
     real(real64), dimension(:,:), allocatable :: Q_test, dQ_expected
-    real(real64), dimension(:,:), allocatable :: c_test, c_expected,c_in,c_in_p,c_out_exp,c_out
+    real(real64), dimension(:,:), allocatable :: c_test, c_expected,c_in,c_in_p,c_out_exp,c_out_1
     real(kind=real64) ,dimension(:), allocatable:: coeffs
     real(kind=real64) :: k
     integer :: i,j ! counters
@@ -184,7 +185,7 @@ program main
 
     Kappa = 1.6
 
-    M = 1.5
+    M_constant = 1.5
 
     C_mean = 0.7
     C_std = 0.1
@@ -218,7 +219,7 @@ program main
     ! Allocate c_test, c_expected, c_new, Q, and mu
     allocate(c_test(Nx,Ny))
     allocate(c_expected(Nx,Ny))
-    allocate(c_new(Nx,Ny))
+    allocate(c_new_1(Nx,Ny))
     allocate(Q_halo_2(Nx,4))
     allocate(conc_halo_3(Nx,4))
 
@@ -231,7 +232,7 @@ program main
                            0.740158839048355,0.738720099275076,0.690382929167892, &
                            0.709132521563533,0.657924059121464,0.803700028541638/),shape(c_expected))
 
-    call test_time_evolution(c_new,c_test,c_expected,Nx,Ny,dx,dy,dt,a,Kappa,M, conc_halo_3,Q_halo_2)
+    call test_time_evolution(c_new_1,c_test,c_expected,Nx,Ny,dx,dy,dt,a,Kappa,M_constant,conc_halo_3,Q_halo_2)
 
 
     print*,'########################################################'
@@ -249,7 +250,7 @@ program main
 
     Kappa = 1.6
 
-    M = 1.5
+    M_constant = 1.5
 
     C_mean = 0.7
     C_std = 0.01
@@ -271,9 +272,9 @@ program main
 
     call test_grid_init(c_grid,Nx,Ny,C_mean,C_std,mean,std)
 
-    call test_rand_normal(mean,std,C_mean,C_std)
+    ! call test_rand_normal(mean,std,C_mean,C_std)
 
-    call test_stdnormal(mean,std)
+    ! call test_stdnormal(mean,std)
 
     print*,'########################################################'
     print*, "Starting spectral test"
@@ -281,7 +282,7 @@ program main
 
     allocate(c_in(3,3))
     allocate(c_in_p(3,3))
-    allocate(c_out(3,3))
+    allocate(c_out_1(3,3))
     allocate(c_out_exp(3,3))
     allocate(coeffs(4))
 
@@ -292,37 +293,37 @@ program main
     c_in_p = 2
     c_in_p(2,2) = 5
 
-    M = 0.1
+    M_constant = 0.1
     k = 0.1
     dt = 0.1
 
 
-    call spectral_method_iter(c_in,c_in_p,coeffs,dt,M,k,c_out,1,1.0_real64)
+    call spectral_method_iter(c_in,c_in_p,coeffs,dt,M_constant,k,c_out_1,1,1.0_real64)
 
     c_out_exp = reshape((/2.3463434502703331, 45.809290092588583,&
      -7.0049297070283778, 45.809290092588583, -153.91998785683825,&
     45.809290092588583, -7.0049297070283831, 45.809290092588597, &
      2.3463434502703282/),shape(c_out_exp))
 
-    !print*, c_out
+    !print*, c_out_1
 
-    if(maxval(c_out-c_out_exp) > 1e-5) then
+    if(maxval(c_out_1-c_out_exp) > 1e-5) then
         print*, "Test 1 failed"
     else
         print*, "Test 1 passed"
     end if
 
-    call spectral_method_iter(c_in,c_in_p,coeffs,dt,M,k,c_out,0,1.0_real64)
+    call spectral_method_iter(c_in,c_in_p,coeffs,dt,M_constant,k,c_out_1,0,1.0_real64)
     c_out_exp = reshape((/2.4698426892921308, 2.2611576236563615, 2.3736714532770624,&
             2.2611576236563615, 0.93500788690283210, 2.2611576236563611, 2.3736714532770629,&
             2.2611576236563615, 2.4698426892921304/),shape(c_out_exp))
 
-    if(maxval(c_out-c_out_exp) > 1e-5) then
+    if(maxval(c_out_1-c_out_exp) > 1e-5) then
         print*, "Test 2 failed"
     else
         print*, "Test 2 passed"
     end if
-    !print*, c_out
+    !print*, c_out_1
 
     print*,'########################################################'
     print*, 'Tests Complete'
