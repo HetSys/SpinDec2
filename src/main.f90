@@ -37,7 +37,7 @@ program main
     real(real64) :: local_F,global_F
     real(real64) :: stab !Stabilization_Term
     real(real64) :: bfe, df_tol!Placeholder (These were in the input file but df_tol hasn't been used in any code)
-    integer :: Nx, Ny, Nt, Nc,no_threads,write_num
+    integer :: Nx, Ny, Nt, Nc,no_threads,write_num,write_freq_c,last_write
     integer :: k, count,thread ,write_count,write_prev,write_next! counters
     integer :: cint, random_seed, err, use_input, current_iter, ncerr,singl, write_freq !checkpointing_interval, random seed,error var
     character(len=128) :: cpi, cpo ! checkpointing files
@@ -175,6 +175,8 @@ program main
     call comms_get_global_grid()
     if(my_rank == 0) then
         write_count = 1
+        write_freq_c = write_freq
+        last_write=1
     end if
 
     if (my_rank==0) then
@@ -204,7 +206,7 @@ program main
             if(write_freq == 0) then
                 write_num = 1
             else
-                write_num = Nt
+                write_num = Nt/write_freq
             end if
             call write_netcdf_parts_setup(c, F_tot, a, Nc, Nx, Ny, write_num, dt, c0, MA, MB, kappa,t_end,file_id)
             !call write_netcdf_parts(c(:,:,write_count:write_count), F_tot(1:1),1,file_id)
@@ -291,7 +293,7 @@ program main
         end if
 
         if (my_rank == 0) then
-            if(write_count == write_int-1 .and. write_freq>0) then
+            if(write_count == write_int-1 .and. write_freq == 1) then
                 w1 = MPI_Wtime()
                 if(singl == 1) then
                     c = sngl(c)
@@ -302,6 +304,12 @@ program main
                 if (my_rank == 0) then
                     print *, "Write took", w2-w1
                 end if
+            end if
+            if(write_freq > 1 .and. write_freq==write_freq_c) then
+                print*, "Writing at iter", k
+                write_freq_c = 0
+                call write_netcdf_parts(c(:,:,write_count+1:write_count+1), F_tot(k:k),last_write,file_id)
+                last_write = last_write+1
             end if
         end if
 
@@ -324,13 +332,14 @@ program main
                 if(write_count > write_int) then
                     write_count = 1
                 end if
+                write_freq_c = write_freq_c +1
             end if
             count = count + 1
         end if
 
     end do
     if (my_rank == 0) then
-        if(write_count /= write_int .and. write_freq>0) then
+        if(write_count /= write_int .and. write_freq == 1) then
             if(singl == 1) then
                 c = sngl(c)
             end if
