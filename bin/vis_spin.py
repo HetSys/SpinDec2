@@ -7,7 +7,17 @@ import matplotlib.animation as animation
 from scipy.ndimage import uniform_filter1d
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import argparse
-import sys
+
+
+# import matplotlib
+# import mpl_toolkits
+# import scipy 
+
+# print(NC.__version__)
+# print(matplotlib.__version__)
+# print(np.__version__)
+# print(scipy.__version__)
+# print(argparse.__version__)
 
 
 # Pre-set plotting style
