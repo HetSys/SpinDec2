@@ -4,8 +4,6 @@ module grid
 
     implicit none
 
-    private
-
     public :: get_seed
 
     public :: left,right,down,up
