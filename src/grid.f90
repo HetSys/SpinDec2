@@ -14,7 +14,6 @@ module grid
     public :: grid_initialise_global,global_grid_deallocate
     public :: Q,M,mu,c_new,T,f_b,write_int
 
-
     ! Define module constants
     real(real64), parameter :: pi = 3.1415926535897932
 
@@ -34,15 +33,11 @@ module grid
     integer, dimension(2) :: grid_domain_start, grid_domain_end
 
 contains
-    !******************************************************************************
-    !> get_seed
-    !!
-    !! Subroutine to set random seed based on user input
-    !! if -1 is inputed for seed, a random seed is generated
-    !! otherwise the user provided seed is used
-    !!
-    !!@param seed_in : user inputted seed value
-    !******************************************************************************
+
+    !> Subroutine to set random seed based on user input.
+    !! If -1 is inputed for seed, a random seed is generated,
+    !! otherwise the user provided seed is used.
+    !! @param seed_in User inputted seed value
     subroutine get_seed(seed_in)
 
         integer :: seed_in
@@ -70,16 +65,11 @@ contains
 
     end subroutine get_seed
 
-    !******************************************************************************
-    !> rand_uniform
-    !!
-    !! Subroutine to output a random number from a uniform distribution
-    !! between user provided lower and upper bound values
-    !!
-    !!@param x: random number output
-    !!@param min: user inputted lower bound for uniform distribution
-    !!@param max : user inputted upper bound for uniform distribution
-    !******************************************************************************
+    !> Subroutine to output a random number from a uniform distribution
+    !! between user provided lower and upper bound values.
+    !! @param x Random number output
+    !! @param min User inputted lower bound for uniform distribution
+    !! @param max User inputted upper bound for uniform distribution
     subroutine rand_uniform(x,min,max)
 
         real(real64), intent(in) :: min, max
@@ -94,17 +84,14 @@ contains
 
     end subroutine rand_uniform
 
-    !******************************************************************************
-    !>  grid_init
-    !!
-    !! Subroutine to initialise a given grid using values sampled from a uniform
-    !! distribution with a given lower and upper bound
-    !!
-    !!@param grid: grid to be populated with random values
-    !!@param Nx, Ny: grid dimensions
-    !!@param min: user inputted lower bound for uniform distribution
-    !!@param max : user inputted upper bound for uniform distribution
-    !******************************************************************************
+    !> Subroutine to initialise a given grid using values sampled from a uniform
+    !! distribution with a given lower and upper bound.
+    !! @param grid 2D grid to be populated with random values
+    !! @param Nx Grid size in x-direction
+    !! @param Ny Grid size in y-direction
+    !! @param min User inputted lower bound for uniform distribution
+    !! @param max User inputted upper bound for uniform distribution
+    !! @param burn (Optional) Parameter to burn initial seed values
     subroutine grid_init(grid, Nx, Ny, min, max, burn)
 
         ! The first input is an array with dimensions Nx x Ny to store concentrations
@@ -119,7 +106,7 @@ contains
         integer, intent(in),optional :: burn
         real(real64), dimension(Nx, Ny), intent(out) :: grid
         real(real64), intent(in) :: min, max
-        real(real64) :: x ! dummy variable for concnetration
+        real(real64) :: x ! dummy variable for concentration
         integer :: i, j ! counters
         if(present(burn)) then
             do i = 1, burn
@@ -137,21 +124,19 @@ contains
 
     ! MPI grid subroutines
 
-    !******************************************************************************
-    !> grid_initialise_local
-    !!
-    !! subroutine to calculate grid subdomain size
-    !! and allocate needed memory for local concentration, Q, and M, and mu grids
-    !! also allocates memory for corresponding halos
-    !!
-    !!@param Nx, Ny : Grid dimensions
-    !!@param p: Number of processors requested for parallel run
-    !!@param my_rank : Current MPI rank
-    !!@param c_min : User inputted miniumum for initial concentration distribution
-    !!@param c_max : User inputted maximum for initial concentration distribution
-    !!@param proot : Square root of number of processors
-    !!@param ierr : Error flag
-    !*****************************************************************************
+    !> Subroutine to calculate grid subdomain size,
+    !! allocate needed memory for local concentration, Q, and M, and mu grids
+    !! and allocate memory for corresponding halos.
+    !! @param Nx Grid size in x-direction
+    !! @param Ny Grid size in y-direction
+    !! @param c_min User inputted miniumum for initial concentration distribution
+    !! @param c_max User inputted maximum for initial concentration distribution
+    !! @param T_min User inputted miniumum for initial temperature distribution
+    !! @param T_max User inputted miniumum for initial temperature distribution
+    !! @param problem User inputted problem type
+    !! @param p  Number of processors requested for parallel run
+    !! @param my_rank Current process' MPI rank
+    !! @param my_rank_coords X and Y rank coordinates of the current process
     subroutine grid_initialise_local(Nx,Ny,c_min,c_max,T_min,T_max,problem,p,my_rank,my_rank_coords)
 
         integer, intent(in) :: Nx, Ny, p
@@ -184,8 +169,6 @@ contains
             end if
             call grid_init(local_grid_conc,grid_domain_size,grid_domain_size,c_min,c_max,Nx*Ny*my_rank)
         end if
-
-
 
         ! Allocate four halo arrays for concentration
         allocate(conc_halo(grid_domain_size,4),stat=ierr)
@@ -233,8 +216,6 @@ contains
         end if
         M_halo = 0.0
 
-
-
         ! Allocate local mu grid
         allocate(mu(grid_domain_size,grid_domain_size),stat=ierr)
         if (ierr /= 0) then
@@ -253,7 +234,6 @@ contains
             T = 0.0
         end if
 
-
         ! Allocate local f_b grid
         allocate(f_b(grid_domain_size,grid_domain_size),stat=ierr)
         if (ierr /= 0) then
@@ -268,22 +248,13 @@ contains
             call grid_init(T, grid_domain_size, grid_domain_size, T_min, T_max,Nx*Ny*my_rank+Nx*Ny*p)
         end if
 
-        ! Initialise local concentration grid using a uniform distribution
-        ! on current rank
-
-
-
     end subroutine grid_initialise_local
 
-    !******************************************************************************
-    !> grid_initialise_global
-    !!
-    !! subroutine to allocate memory for global concentration grid on rank 0
-    !!
-    !!@param Nx, Ny : Grid dimensions
-    !!@param my_rank : Current MPI rank
-    !!@param ierr : Error flag
-    !*****************************************************************************
+    !> Subroutine to allocate memory for global concentration grid on rank 0.
+    !! @param Nx Grid size in x-direction
+    !! @param Ny Grid size in y-direction
+    !! @param Nt Number of timesteps
+    !! @param my_rank Current MPI rank
     subroutine grid_initialise_global(Nx,Ny,Nt,my_rank)
 
         integer, intent(in) :: Nx, Ny, Nt, my_rank
@@ -299,15 +270,8 @@ contains
         end if
     end subroutine grid_initialise_global
 
-
-    !******************************************************************************
-    !> global_grid_deallocate
-    !!
-    !! subroutine to dellocate memory of global concentration grids
-    !!
-    !!@param my_rank : current MPI rank
-    !!@param ierr : error flag
-    !*****************************************************************************
+    !> Subroutine to deallocate memory of global concentration grids
+    !! @param my_rank Current MPI rank
     subroutine global_grid_deallocate(my_rank)
 
         integer, intent(in) :: my_rank
@@ -334,14 +298,8 @@ contains
 
     end subroutine global_grid_deallocate
 
-    !******************************************************************************
-    !> global_grid_deallocate
-    !!
-    !! subroutine to dellocate memory of local grids
-    !!
-    !!@param my_rank : current MPI rank
-    !!@param ierr : error flag
-    !*****************************************************************************
+    !> Subroutine to dellocate memory of local grids.
+    !! @param my_rank Current MPI rank
     subroutine local_grid_deallocate(my_rank)
 
         integer, intent(in) :: my_rank
@@ -403,7 +361,7 @@ contains
             stop
         end if
 
-        ! Deallocate halo memory
+        ! Deallocate halo memories
         deallocate(conc_halo, stat=ierr)
 
         if (ierr /= 0) then
