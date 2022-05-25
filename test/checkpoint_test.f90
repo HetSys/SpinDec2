@@ -3,6 +3,7 @@ module checkpoint_tester
     use checkpointing
     use netcdf
     use iso_fortran_env
+    use grid
 
     implicit none
 
@@ -22,6 +23,7 @@ contains
         allocate (mu(1, 1))
         allocate (Tg(1, 1))
         allocate (ftot(1))
+        allocate (local_grid_conc(1,1))
 
         datas(1, 1, 1) = 1
         mu(1, 1) = 1
@@ -33,7 +35,6 @@ contains
 
         open (unit=13, file="Out.cp")
         close (13)
-
         call read_params("../checkpoint_test.txt",problem, c_min, c_max, coeffs, nx, &
                          ny, m1, m2,ea,eb,Tmin,Tmax, k, bfe, cint, cpi, cpo,&
                           t, delta_t, df_tol,stab, random_seed, use_input, err,singl,write_freq)
@@ -62,21 +63,28 @@ contains
 
         end do
 
-        ! if (cpi /= "") then
-        !     call read_checkpoint_in(datas, mu,Tg, ftot, cpi, problem,initial_conc, coeffs, nx, &
-        !                             ny, m1, m2, k, bfe, cint, cpo, t, delta_t, df_tol, current_time, &
-        !                             random_seed, use_input, ncerr)
-        !     if (ncerr /= nf90_noerr) then
-        !         print *, "There was an error reading the checkpoint file."
-        !         print *, "Checkpoint test failed"
-        !         stop
-        !     end if
-        ! end if
+         if (cpi /= "") then
+             call read_checkpoint_metadata(cpi, problem,initial_conc, coeffs, nx, &
+                                     ny, m1, m2, k, bfe, cint, cpo, t, delta_t, df_tol, current_time, &
+                                     random_seed, use_input, ncerr)
+             if (ncerr /= nf90_noerr) then
+                 print *, "There was an error reading the checkpoint metadata."
+                 print *, "Checkpoint test failed"
+                 stop
+             end if
+
+             call read_checkpoint_data(datas, mu,Tg, ftot, cpi, use_input, ncerr)
+             if (ncerr /= nf90_noerr) then
+                 print *, "There was an error reading the checkpoint data."
+                 print *, "Checkpoint test failed"
+                 stop
+             end if
+         end if
 
         if (current_time == 50000 .and. &
             abs(mu(1, 1) - 100001) < mu(1, 1) / 1e7 .and. &
             abs(ftot(1) - 150001) < ftot(1) / 1e7 .and. &
-            abs(datas(1, 1, 1) - 50001) < datas(1, 1, 1) / 1e7 .and. &
+            abs(local_grid_conc(1,1) - 50001) < local_grid_conc(1,1) / 1e7 .and. &
             abs(Tg(1, 1) - 200001) < Tg(1, 1) / 1e7) then
         else
             print *, "Checkpoint test failed"
