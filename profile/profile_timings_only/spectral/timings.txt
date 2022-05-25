@@ -1,0 +1,15 @@
+oly sec on hybrid_mpi_16 with 2 threads
+oly sec on hybrid_mpi_4 with 2 threads
+oly sec on hybrid_mpi_4 with 4 threads
+oly sec on hybrid_mpi_4 with 8 threads
+oly sec on mpi with 16 threads
+oly sec on mpi with 25 threads
+oly sec on mpi with 36 threads
+oly sec on mpi with 4 threads
+86.900439129909500 sec on omp with 1 threads
+87.345880937064067 sec on omp with 16 threads
+87.223266151035205 sec on omp with 2 threads
+88.745152579853311 sec on omp with 32 threads
+85.841418931959197 sec on omp with 4 threads
+94.925232205074281 sec on omp with 40 threads
+86.031351180048659 sec on omp with 8 threads
