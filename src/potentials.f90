@@ -1,3 +1,5 @@
+!> Potentials module contains routines to 
+!! calculate bulk and total chemical potentials
 module potentials
 
     use iso_fortran_env

@@ -1,3 +1,6 @@
+!> Grid module contains subroutines to initialise
+!! grid related variables and allocate and deallocate
+!! memories for different grids used in the software
 module grid
 
     use iso_fortran_env
