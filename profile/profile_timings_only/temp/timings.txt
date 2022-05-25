@@ -1,0 +1,15 @@
+34.830480055883527 sec on hybrid_mpi_16 with 2 threads
+35.939538100967184 sec on hybrid_mpi_4 with 2 threads
+34.611689016921446 sec on hybrid_mpi_4 with 4 threads
+35.112811762141064 sec on hybrid_mpi_4 with 8 threads
+35.627387959975749 sec on mpi with 16 threads
+35.597427285974845 sec on mpi with 25 threads
+35.359071078011766 sec on mpi with 36 threads
+38.381295061903074 sec on mpi with 4 threads
+58.033165327971801 sec on omp with 1 threads
+64.436058183899149 sec on omp with 16 threads
+56.955096581950784 sec on omp with 2 threads
+60.791446716990322 sec on omp with 32 threads
+56.292920565931126 sec on omp with 4 threads
+60.792099994840100 sec on omp with 40 threads
+62.532954518916085 sec on omp with 8 threads
