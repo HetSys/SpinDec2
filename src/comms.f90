@@ -30,7 +30,7 @@ contains
 
     subroutine comms_initialise()
 
-        integer:: ierr,thr,prov
+        integer:: ierr,prov
 
         !call mpi_init(ierr)
         call mpi_init_thread(MPI_THREAD_FUNNELED,prov,ierr)

@@ -7,6 +7,7 @@ import matplotlib.animation as animation
 from scipy.ndimage import uniform_filter1d
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import argparse
+import sys
 
 
 # Pre-set plotting style
@@ -74,19 +75,23 @@ def bulk_energy_extrema(coeffs):
     return min_pos, max_pos
 
 # Argument parser for saving and viewing the  plot
-parser = argparse.ArgumentParser(description='Visulise spinodal decomposistion in SpinDec2 (DEFAULT: Saves plots)')
+parser = argparse.ArgumentParser(description='Visulise spinodal decomposistion in SpinDec2')
 
-# controls snapshot that you can view in grid_snapshot plotter function
 parser.add_argument('-sn', '--snap', type=int, default=-1, metavar = '',help='Select Snapshot Of Grid To Plot')
 
+plots = parser.add_mutually_exclusive_group(required=True)
+
 # controls whether user wants to save plots only
-parser.add_argument('-s', '--save', action='store_true', help='Save plots only')
+plots.add_argument('-s', '--save', action='store_true', help='Save plots only')
 # controls whether user wants to view plots only
-parser.add_argument('-d', '--display', action='store_true', help='View plots only')
+plots.add_argument('-d', '--display', action='store_true', help='View plots only')
+
+plots.add_argument('-b', '--both', action='store_true', help='Does both the save and view options')
 
 
 args = parser.parse_args()
 
+parser.print_help()
 
 #Visualisation Code Begins
 class Vis_CH:
@@ -113,6 +118,8 @@ class Vis_CH:
 
         #user inputted coefficients for f(c)
         self.coeffs = np.array([data.variables['coeffs'][:]][0])
+
+        print(self.coeffs)
 
 
         self.dt = data.dt         #time-step
@@ -191,12 +198,19 @@ class Vis_CH:
 
     
     #function that plots an animation of both c and F (and its moving average) on the same figure
-    def dual_animation(self, save_plot = True):
+    def dual_animation(self, save_plot = False, both = False):
 
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15,15))
 
-        vmin = np.min(self.minima)
-        vmax = np.max(self.minima)
+
+        if len(self.minima > 0):
+            vmin = np.min(self.minima)
+            vmax = np.max(self.minima)
+        
+        if len(self.minima == 0):
+
+            vmin = np.min(self.c_plot[-1])
+            vmax = np.max(self.c_plot[-1])
 
         if vmax - vmin < 1e-1:
             vmin = np.min(self.c_plot[-1])
@@ -215,8 +229,8 @@ class Vis_CH:
         line_av, = ax2.plot([], [], '--', label = r'Moving Average ($t_{period}$ = ' + str(self.N_t // self.av_period) + r' s)', color = 'red')
         ax2.set_xlabel(r'Time (ns)')
         ax2.set_ylabel(r'Total Free Energy - $F$')
-        ax2.set_xlim(self.time_anim[0], self.time_anim[-1])
-        ax2.set_ylim(0.98*self.F_anim[0], 1.02*self.F_anim[-1])
+        ax2.set_ylim(0.9*self.F_anim.min(), 1.1*self.F_anim.max())
+        ax2.set_xlim(0.9*self.time_anim.min(), 1.1*self.time_anim.max())
         ax2.legend()
 
         def init():
@@ -242,6 +256,11 @@ class Vis_CH:
             FFwriter = animation.FFMpegWriter(fps = 50)
             anim.save('Dual_Animation.mp4', writer = FFwriter)
 
+        if (both):
+            FFwriter = animation.FFMpegWriter(fps = 50)
+            anim.save('Dual_Animation.mp4', writer = FFwriter)
+            plt.show()
+
         else:
             plt.show()
 
@@ -249,7 +268,7 @@ class Vis_CH:
 
 
     #function that plots an animation of both c and F (and its moving average) on the same figure
-    def F_animation(self, save_plot = True):
+    def F_animation(self, save_plot = False, both = False):
 
         fig, ax = plt.subplots()
         
@@ -257,8 +276,8 @@ class Vis_CH:
         line_av, = ax.plot([], [], '--', label = r'Moving Average ($t_{period}$ = ' + str(self.N_t // self.av_period) + r' s)', color = 'red')
         ax.set_xlabel(r'Time (ns)')
         ax.set_ylabel(r'Total Free Energy - $F$')
-        ax.set_xlim(self.time_anim[0], self.time_anim[-1])
-        ax.set_ylim(0.98*self.F_anim[0], 1.02*self.F_anim[-1])
+        ax.set_ylim(0.9*self.F_anim.min(), 1.1*self.F_anim.max())
+        ax.set_xlim(0.9*self.time_anim.min(), 1.1*self.time_anim.max())
         ax.legend()
 
         def init():
@@ -277,16 +296,28 @@ class Vis_CH:
         
             FFwriter = animation.FFMpegWriter(fps = 50)
             anim_traj.save('Free_Energy_Animation.mp4', writer = FFwriter)
+
+        if (both):
+        
+            FFwriter = animation.FFMpegWriter(fps = 50)
+            anim_traj.save('Free_Energy_Animation.mp4', writer = FFwriter)
+            plt.show()
                
         else:
             plt.show()
     
     #function that plots an animation of c
-    def grid_animation(self, save_plot = True):
+    def grid_animation(self, save_plot = False, both = False):
 
         fig, ax = plt.subplots()
-        vmin = np.min(self.minima)
-        vmax = np.max(self.minima)
+        if len(self.minima > 0):
+            vmin = np.min(self.minima)
+            vmax = np.max(self.minima)
+        
+        if len(self.minima == 0):
+
+            vmin = np.min(self.c_plot[-1])
+            vmax = np.max(self.c_plot[-1])
 
         if vmax - vmin < 1e-1:
             vmin = np.min(self.c_plot[-1])
@@ -317,15 +348,20 @@ class Vis_CH:
 
         if (save_plot):
 
-            FFwriter = animation.FFMpegWriter(fps = 10)
+            FFwriter = animation.FFMpegWriter(fps = 50)
             anim.save('Grid_Animation.mp4', writer = FFwriter)
+
+        if (both):
+            FFwriter = animation.FFMpegWriter(fps = 50)
+            anim.save('Grid_Animation.mp4', writer = FFwriter)
+            plt.show()
 
         else:
             plt.show()
 
 
     #function that plots an animation of c
-    def grid_snapshot(self, snapshot = -1, save_plot = True):
+    def grid_snapshot(self, snapshot = -1, save_plot = False, both = False):
 
         fig, ax = plt.subplots()
         vmin = np.min(self.minima)
@@ -342,28 +378,37 @@ class Vis_CH:
 
         if (save_plot):
             plt.savefig('Grid_Snaphot.png', bbox_inches='tight')
+
+        if (both):
+            plt.savefig('Grid_Snaphot.png', bbox_inches='tight')
+            plt.show()
         else:
             plt.show()
 
 
     #Function that plots F (and its moving average)
-    def F_plot(self, save_plot = True):
+    def F_plot(self, save_plot = False, both = False):
         fig, ax = plt.subplots()
         ax.plot(self.time,self.F_tot, scaley=True, scalex=True, color="blue", label = r'CH Data')
         ax.plot(self.time,self.F_av, scaley=True, scalex=True, color="red", label = r'Moving Average ($t_{period}$ = ' + str(self.N_t // self.av_period) + r' s)')
         ax.set_xlabel(r'Time (s)')
         ax.set_ylabel(r"Total Free Energy - $F(t)$")
+        ax.set_ylim(0.9*self.F_tot.min(), 1.1*self.F_tot.max())
+        ax.set_xlim(0.9*self.time.min(), 1.1*self.time.max())
         ax.legend(loc = 'upper left')
 
         if (save_plot):
             plt.savefig('Free_Energy.png', bbox_inches='tight')
+        if (both):
+            plt.savefig('Free_Energy.png', bbox_inches='tight')
+            plt.show()
         else:
             plt.show()
 
    
     #function thats plots the initial bulk free energy and the trajectory of the
     #averge bulk free energy over time in c c-f(c) space
-    def bulk_energy_traj(self, save_plot = True):
+    def bulk_energy_traj(self, save_plot = False, both = False):
         
         if (self.N_x == self.N_y):
             if (self.N_x == 64 or self.N_x == 128 or self.N_x == 256):
@@ -425,6 +470,9 @@ class Vis_CH:
                 
                 if (save_plot):
                     plt.savefig('Bulk_Energy_Traj.png', bbox_inches='tight')
+                if (both):
+                    plt.savefig('Bulk_Energy_Traj.png', bbox_inches='tight')
+                    plt.show()
                 else:
                     plt.show()
 
@@ -448,31 +496,35 @@ res_CH.read_and_setup(verbose=True)
 # arg parser for saving or viewing
 if args.save:
     save = True
+    both = False
 if args.display:
     save = False
-else:
-    save = True
+    both = False
+if args.both:
+    save = False
+    both = True
 
-res_CH.F_animation(save_plot=save)
+
+res_CH.F_animation(save_plot=save, both = both)
 if save:
     print('Saved Free Energy Animation')
 
-res_CH.grid_animation(save_plot=save)
+res_CH.grid_animation(save_plot=save, both = both)
 if save:
     print('Saved Grid Animation')
 
-# res_CH.grid_snapshot(snapshot=args.snap, save_plot=save)
-# if save:
-#     print('Saved Grid Snapshot N_t =' + str(args.snap))
+res_CH.grid_snapshot(snapshot=args.snap, save_plot=save, both = both)
+if save:
+    print('Saved Grid Snapshot N_t =' + str(args.snap))
 
-# res_CH.F_plot(save_plot=save)
-# if save:
-#     print('Saved Free Energy plot')
+res_CH.F_plot(save_plot=save, both = both)
+if save:
+    print('Saved Free Energy plot')
 
-# res_CH.bulk_energy_traj(save_plot=save)
-# if save:
-#     print('Saved Bulk Energy Trajectory Plot')
+res_CH.bulk_energy_traj(save_plot=save, both = both)
+if save:
+    print('Saved Bulk Energy Trajectory Plot')
 
-# res_CH.dual_animation(save_plot=save)
-# if save:
-#     print('Saved Dual Animation')
+res_CH.dual_animation(save_plot=save, both = both)
+if save:
+    print('Saved Dual Animation')

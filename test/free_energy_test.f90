@@ -79,7 +79,7 @@ module test_free_energy
         real(real64) :: expected
         integer, intent(in) :: test_num
         logical :: res = .true.
-        integer :: nx, ny, i, j
+        integer :: nx, ny
         real(real64) :: F
 
         nx = size(c, 1)
