@@ -2,6 +2,8 @@
 # Automate testing in parallel for SpinDec
 # Usage: ./auto_profile <dir_name>
 
+trap "exit" INT
+
 prepare_profile () {
     ### Create dirs to run spindec ###
     cd "$1" || exit 1
