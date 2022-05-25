@@ -101,7 +101,7 @@ contains
     !! @param Q a 2D grid of total chemical potentials
     !! @param dx, dy the spatial grid spacings in x and y
     !! @param Nx, Ny grid size in x and y
-    !! @param Q_halo array storing boundary neighbour values
+    !! @param Q_halo array storing Q boundary neighbour values
 
     subroutine del_Q(dQ, Q, dx, dy, Nx, Ny, Q_halo)
 
@@ -185,7 +185,7 @@ contains
     !! @param Q a 2D grid of total chemical potentials
     !! @param dx, dy the spatial grid spacings in x and y
     !! @param Nx, Ny grid size in x and y
-    !! @param Q_halo array storing boundary neighbour values
+    !! @param Q_halo array storing Q boundary neighbour values
 
     subroutine dQ_dx(dQx, Q, dx, Nx, Ny, Q_halo)
         ! Subroutine to calculate dQ/dx
@@ -220,11 +220,10 @@ contains
     !! @param Q a 2D grid of total chemical potentials
     !! @param dx, dy the spatial grid spacings in x and y
     !! @param Nx, Ny grid size in x and y
-    !! @param Q_halo array storing boundary neighbour values
+    !! @param Q_halo array storing Q boundary neighbour values
 
     subroutine dQ_dy(dQy, Q, dy, Nx, Ny, Q_halo)
-        ! Subroutine to calculate dQ/dx
-        ! Using central differences
+
         integer, intent(in):: Nx, Ny
         real(real64), dimension(Nx, Ny), intent(in):: Q
         real(real64), dimension(Nx, 4), intent(in):: Q_halo
@@ -234,7 +233,6 @@ contains
         integer:: i, j  ! counters
 
         dy_inv = 1.0/(2.0*dy)
-
 
         ! Top and Bottom Boundary
         !$omp parallel do default(shared) private(i)
@@ -262,7 +260,7 @@ contains
     !! @param M a 2D grid of mobilities
     !! @param dx, dy the spatial grid spacings in x and y
     !! @param Nx, Ny grid size in x and y
-    !! @param M_halo array storing boundary neighbour values
+    !! @param M_halo array storing M boundary neighbour values
 
     subroutine dM_dy(dMy, M, dy, Nx, Ny, M_halo)
 
@@ -301,7 +299,7 @@ contains
     !! @param M a 2D grid of mobilities
     !! @param dx, dy the spatial grid spacings in x and y
     !! @param Nx, Ny grid size in x and y
-    !! @param M_halo array storing boundary neighbour values
+    !! @param M_halo array storing M boundary neighbour values
 
     subroutine dM_dx(dMx, M, dx, Nx, Ny, M_halo)
         ! Subroutine to calculate dM/dx
@@ -331,13 +329,41 @@ contains
 
     !> Subroutine to perform forward Euler (explicit) time integration
     !!
-    !!@param c oncentration field at previous step
+    !!@param c concentration field at previous step
+    !!@param c_new concentration field at next step
+    !!@param M diffusive mobility field
+    !!@param dQ derivative of Q
+    !!@param dx, dy grid spacings in x and y
+    !!@param dt time-step
+    !!@param Nx, Ny number of resoloutions in x and y
+
+    subroutine time_evolution(grid, grid_new, dQ, M, dt, Nx, Ny)
+
+        integer, intent(in):: Nx, Ny
+        real(real64), dimension(Nx, Ny), intent(in):: grid, dQ
+        real(real64), intent(in):: M, dt
+        real(real64), dimension(Nx, Ny), intent(out):: grid_new
+        integer:: i, j  ! counters
+
+        do i = 1, Nx
+            do j = 1, Ny
+                grid_new(i, j) = grid(i, j) + dt*M * dQ(i, j)
+            end do
+        end do
+    end subroutine time_evolution
+
+
+    !> Subroutine to perform forward Euler (explicit) time integration
+    !!
+    !!@param c concentration field at previous step
     !!@param c_new concentration field at next step
     !!@param M diffusive mobility field
     !!@param Q total chemical potential
     !!@param dx, dy grid spacings in x and y
     !!@param dt time-step
-    !!@param Nx, Ny grid sizes in x and y
+    !!@param Nx, Ny number of resoloutions in x and y
+    !!@param Q_halo array storing Q boundary neighbour values
+    !!@param M_halo array storing M boundary neighbour values
 
     subroutine time_evolution_new(c, c_new, M, Q, dx, dy, dt, Nx, Ny, Q_halo, M_halo)
         integer, intent(in):: Nx, Ny
@@ -370,8 +396,6 @@ contains
             end do
         end do
         !$omp end parallel do
-
-
     end subroutine time_evolution_new
 
 end module cahn_hilliard
