@@ -68,9 +68,13 @@ program main
 
     current_iter = 2
     ! come back to this
-    Nt = floor(t_end / dt)
-    c0 = (c_min+c_max)/2
     write_int = 2
+
+    if(my_rank == 0) then
+        write_count = 1
+        write_freq_c = write_freq
+        last_write=1
+    end if
 
     if(problem == "Spectral") then
         !call omp_set_num_threads(no_threads)
@@ -85,13 +89,27 @@ program main
 
     if (cpi /= "") then
         call read_checkpoint_metadata(cpi,problem, c0, a, nx, &
-                                ny, ma, mb, kappa, bfe, cint, cpo, t_end, dt, df_tol, current_iter, random_seed, use_input, ncerr)
+                                ny, ma, mb, kappa, bfe, cint, cpo, t_end, dt, &
+                                df_tol, current_iter, random_seed, use_input, &
+                                last_write,write_freq,write_freq_c,singl&
+                                ,write_count, ncerr)
         if (ncerr /= nf90_noerr) then
             print *, "There was an error reading the checkpoint file."
             call comms_finalise()
             stop
         end if
+        if(my_rank == 0) then
+            write_count = write_count +1
+            if(write_count > write_int) then
+                write_count = 1
+            end if
+            write_freq_c = write_freq_c +1
+        end if
     end if
+
+    Nt = floor(t_end / dt)
+    c0 = (c_min+c_max)/2
+
 
 
 
@@ -173,11 +191,7 @@ program main
     end if
 
     call comms_get_global_grid()
-    if(my_rank == 0) then
-        write_count = 1
-        write_freq_c = write_freq
-        last_write=1
-    end if
+
 
     if (my_rank==0) then
         c(:,:,write_count) = global_grid_conc(:,:)
@@ -206,10 +220,18 @@ program main
             if(write_freq == 0) then
                 write_num = 1
             else
-                write_num = Nt/write_freq
+                if(mod(Nt,write_freq) == 0) then
+                    write_num = Nt/write_freq
+                else
+                    write_num = Nt/write_freq +1
+                end if
             end if
             call write_netcdf_parts_setup(c, F_tot, a, Nc, Nx, Ny, write_num, dt, c0, MA, MB, kappa,t_end,file_id)
             !call write_netcdf_parts(c(:,:,write_count:write_count), F_tot(1:1),1,file_id)
+        end if
+    else
+        if (my_rank == 0) then
+            call open_netcdf(file_id)
         end if
     end if
     count = 0
@@ -308,7 +330,7 @@ program main
             if(write_freq > 1 .and. write_freq==write_freq_c) then
                 print*, "Writing timestep at iter", k
                 write_freq_c = 0
-                call write_netcdf_parts(c(:,:,write_count+1:write_count+1), F_tot(k:k),last_write,file_id)
+                call write_netcdf_parts(c(:,:,write_next:write_next), F_tot(k:k),last_write,file_id)
                 last_write = last_write+1
             end if
         end if
@@ -317,7 +339,8 @@ program main
             if (count >= cint) then
                 call write_checkpoint_file(c, phold, T,F_tot,problem, a, cpo, c0, &
                                            nx, ny, ma, mb, kappa, bfe, Cint, t_end, dt, k, df_tol, &
-                                           random_seed, ncerr)
+                                           random_seed, last_write,write_freq,write_freq_c,singl&
+                                           ,write_count,ncerr)
 
                 if (ncerr /= nf90_noerr) then
                     print *, "There was an error writing the checkpoint file."
@@ -361,7 +384,7 @@ program main
     t2 = MPI_Wtime()
 
     if (my_rank == 0) then
-        call close_netcdf(file_id)
+        !call close_netcdf(file_id)
         print *, "Calculation took", t2-t1, "seconds on", p, "MPI threads"
     end if
 

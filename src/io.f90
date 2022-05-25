@@ -146,10 +146,12 @@ contains
         size_c = shape(c)
         size_c(3) = NF90_UNLIMITED
         !print*, NF90_UNLIMITED
-        size_F_tot = size(F_tot)
+        !print*, Nt
+        size_F_tot = Nt
         size_a = size(a)
 
         !Create the file, overwriting if it exists
+
         call check(nf90_create(filename,IOR(NF90_NETCDF4,NF90_CLOBBER), file_id))
 
         !write in the dimensions for the variables
@@ -200,7 +202,7 @@ contains
 
         !close the file
         !call check(nf90_close(file_id))
-
+        call close_netcdf(file_id)
         print *, "Sucessfully setup netcdf file"
 
     end subroutine write_netcdf_parts_setup
@@ -214,7 +216,7 @@ contains
         integer, dimension(2) :: var_ids
         integer,intent(in) :: PT
         integer, intent(inout) :: file_id
-
+        call open_netcdf(file_id)
 
         ierr = nf90_inq_varid(file_id, "F_tot", var_ids(2))
         if (ierr /= nf90_noerr) then
@@ -238,16 +240,25 @@ contains
             print *, trim(nf90_strerror(ierr))
             return
         end if
+        call close_netcdf(file_id)
 
 
         !print *, "Sucessfully written netcdf file"
 
     end subroutine write_netcdf_parts
 
+
+
     subroutine close_netcdf(file_id)
         integer, intent(in) :: file_id
         call check(nf90_close(file_id))
     end subroutine close_netcdf
+
+    subroutine open_netcdf(file_id)
+        integer, intent(out) :: file_id
+        character(len=*), parameter :: filename = 'CH_output.nc'
+        call check(nf90_open(filename,IOR(NF90_NETCDF4,NF90_WRITE), file_id))
+    end subroutine open_netcdf
 
 
 end module io

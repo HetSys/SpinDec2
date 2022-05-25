@@ -11,24 +11,26 @@ contains
 
     subroutine write_checkpoint_file(arr3dim, arr2dim,temp2dim, arr1dim,prob, coeffs, cpo, &
                                      initial_conc, nx, ny, m1, m2, k, bfe, Cint, t, time_step, current_iter, &
-                                     df_tol, random_seed, ierr)
+                                     df_tol, random_seed,lastw,write_freq,write_freq_c,singl,write_count, ierr)
 
 
         real(kind=real64), intent(IN), dimension(:, :, :) :: arr3dim
         real(kind=real64), intent(IN), dimension(:, :) :: arr2dim,temp2dim
         real(kind=real64), intent(IN), dimension(:) :: arr1dim
         real(kind=real64), intent(IN), dimension(:) :: coeffs
-        integer, intent(in) :: nx, ny, cint, random_seed, current_iter
+        integer, intent(in) :: nx, ny, cint, random_seed, current_iter,lastw,&
+                                write_freq,write_freq_c,singl,write_count
         real(kind=real64), intent(in) :: initial_conc, m1, m2, k, bfe, t, &
                                          time_step, df_tol
         !TYPE(run_data_type), INTENT(IN) :: run_data
         character(len=*), intent(in) :: cpo,prob
         character(LEN=1), dimension(9) :: dims = (/"x", "y", "t", "c", "a", "b", "f","n","m"/)
-        character(LEN=12), dimension(15) :: comp_names = (/"initial_conc", &
-                                                            "nx          ", "ny          ", "m1          ", &
+        character(LEN=12), dimension(20) :: comp_names = (/"initial_conc", &
+                                                           "nx          ", "ny          ", "m1          ", &
                                                            "m2          ", "k           ", "bfe         ", "cint        " &
                                                            , "max_t       ", "time_step   ", "current_time", "df_tol      " &
-                                                           , "random_seed ", "cpo         ","problem     "/)
+                                                           , "random_seed ", "cpo         ","problem     ","last_write  "&
+                                                           ,"write_freq  ","write_freq_c","singl       ","write_count "/)
         integer :: file_id, i
         integer, intent(out) :: ierr
         integer :: ndims = 9
@@ -180,6 +182,35 @@ contains
             return
         end if
 
+        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(16)), lastw)
+        if (ierr /= nf90_noerr) then
+            print *, trim(nf90_strerror(ierr))
+            return
+        end if
+
+        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(17)), write_freq)
+        if (ierr /= nf90_noerr) then
+            print *, trim(nf90_strerror(ierr))
+            return
+        end if
+
+        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(18)), write_freq_c)
+        if (ierr /= nf90_noerr) then
+            print *, trim(nf90_strerror(ierr))
+            return
+        end if
+
+        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(19)), singl)
+        if (ierr /= nf90_noerr) then
+            print *, trim(nf90_strerror(ierr))
+            return
+        end if
+
+        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(20)), write_count)
+        if (ierr /= nf90_noerr) then
+            print *, trim(nf90_strerror(ierr))
+            return
+        end if
         ! Ending definition mode
         ierr = nf90_enddef(file_id)
         if (ierr /= nf90_noerr) then
@@ -231,22 +262,24 @@ contains
 
     subroutine read_checkpoint_metadata(fn, prob,initial_conc, &
                                    coeffs, Nx, Ny, M1, M2, k, bfe, Cint, cpo, t, delta_t, df_tol, &
-                                  current_iter, random_seed, use_input, ierr)
+                                  current_iter, random_seed, use_input,&
+                                  lastw,write_freq,write_freq_c,singl,write_count, ierr)
 
-        integer, intent(inout) :: nx, ny, cint, random_seed
+        integer, intent(inout) :: nx, ny, cint, random_seed,write_freq,write_freq_c,singl,write_count
         integer, intent(in) :: use_input
         character(len=*), intent(inout) :: cpo,prob
         character(len=*), intent(in) :: fn
         real(kind=real64), intent(inout) :: initial_conc, m1, m2, k, bfe, &
                                             t, delta_t, df_tol
-        integer, intent(inout) :: current_iter
+        integer, intent(inout) :: current_iter,lastw
         real(kind=real64), intent(inout), dimension(:), allocatable :: coeffs
         character(LEN=1), dimension(9) :: dims = (/"x", "y", "t", "c", "a", "b", "f","n","m"/)
-        character(LEN=12), dimension(15) :: comp_names = (/"initial_conc", &
+        character(LEN=12), dimension(20) :: comp_names = (/"initial_conc", &
                                                            "nx          ", "ny          ", "m1          ", &
                                                            "m2          ", "k           ", "bfe         ", "cint        " &
                                                            , "max_t       ", "time_step   ", "current_time", "df_tol      " &
-                                                           , "random_seed ", "cpo         ","problem     "/)
+                                                           , "random_seed ", "cpo         ","problem     ","last_write  "&
+                                                           ,"write_freq  ","write_freq_c","singl       ","write_count "/)
         integer :: file_id, i
         integer, intent(out) :: ierr
         integer :: ndims = 9
@@ -282,6 +315,12 @@ contains
             deallocate (coeffs)
             allocate (coeffs(sizes(4)))
             ierr = nf90_inq_varid(file_id, "coeffs", var_ids(2))
+            if (ierr /= nf90_noerr) then
+                print *, trim(nf90_strerror(ierr))
+                return
+            end if
+
+            ierr = nf90_get_var(file_id, var_ids(2), coeffs)
             if (ierr /= nf90_noerr) then
                 print *, trim(nf90_strerror(ierr))
                 return
@@ -371,6 +410,36 @@ contains
                 return
             end if
 
+            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(16)), lastw)
+            if (ierr /= nf90_noerr) then
+                print *, trim(nf90_strerror(ierr))
+                return
+            end if
+
+            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(17)), write_freq)
+            if (ierr /= nf90_noerr) then
+                print *, trim(nf90_strerror(ierr))
+                return
+            end if
+
+            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(18)), write_freq_c)
+            if (ierr /= nf90_noerr) then
+                print *, trim(nf90_strerror(ierr))
+                return
+            end if
+
+            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(19)), singl)
+            if (ierr /= nf90_noerr) then
+                print *, trim(nf90_strerror(ierr))
+                return
+            end if
+
+            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(20)), write_count)
+            if (ierr /= nf90_noerr) then
+                print *, trim(nf90_strerror(ierr))
+                return
+            end if
+
         end if
 
         ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(11)), current_iter)
@@ -400,11 +469,7 @@ contains
         real(kind=real64), intent(inout), dimension(:, :), allocatable :: temp2dim
         real(kind=real64), intent(inout), dimension(:), allocatable :: arr1dim
         character(LEN=1), dimension(9) :: dims = (/"x", "y", "t", "c", "a", "b", "f","n","m"/)
-        character(LEN=12), dimension(15) :: comp_names = (/"initial_conc", &
-                                                           "nx          ", "ny          ", "m1          ", &
-                                                           "m2          ", "k           ", "bfe         ", "cint        " &
-                                                           , "max_t       ", "time_step   ", "current_time", "df_tol      " &
-                                                           , "random_seed ", "cpo         ","problem     "/)
+
         integer :: file_id, i
         integer, intent(out) :: ierr
         integer :: ndims = 9
@@ -442,7 +507,7 @@ contains
             return
         end if
         ierr = nf90_get_var(file_id, var_ids(1), local_grid_conc,&
-                start=(/grid_domain_start(1),grid_domain_start(2),1/))
+                start=(/grid_domain_start(2),grid_domain_start(1),1/))
         if (ierr /= nf90_noerr) then
             print *, trim(nf90_strerror(ierr))
             return
