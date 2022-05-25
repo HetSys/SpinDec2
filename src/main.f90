@@ -38,7 +38,7 @@ program main
     real(real64) :: stab !Stabilization_Term
     real(real64) :: bfe, df_tol!Placeholder (These were in the input file but df_tol hasn't been used in any code)
     integer :: Nx, Ny, Nt, Nc,no_threads
-    integer :: k, count,thread ,write_count,write_prev! counters
+    integer :: k, count,thread ,write_count,write_prev,write_next! counters
     integer :: cint, random_seed, err, use_input, current_iter, ncerr !checkpointing_interval, random seed,error var
     character(len=128) :: cpi, cpo ! checkpointing files
     character(len=128) :: problem
@@ -69,7 +69,7 @@ program main
     ! come back to this
     Nt = floor(t_end / dt)
     c0 = (c_min+c_max)/2
-    write_int = 1000
+    write_int = 2
 
     if(problem == "Spectral") then
         !call omp_set_num_threads(no_threads)
@@ -201,14 +201,22 @@ program main
 
         if (my_rank == 0) then
             call write_netcdf_parts_setup(c, F_tot, a, Nc, Nx, Ny, Nt, dt, c0, MA, MB, kappa,file_id)
-            call write_netcdf_parts(c(:,:,write_count:write_count), F_tot(1:1),1,file_id)
+            !call write_netcdf_parts(c(:,:,write_count:write_count), F_tot(1:1),1,file_id)
         end if
     end if
     count = 0
-
     ! Grid evolution
-
     do k = current_iter, Nt
+        if(write_count == write_int) then
+            write_next = 1
+        else
+            write_next = write_count+1
+        end if
+        if(write_count == 1) then
+            write_prev = write_int
+        else
+            write_prev = write_count-1
+        end if
         !print*, k
         ! Get bulk chemical potentials
         call bulk_potential(mu,local_grid_conc, a)
@@ -222,7 +230,7 @@ program main
 
         ! Get Mobility Field
         call Mobility(M,MA,MB, EA, EB, c0, local_grid_conc, T, problem)
-        
+
         !Store Q and M from neighbor ranks
         call comms_halo_swaps(Q,Q_halo)
 
@@ -239,25 +247,24 @@ program main
 
 
             if (my_rank == 0) then
-                c(:,:,write_count+1) = global_grid_conc(:,:)
+                c(:,:,write_next) = global_grid_conc(:,:)
             end if
         else
+
             if(k == 2) then
                 call spectral_method_iter(c(:, :, write_count),c(:, :,write_count),a,dt,M(1,1),Kappa,c_new,1,stab)
-                c(:,:,write_count+1) = c_new(:,:)
+                c(:,:,write_next) = c_new(:,:)
             else
-                if(write_count == 1) then
-                    write_prev = write_int+1
-                else
-                    write_prev = write_count-1
-                end if
+
                 call spectral_method_iter(c(:, :, write_count),c(:, :,write_prev),a,dt,M(1,1),Kappa,c_new,0,stab)
-                c(:,:,write_count+1) = c_new(:,:)
+                c(:,:,write_next) = c_new(:,:)
+
+                !print*, c_new(:,:)
             end if
         end if
 
         if(p == 1) then
-            local_grid_conc(:,:) = c(:,:,write_count+1)
+            local_grid_conc(:,:) = c(:,:,write_next)
         end if
 
 
@@ -278,10 +285,9 @@ program main
         end if
 
         if (my_rank == 0) then
-            if(write_count == write_int) then
+            if(write_count == write_int-1) then
                 w1 = MPI_Wtime()
                 call write_netcdf_parts(c(:,:,:), F_tot(k-write_int+1:k),k-write_int+1,file_id)
-                write_count = 0
                 w2 = MPI_Wtime()
 
                 if (my_rank == 0) then
@@ -306,16 +312,16 @@ program main
             end if
             if(my_rank == 0) then
                 write_count = write_count +1
-            end if
-            if(write_count > write_int) then
-                write_count = 1
+                if(write_count > write_int) then
+                    write_count = 1
+                end if
             end if
             count = count + 1
         end if
 
     end do
     if (my_rank == 0) then
-        if(write_count > 1) then
+        if(write_count /= write_int) then
 
             call write_netcdf_parts(c(:,:,:write_count), &
                                 F_tot(Nt-write_count:),Nt-write_count,file_id)

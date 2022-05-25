@@ -43,7 +43,7 @@ contains
         sizes(8:9) = shape(temp2dim)
 
         ! Opening a file
-        ierr = nf90_create(cpo, NF90_CLOBBER, file_id)
+        ierr = nf90_create(cpo ,IOR(NF90_NETCDF4,NF90_CLOBBER), file_id)
         if (ierr /= nf90_noerr) then
             print *, trim(nf90_strerror(ierr))
             return
