@@ -41,7 +41,8 @@ mkdir "$1" && cd "$1" || exit 1
 # Create input file to use
 echo "concentration_max = 0.9
 concentration_min = 0.1
-domain_size = $3
+domain_x_size = $3
+domain_y_size = $3
 mobility_a = 4
 mobility_b = 4
 free_energy_gradient_parameter = 0.0001
