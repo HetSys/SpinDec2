@@ -1,3 +1,7 @@
+!> Comms module contains all routines which interact
+!! with MPI libraries. Derived from PX425 Assignment 3
+!! of Term 2 in 2021-2022
+!! Original code created by D.Quigley - November 2012      
 module comms
 
     use iso_fortran_env, dp => real64
@@ -28,6 +32,9 @@ module comms
 
 contains
 
+    !> Subroutine to initialise MPI, get the communicator size p 
+    !! and the rank my_rank of the current process within 
+    !! that communicator.
     subroutine comms_initialise()
 
         integer:: ierr,prov
@@ -40,6 +47,13 @@ contains
 
     end subroutine comms_initialise
 
+    !> Subroutine to map our p processors into a 2D Cartesian grid of    
+    !! dimension proot by proot where proot = sqrt(p).                                                                                      !
+    !! Should populate the arrays my_rank_cooords, which contains the    
+    !! location of the current MPI task within the processor grid, and   
+    !! my_rank_neighbours, which contains (in the order left, right,     
+    !! down and up) ranks of neighbouring MPI tasks on the grid with     
+    !! which the current task will need to communicate.                  
     subroutine comms_processor_map()
 
         ! setting up cartesian communicator
@@ -72,24 +86,28 @@ contains
 
     end subroutine comms_processor_map
 
+    !> Subroutine to compute the global free energy of the grid by     
+    !! summing over all values of loca free energy, and storing the     
+    !! result in global_F.
+    !! @param local_F Local free energy of current rank (input)
+    !! @param global F Global free energy (output)                                                   
     subroutine comms_get_global_F(local_F,global_F)
-        ! Subroutine to compute the glocal magnetisation of the grid by     !
-        ! averaging over all values of local_mag, and storing the result    !
-        ! in global_mag.                                                    !
+
         real(kind=dp),intent(in)  :: local_F
         real(kind=dp),intent(out) :: global_F
 
         integer :: ierr              ! Error flag
-        !print*, local_F
-        ! This is only correct on one processor. You will need
-        ! to use a collective communication routine to correct this.
-        !global_F = local_F
-        call MPI_Reduce(local_F,global_F,1,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,ierr)
 
+        call MPI_Reduce(local_F,global_F,1,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,ierr)
 
     end subroutine comms_get_global_F
 
-
+    !> Subroutine to send boundary spins on each side of the local grid  
+    !! to neighbour processors, and to receive from those processors the 
+    !! halo information needed to perform computations involving spins   
+    !! on the boundary processors grid.      
+    !! @param grid 2D Grid of the current process
+    !! @param grid_halo 2D Array to store data from neighbours
     subroutine comms_halo_swaps(grid,grid_halo)
 
         ! send and receive concs on each side of the grid to neighbour processors
@@ -159,6 +177,7 @@ contains
 
     end subroutine comms_halo_swaps
 
+    !> Subroutine to finalise MPI.  
     subroutine comms_finalise()
 
         integer:: ierr
@@ -167,6 +186,8 @@ contains
 
     end subroutine comms_finalise
 
+    !> Routine to collect all contributions to the global grid     
+    !! onto rank zero.                                    
     subroutine comms_get_global_grid()
 
         ! comms buffer
