@@ -41,7 +41,7 @@ contains
 
             !Temp-- Diffusive mobility dependent on c, and atomic mobilities
             !           are dependent on T
-            case ("Temp")
+            case ("temp")
 
                 !$omp parallel do default(shared) private(i, j, boltz)
                 do j = 1, Ny
@@ -56,7 +56,7 @@ contains
 
             !NonTemp-- Diffusive mobility still dependent on c, but atomic mobilities
             !           are independent on T
-            case ("NonTemp")
+            case ("nontemp")
 
                 !$omp parallel do default(shared) private(i, j)
                 do j = 1, Ny
@@ -68,7 +68,7 @@ contains
 
             !Constant-Diffve Mobility is taken to be a mixing of the two constant
             !           mobilities, and is independent of c
-            case ("Constant")
+            case ("constant")
 
                 !$omp parallel do default(shared) private(i, j)
                 do j = 1, Ny
@@ -78,7 +78,7 @@ contains
                 end do
                 !$omp end parallel do
 
-            case ("Spectral")
+            case ("spectral")
                 !$omp parallel do default(shared) private(i, j)
                 do j = 1, Ny
                     do i = 1, Nx
@@ -88,7 +88,7 @@ contains
                 !$omp end parallel do
             ! condition to enforce one of the two setups
             case default
-                print*, "PLEASE INPUT PROBLEM AS 'Spectral', 'Temp', 'NonTemp' or 'Constant'"
+                print*, "PLEASE INPUT PROBLEM AS 'spectral', 'temp', 'nontemp' or 'constant'"
                 stop "STOPPED"
 
 
