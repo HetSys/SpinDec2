@@ -34,7 +34,7 @@ module test_free_energy
 
         allocate (f_b(nx, ny))
 
-        call bulk_free_energy(c, a)
+        call bulk_free_energy(f_b, c, a)
 
         ! Testing if resulting f_b is equal to expected
         ! within certain tolerance
@@ -85,18 +85,13 @@ module test_free_energy
         nx = size(c, 1)
         ny = size(c, 2)
 
-        call total_free_energy(F, c, dx, dy, kappa,conc_halo)
+        call total_free_energy(F, c, f_b, dx, dy, kappa,conc_halo)
 
         ! Testing if resulting F is equal to expected
         ! within certain tolerance
-        do j = 1, ny
-            do i = 1, nx
-                if (abs(F - expected) > 1e-3) then
-                    res = .false.
-                    exit
-                end if
-            end do
-        end do
+        if (abs(F - expected) > 1e-3) then
+            res = .false.
+        end if
 
         if (res) then
             print *, 'Unit test #', test_num, ' for total free energy succeeded.'
@@ -134,7 +129,7 @@ module test_free_energy
         dx = 1
         dy = 1
 
-        call total_free_energy(F(0), c, dx, dy, kappa,conc_halo)
+        call total_free_energy(F(0), c, f_b, dx, dy, kappa,conc_halo)
 
         !observe whether F converges with increasing resoloution in x and y
         do i = 1, 10
@@ -142,7 +137,7 @@ module test_free_energy
             dx = dx/10
             dy = dy/10
 
-            call total_free_energy(F(i), c, dx, dy, kappa,conc_halo)
+            call total_free_energy(F(i), c, f_b, dx, dy, kappa,conc_halo)
 
             delta = abs(F(i) - F(i-1))
 

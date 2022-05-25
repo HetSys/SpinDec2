@@ -183,13 +183,13 @@ program main
 
     if (cpi == "") then
         !Get initial bulk free energy for current rank using local grid
-        call bulk_free_energy(local_grid_conc,a)
+        call bulk_free_energy(f_b,local_grid_conc,a)
 
         !Store concentration from neighbor ranks in halo_swaps
         call comms_halo_swaps(local_grid_conc,conc_halo)
 
         ! Calculate Initial F(t)
-        call total_free_energy(local_F, local_grid_conc, dx, dy, kappa,conc_halo)
+        call total_free_energy(local_F, local_grid_conc,f_b, dx, dy, kappa,conc_halo)
 
         !Gather total free energy
         call comms_get_global_F(local_F,global_F)
@@ -266,10 +266,10 @@ program main
 
 
         ! Get Bulk Free Energy over space
-        call bulk_free_energy(local_grid_conc, a)
+        call bulk_free_energy(f_b,local_grid_conc, a)
 
         ! Calculate F(t)
-        call total_free_energy(local_F, local_grid_conc, dx, dy, kappa,conc_halo)
+        call total_free_energy(local_F, local_grid_conc, f_b, dx, dy, kappa,conc_halo)
 
         call comms_get_global_F(local_F,global_F)
 

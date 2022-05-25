@@ -26,6 +26,7 @@ program main
     real(real64), dimension(4, 4) :: conc_halo_2
     real(real64), dimension(3) :: a_3
     real(real64), dimension(3, 3)  :: c_3,expected_bulk_3,expected_total_3
+    real(real64), dimension(3, 4) :: conc_halo_3
     real(real64) :: expected_total_F_1, expected_total_F_2
     integer :: test_num
     real(real64), dimension(:,:), allocatable :: c_new_1 ! new conc. grid
@@ -33,7 +34,7 @@ program main
     real(real64), dimension(:), allocatable :: a
     real(real64), dimension(:,:), allocatable :: Q_halo_1
     real(real64), dimension(:,:), allocatable :: Q_halo_2
-    real(real64), dimension(:,:), allocatable :: conc_halo_3
+    real(real64), dimension(:,:), allocatable :: conc_halo_4
     real(real64) :: C_mean, C_std
     real(real64) :: M_constant ! Mobility
     integer :: Nx, Ny
@@ -122,17 +123,17 @@ program main
     ! c = x^2 + y^2
     ! laplacian c = 4.0
 
-    conc_halo_1(:, right) = c_3(1,:)
-    conc_halo_1(:, left) = c_3(3, :)
-    conc_halo_1(:, up) = c_3(:,3)
-    conc_halo_1(:, down) = c_3(:,1)
+    conc_halo_3(:, right) = c_3(1,:)
+    conc_halo_3(:, left) = c_3(3, :)
+    conc_halo_3(:, up) = c_3(:,3)
+    conc_halo_3(:, down) = c_3(:,1)
 
     dx = 0.01
     dy = 0.01
     kappa = 2.0
     test_num = 3
     expected_total_3 = expected_bulk_3 - 4.0*kappa
-    call test_total_potential(expected_bulk_3,c_3,dx,dy,kappa, conc_halo_1, expected_total_3,test_num,.true.)
+    call test_total_potential(expected_bulk_3,c_3,dx,dy,kappa, conc_halo_3, expected_total_3,test_num,.true.)
     !call test_total_potential(mu_3,c_3,dx,dx,kappa,expected_total_3)
 
     print*,'########################################################'
@@ -238,7 +239,7 @@ program main
     allocate(c_expected(Nx,Ny))
     allocate(c_new_1(Nx,Ny))
     allocate(Q_halo_2(Nx,4))
-    allocate(conc_halo_3(Nx,4))
+    allocate(conc_halo_4(Nx,4))
 
     ! initialize concentration grid with test values
     c_test = reshape((/0.82600226343913463,0.73763425858679454,0.75563253296536192, &
@@ -249,7 +250,7 @@ program main
                            0.740158839048355,0.738720099275076,0.690382929167892, &
                            0.709132521563533,0.657924059121464,0.803700028541638/),shape(c_expected))
 
-    call test_time_evolution(c_new_1,c_test,c_expected,Nx,Ny,dx,dy,dt,a,Kappa,M_constant,conc_halo_3,Q_halo_2)
+    call test_time_evolution(c_new_1,c_test,c_expected,Nx,Ny,dx,dy,dt,a,Kappa,M_constant,conc_halo_4,Q_halo_2)
 
 
     print*,'########################################################'
