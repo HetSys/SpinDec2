@@ -104,27 +104,27 @@ $(document).ready(function(){initNavTree('input.html',''); initResizable(); });
 
 <p>A list of all the user inputs are outlined below with there respective names and types</p>
 <ul> 
-<li><p><code markup="tt" class=" language-none"> Concentration_max = value (real) </code>  \( \rightarrow \) Upper bound of uniform distribution that initialises concentration field. Thus \(c(:,:,1) = \mathcal{U}(\text{Concentration_min}, \text{Concentration_max})\).</p></li>
+<li><p><code markup="tt" class=" language-none"> concentration_max = value (real) </code>  \( \rightarrow \) Upper bound of uniform distribution that initialises concentration field. Thus \(c(:,:,1) = \mathcal{U}(\text{Concentration_min}, \text{Concentration_max})\).</p></li>
 </ul>
 <br>
 <ul> 
-  <li><p><code markup="tt" class=" language-none"> Concentration_min = value (real) </code> \( \rightarrow \) Lower bound of uniform distribution that initialises concentration field. Thus \(c(:,:,1) = \mathcal{U}(\text{Concentration_min}, \text{Concentration_max})\). </p></li>
+  <li><p><code markup="tt" class=" language-none"> concentration_min = value (real) </code> \( \rightarrow \) Lower bound of uniform distribution that initialises concentration field. Thus \(c(:,:,1) = \mathcal{U}(\text{Concentration_min}, \text{Concentration_max})\). </p></li>
   </ul>
   <br>
 <ul> 
-  <li><p><code markup="tt" class=" language-none"> Domain_x_size = value (int) </code>  \( \rightarrow \) Number of grid cells in the x dimesnion \(N_x\).</p></li>
+  <li><p><code markup="tt" class=" language-none"> domain_x_size = value (int) </code>  \( \rightarrow \) Number of grid cells in the x dimesnion \(N_x\).</p></li>
   </ul>
   <br>
 <ul> 
-  <li><p><code markup="tt" class=" language-none"> Domain_y_size = value (int) </code>  \( \rightarrow \) Number of grid cells in the y dimesnion \(N_y\).</p></li>
+  <li><p><code markup="tt" class=" language-none"> domain_y_size = value (int) </code>  \( \rightarrow \) Number of grid cells in the y dimesnion \(N_y\).</p></li>
   </ul>
   <br>
 <ul> 
-  <li><p><code markup="tt" class=" language-none"> Mobility_A = value (real) </code>  \( \rightarrow \) Atomic mobility of species A, \(M_A\), (for constant and temperature independent mobility).</p></li>
+  <li><p><code markup="tt" class=" language-none"> mobility_A = value (real) </code>  \( \rightarrow \) Atomic mobility of species A, \(M_A\), (for constant and temperature independent mobility).</p></li>
   </ul>
   <br>
 <ul> 
-  <li><p><code markup="tt" class=" language-none"> Mobility_B = value (real) </code>  \( \rightarrow \) Atomic mobility of species B, \(M_B\), (for constant and temperature independent mobility).</p></li>
+  <li><p><code markup="tt" class=" language-none"> mobility_B = value (real) </code>  \( \rightarrow \) Atomic mobility of species B, \(M_B\), (for constant and temperature independent mobility).</p></li>
   </ul>
   <br>
 <ul> 
@@ -132,19 +132,19 @@ $(document).ready(function(){initNavTree('input.html',''); initResizable(); });
   </ul>
   <br>
 <ul> 
-  <li><p><code markup="tt" class=" language-none"> Bulk_free_energy = value (real) </code>  \( \rightarrow \) Bulk free energy scale factor (\(A\)) for case \(f(c) = Ac^2(1-c)^2\).</p></li>
+  <li><p><code markup="tt" class=" language-none"> bulk_free_energy = value (real) </code>  \( \rightarrow \) Bulk free energy scale factor (\(A\)) for case \(f(c) = Ac^2(1-c)^2\).</p></li>
   </ul>
   <br>
 <ul> 
-  <li><p><code markup="tt" class=" language-none"> Checkpointing_interval = value (int) </code>  \( \rightarrow \) Check-pointing interval.</p></li>
+  <li><p><code markup="tt" class=" language-none"> checkpointing_interval = value (int) </code>  \( \rightarrow \) Check-pointing interval.</p></li>
   </ul>
   <br>
 <ul> 
-  <li><p><code markup="tt" class=" language-none"> Checkpoint_output_file = "value" (str) </code>  \( \rightarrow \) Check-point output file name.</p></li>
+  <li><p><code markup="tt" class=" language-none"> checkpoint_output_file = "value" (str) </code>  \( \rightarrow \) Check-point output file name.</p></li>
   </ul>
   <br>
 <ul> 
-  <li><p><code markup="tt" class=" language-none"> Checkpoint_input_file = "value" (str)</code>  \( \rightarrow \) Input check-point file (optional)</p></li>
+  <li><p><code markup="tt" class=" language-none"> checkpoint_input_file = "value" (str)</code>  \( \rightarrow \) Input check-point file (optional)</p></li>
   </ul>
   <br>
 <ul> 
@@ -152,15 +152,15 @@ $(document).ready(function(){initNavTree('input.html',''); initResizable(); });
   </ul>
   <br>
 <ul> 
-  <li><p><code markup="tt" class=" language-none"> Max_time = value (real) </code>  \( \rightarrow \) End time of simulation.</p></li>
+  <li><p><code markup="tt" class=" language-none"> max_time = value (real) </code>  \( \rightarrow \) End time of simulation.</p></li>
   </ul>
   <br>
 <ul> 
-  <li><p><code markup="tt" class=" language-none"> dF_tolerance = value (real) </code>  \( \rightarrow \) Tolerance limit in change in total free energy.</p></li>
+  <li><p><code markup="tt" class=" language-none"> df_tolerance = value (real) </code>  \( \rightarrow \) Tolerance limit in change in total free energy.</p></li>
   </ul>
   <br>
 <ul> 
-  <li><p><code markup="tt" class=" language-none"> Random_Seed = value (int) </code>  \( \rightarrow \) Seed to reproduce random grid initialised from previous run.</p></li>
+  <li><p><code markup="tt" class=" language-none"> random_seed = value (int) </code>  \( \rightarrow \) Seed to reproduce random grid initialised from previous run.</p></li>
   </ul>
   <br>
 <ul> 

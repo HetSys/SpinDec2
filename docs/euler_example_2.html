@@ -96,9 +96,9 @@ $(document).ready(function(){initNavTree('euler_example_2.html',''); initResizab
 </div><!--header-->
 <div class="headertitle"><div class="title">Example - Running Serial With Non-Constant Mobility</div></div>
 
-<p>To run the code with a non-constant mobility field, the problem variable in your input.txt file needs to be set to "nontemp".
-You must also make sure you set the variables \(mobility\_a\) and \(mobility\_b\) to the values you want to simulate. In our example, we shall set them to \(mobility\_a\) = 4 and
-\(mobility\_b\) = 4. The forward Euler solver is very sensitive to the value of the input parameters, so some suggested values are given in the example input file picture below:</p>
+<p>To run the code with a non-constant mobility field, the problem variable in your <code markup="tt" class=" language-none">input.txt</code> file needs to be set to "nontemp".
+You must also make sure you set the variables <code markup="tt" class=" language-none">mobility_a</code> and <code markup="tt" class=" language-none">mobility_b</code> to the values you want to simulate. In our example, we shall set them to <code markup="tt" class=" language-none">mobility_a = 4</code>and
+<code markup="tt" class=" language-none">mobility_b = 4</code>. The forward Euler solver is very sensitive to the value of the input parameters, so some suggested values are given in the example input file picture below:</p>
 
 <pre><samp>
   concentration_max = 0.6
@@ -134,9 +134,9 @@ You must also make sure you set the variables \(mobility\_a\) and \(mobility\_b\
 <p>The results from the above input file are shown below, and you should expect similar results
   if you try it yourself: </p>
 <center>
-<p> <img src="user_examples/NonTemp/snap_begin_46.png"  width="300" height="300">
-   <img src="user_examples/NonTemp/snap_quarter_Non_Temp_46.png"  width="300" height="300"> 
-   <img src="user_examples/NonTemp/snap_last_Non_Temp_46.png"  width="300" height="300"> 
+<p> <img src="user_examples/NonTemp/snap_begin_46.png"  width="500" height="500">
+   <img src="user_examples/NonTemp/snap_quarter_Non_Temp_46.png"  width="500" height="500"> 
+   <img src="user_examples/NonTemp/snap_last_Non_Temp_46.png"  width="500" height="500"> 
   </center>
 
 <p>Another nice quick validation you can do is to check whether you get the same result when you change the bounds of the initial concentration grid
@@ -144,9 +144,9 @@ while keeping the average the same. For example, if we vary the minimum concentr
 file example, we get a very similar final solution:</p>
 
 <center>
-  <p> <img src="user_examples/NonTemp/snap_begin.png"  width="300" height="300">
-     <img src="user_examples/NonTemp/snap_quarter_Non_Temp.png"  width="300" height="300"> 
-     <img src="user_examples/NonTemp/snap_last_Non_Temp.png"  width="300" height="300"> 
+  <p> <img src="user_examples/NonTemp/snap_begin.png"  width="500" height="500">
+     <img src="user_examples/NonTemp/snap_quarter_Non_Temp.png"  width="500" height="500"> 
+     <img src="user_examples/NonTemp/snap_last_Non_Temp.png"  width="500" height="500"> 
     </center>
 
   <div class="contents">

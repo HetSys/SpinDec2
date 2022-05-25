@@ -97,9 +97,10 @@ $(document).ready(function(){initNavTree('euler_example_1.html',''); initResizab
 <div class="headertitle"><div class="title">Example - Running Serial With Constant Mobility</div></div>
 
 
-<p>To run the code with a constant mobility field, the problem variable in your input.txt file needs to be set to "Constant".
-You must also make sure you set the variables \(Mobility\_A\) and \(Mobility\_B\) to the values you want to simulate. In our example, we shall set them to \(Mobility\_A\) = 4 and
-\(Mobility\_B\) = 4. The forward Euler solver is very sensitive to the value of the input parameters, so some suggested values are given in the example input file picture below:</p>
+<p>To run the code with a constant mobility field, the problem variable in your <code markup="tt" class=" language-none">input.txt</code> file needs to be set to "Constant".
+You must also make sure you set the variables <code markup="tt" class=" language-none">mobility_a</code> and <code markup="tt" class=" language-none">mobility_b</code> to the values you want to simulate. In our example, we shall set them to <code markup="tt" class=" language-none">mobility_a = 4</code> and
+<code markup="tt" class=" language-none">mobility_b = 4</code>. For this example, the value of four is chosen such that \(M\) is equal to one 
+when \(c_0 = 0.5 \). The forward Euler solver is very sensitive to the value of the input parameters, so some suggested values are given in the example input file picture below:</p>
 
 <pre><samp>
   concentration_max = 0.6
@@ -135,10 +136,10 @@ You must also make sure you set the variables \(Mobility\_A\) and \(Mobility\_B\
 <p>The results from the above input file are shown below, and you should expect similar results
   if you try it yourself: </p>
 <center>
-<p> <img src="user_examples/Constant/constant_start_46_A_1.png"  width="300" height="300">
-   <img src="user_examples/Constant/constant_quarter_46_A_1.png"  width="300" height="300"> 
-   <img src="user_examples/Constant/constant_end_46_A_1.png"  width="300" height="300">  
-   <img src="user_examples/Constant/F_46_A_1.png"  width="300" height="300"></p>
+<p> <img src="user_examples/Constant/constant_start_46_A_1.png"  width="350" height="350">
+   <img src="user_examples/Constant/constant_quarter_46_A_1.png"  width="350" height="350"> 
+   <img src="user_examples/Constant/constant_end_46_A_1.png"  width="350" height="350">  
+   <img src="user_examples/Constant/F_46_A_1.png"  width="350" height="350"></p>
   </center>
 
   <h2>Changing \(A\) and \(\kappa\)</h2>
@@ -176,10 +177,10 @@ You must also make sure you set the variables \(Mobility\_A\) and \(Mobility\_B\
     if you try it yourself: </p>
 
   <center>
-    <p> <img src="user_examples/Constant/constant_start_46_A_10.png"  width="300" height="300">
-       <img src="user_examples/Constant/constant_quarter_46_A_10.png"  width="300" height="300"> 
-       <img src="user_examples/Constant/constant_end_46_A_10.png"  width="300" height="300">  
-       <img src="user_examples/Constant/F_46_A_10.png"  width="300" height="300"></p>
+    <p> <img src="user_examples/Constant/constant_start_46_A_10.png"  width="350" height="350">
+       <img src="user_examples/Constant/constant_quarter_46_A_10.png"  width="350" height="350"> 
+       <img src="user_examples/Constant/constant_end_46_A_10.png"  width="350" height="350">  
+       <img src="user_examples/Constant/F_46_A_10.png"  width="350" height="350"></p>
       </center>
 
       <h2>Changing only \(\kappa\)</h2>
@@ -219,10 +220,10 @@ You must also make sure you set the variables \(Mobility\_A\) and \(Mobility\_B\
     if you try it yourself: </p>
 
       <center>
-        <p> <img src="user_examples/Constant/constant_start_46_A_10_kappa.png"  width="300" height="300">
-           <img src="user_examples/Constant/constant_mid_46_A_10_kappa.png"  width="300" height="300"> 
-           <img src="user_examples/Constant/constant_end_46_A_10_kappa.png"  width="300" height="300"> 
-           <img src="user_examples/Constant/F_kappa.png"  width="300" height="300"> </p>
+        <p> <img src="user_examples/Constant/constant_start_46_A_10_kappa.png"  width="350" height="350">
+           <img src="user_examples/Constant/constant_mid_46_A_10_kappa.png"  width="350" height="350"> 
+           <img src="user_examples/Constant/constant_end_46_A_10_kappa.png"  width="350" height="350"> 
+           <img src="user_examples/Constant/F_kappa.png"  width="350" height="350"> </p>
           </center>
 
           <h2>Changing The Initial Concentration Range</h2>
@@ -260,7 +261,7 @@ You must also make sure you set the variables \(Mobility\_A\) and \(Mobility\_B\
             </samp></pre>
 
           <center>
-            <p> <img src="user_examples/Constant/constant_end_6465.png"  width="300" height="300">
+            <p> <img src="user_examples/Constant/constant_end_6465.png"  width="500" height="500">
               </p>
               </center>
 
@@ -291,7 +292,7 @@ You must also make sure you set the variables \(Mobility\_A\) and \(Mobility\_B\
                 </samp></pre>
 
               <center>
-                <p> <img src="user_examples/Constant/constant_end_3132.png"  width="300" height="300">
+                <p> <img src="user_examples/Constant/constant_end_3132.png"  width="500" height="500">
                   </p>
                   </center>
 
@@ -332,8 +333,8 @@ will affect the range of values that \(c\) can take. Previously, we have used a 
   </samp></pre>
           
       <center>
-        <p> <img src="user_examples/Constant/constant_end_new_pol.png"  width="300" height="300"> 
-          <img src="user_examples/Constant/F_new_pol.png"  width="300" height="300"> </p>
+        <p> <img src="user_examples/Constant/constant_end_new_pol.png"  width="500" height="500"> 
+          <img src="user_examples/Constant/F_new_pol.png"  width="500" height="500"> </p>
           </center>
   <div class="contents">
 </div><!-- contents -->
