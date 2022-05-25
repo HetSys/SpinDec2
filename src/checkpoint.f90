@@ -442,7 +442,7 @@ contains
             return
         end if
         ierr = nf90_get_var(file_id, var_ids(1), local_grid_conc,&
-                start=(/grid_domain_start(1),grid_domain_start(2),2/))
+                start=(/grid_domain_start(1),grid_domain_start(2),1/))
         if (ierr /= nf90_noerr) then
             print *, trim(nf90_strerror(ierr))
             return
