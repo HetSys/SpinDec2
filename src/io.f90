@@ -168,7 +168,7 @@ contains
         print *, "Variable types defined"
         call check(nf90_def_var_chunking(file_id,c_var_id,0,(/size_c(1),size_c(2),size_c(3)/)))
         ! Setting up meta variables of simulation
-
+        !call check(nf90_var_par_access(file_id,c_var_id,NF90_COLLECTIVE))
         !Time step
         call check(nf90_put_att(file_id, NF90_GLOBAL, "dt", dt))
 

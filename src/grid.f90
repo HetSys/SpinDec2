@@ -59,12 +59,14 @@ contains
             call random_seed(put=seed)
             !print*, seed
             seed_in = seed(1)
+        else
+            call random_seed(size=n)
+            allocate (seed(n))
+            seed = seed_in
+            call random_seed(put=seed)
         end if
         ! Set seed
-        call random_seed(size=n)
-        allocate (seed(n))
-        seed = seed_in
-        call random_seed(put=seed)
+
 
     end subroutine get_seed
 
@@ -292,7 +294,7 @@ contains
             allocate(global_grid_conc(Nx,Ny),stat=ierr)
             if(ierr/=0) stop "Error: allocating global_grid_conc failed"
             if (.not. allocated(c)) then
-                allocate(c(Nx,Ny,write_int+1),stat=ierr)
+                allocate(c(Nx,Ny,write_int),stat=ierr)
                 if(ierr/=0) stop "Error: allocating c failed"
             end if
         end if
