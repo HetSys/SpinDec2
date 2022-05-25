@@ -94,7 +94,7 @@ for i in *; do (
         # Timings are written to ./$1/timings.txt
         # If anyone sees this, I'm pretty proud of this command
         awk -v type="$i" -v num="$j" -F ' ' 'END{ print $3, "sec on " type " with " num " threads" }' \
-            prof_out.txt >> ../../timings.txt
+            prof_out.txt >> ../../"$2"_timings.txt
 
     ) done
 ) done
