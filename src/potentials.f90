@@ -7,15 +7,10 @@ module potentials
 
 contains
 
-    !******************************************************************************
-    !> bulk_potential
-    !!
-    !! Subroutine to calculate bulk chemical potential
-    !!
+    !> Subroutine to calculate bulk chemical potential
     !!@param mu: 2D grid to store bulk chemical potentials
     !!@param c: 2D concentration grid
     !!@param a: 1D array storing coefficients for bulk free energy
-    !******************************************************************************
     subroutine bulk_potential(mu, c, a)
 
         real(real64) :: mu(:, :)
@@ -47,11 +42,7 @@ contains
 
     end subroutine bulk_potential
 
-    !******************************************************************************
-    !> total_potential
-    !!
-    !! Subroutine to calculate total chemical potential
-    !!
+    !> Subroutine to calculate total chemical potential
     !!@param Q: 2D grid to store total chemical potential
     !!@param mu: 2D grid containing bulk chemical potential
     !!@param c: 2D concentration grid
@@ -59,7 +50,6 @@ contains
     !!@param dy: spatial grid spacing in y-direction
     !!@param Kappa: Free energy gradient paramater
     !!@param conc_halo: concentration halo storing neighbour rank boundary data
-    !******************************************************************************
     subroutine total_potential(Q, mu, c, dx, dy, Kappa,conc_halo)
 
         real(real64), intent(in) :: mu(:,:)
