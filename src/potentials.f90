@@ -50,7 +50,7 @@ contains
     !******************************************************************************
     !> total_potential
     !!
-    !! Subroutine to calculate bulk chemical potential
+    !! Subroutine to calculate total chemical potential
     !!
     !!@param Q: 2D grid to store total chemical potential
     !!@param mu: 2D grid containing bulk chemical potential
