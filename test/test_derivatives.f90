@@ -2,6 +2,7 @@ module test_derivatives
 
     use iso_fortran_env
     use cahn_hilliard
+    use grid
 
     implicit none
 
@@ -42,6 +43,11 @@ module test_derivatives
 
             end do
         end do
+
+        Q_halo(:, right) = test_in(1,:)
+        Q_halo(:, left) = test_in(Nx, :)
+        Q_halo(:, up) = test_in(:,1)
+        Q_halo(:, down) = test_in(:,Ny)
     
         call dQ_dx(dQx,test_in,dx,Nx,Ny,Q_halo)
 
@@ -97,6 +103,7 @@ module test_derivatives
         end if
 
         ! dM/dx tests
+        M_halo(:,:) = Q_halo(:,:)
 
         call dM_dx(dMx,test_in,dx,Nx,Ny,M_halo)
 
@@ -216,6 +223,11 @@ module test_derivatives
 
             end do
         end do
+
+        Q_halo(:, right) = test_in(1,:)
+        Q_halo(:, left) = test_in(Nx, :)
+        Q_halo(:, up) = test_in(:,1)
+        Q_halo(:, down) = test_in(:,Ny)
     
         call dQ_dy(dQy,test_in,dy,Nx,Ny,Q_halo)
 
@@ -271,6 +283,7 @@ module test_derivatives
         end if
 
         ! dM/dx tests
+        M_halo(:,:) = Q_halo(:,:)
 
         call dM_dy(dMy,test_in,dy,Nx,Ny,M_halo)
 
