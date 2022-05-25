@@ -159,7 +159,6 @@ contains
         integer, dimension(2), intent(in) :: my_rank_coords
         real(real64), intent(in) :: c_min, c_max
         real(real64), intent(in) :: T_min, T_max
-        real(real64) :: ct_min,ct_max
         character(len=128), intent(in) :: problem
         integer :: proot
         integer :: ierr

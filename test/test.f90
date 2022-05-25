@@ -42,7 +42,6 @@ program main
     real(real64), dimension(:,:), allocatable :: c_grid ! conc. grid
     integer :: seed_in ! seed for random number generator
     ! Testing variables
-    real(real64) :: mean, std
     real(real64), dimension(:,:), allocatable :: Q_test, dQ_expected
     real(real64), dimension(:,:), allocatable :: c_test, c_expected,c_in,c_in_p,c_out_exp,c_out_1
     real(kind=real64) ,dimension(:), allocatable:: coeffs
@@ -266,8 +265,8 @@ program main
     print*, "Starting grid test"
     print*,'--------------------------------------------------------'
 
-    Nx = 10
-    Ny = 10
+    Nx = 100
+    Ny = 100
 
     dx = 0.01
     dy = 0.01
