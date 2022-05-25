@@ -1,7 +1,8 @@
 module io
-
+    !use comms
     use iso_fortran_env
     use netcdf
+    use mpi
 
     implicit none
 
@@ -149,7 +150,7 @@ contains
         size_a = size(a)
 
         !Create the file, overwriting if it exists
-        call check(nf90_create(filename, NF90_CLOBBER, file_id))
+        call check(nf90_create(filename,IOR(NF90_NETCDF4,NF90_CLOBBER), file_id))
 
         !write in the dimensions for the variables
         do k = 1, 3

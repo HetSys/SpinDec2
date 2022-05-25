@@ -294,7 +294,7 @@ contains
             allocate(global_grid_conc(Nx,Ny),stat=ierr)
             if(ierr/=0) stop "Error: allocating global_grid_conc failed"
             if (.not. allocated(c)) then
-                allocate(c(Nx,Ny,write_int+2),stat=ierr)
+                allocate(c(Nx,Ny,write_int+1),stat=ierr)
                 if(ierr/=0) stop "Error: allocating c failed"
             end if
         end if
