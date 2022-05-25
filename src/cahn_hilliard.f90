@@ -22,7 +22,7 @@ contains
     !*****************************************************************************
     subroutine Mobility(M, MA, MB, EA, EB, c0, c, T, problem)
 
-        real(real64), intent(out):: M(:,:)
+        real(real64), intent(inout):: M(:,:)
         real(real64), intent(in):: c(:,:), T(:,:)
         real(real64), intent(in):: MA, MB
         real(real64), intent(in):: EA, EB
@@ -88,7 +88,7 @@ contains
                 !$omp end parallel do
             ! condition to enforce one of the two setups
             case default
-                print*, "PLEASE INPUT PROBLEM AS 'Temp', 'NonTemp' or 'Cons'"
+                print*, "PLEASE INPUT PROBLEM AS 'Spectral', 'Temp', 'NonTemp' or 'Constant'"
                 stop "STOPPED"
 
 

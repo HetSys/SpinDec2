@@ -166,7 +166,7 @@ contains
         call check(nf90_def_var(file_id, "F_tot", NF90_DOUBLE, F_tot_dim_ids, F_tot_var_id))
         call check(nf90_def_var(file_id, "coeffs", NF90_DOUBLE, a_dim_ids, a_var_id))
         print *, "Variable types defined"
-
+        call check(nf90_def_var_chunking(file_id,c_var_id,0,(/size_c(1),size_c(2),size_c(3)/)))
         ! Setting up meta variables of simulation
 
         !Time step

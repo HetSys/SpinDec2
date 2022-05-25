@@ -54,6 +54,7 @@ program main
 
 
     thread =  fftw_init_threads()
+
     ! Only run files in test for now
     call read_params("input.txt",problem, c_min, c_max, a, nx, &
                      ny, ma, mb,ea,eb,T_min,T_max, kappa, bfe, cint, cpi, cpo, t_end, dt, df_tol,stab, random_seed, use_input, err)
@@ -71,7 +72,7 @@ program main
     write_int = 1000
 
     if(problem == "Spectral") then
-        call omp_set_num_threads(no_threads)
+        !call omp_set_num_threads(no_threads)
         if(p > 1) then
             if(my_rank == 0) then
                 print*, "Spectral can oly be run with pure OpenMP"
@@ -179,6 +180,7 @@ program main
         c(:,:,write_count) = global_grid_conc(:,:)
     end if
 
+
     if (cpi == "") then
         !Get initial bulk free energy for current rank using local grid
         call bulk_free_energy(local_grid_conc,a)
@@ -203,7 +205,9 @@ program main
         end if
     end if
     count = 0
+
     ! Grid evolution
+
     do k = current_iter, Nt
         !print*, k
         ! Get bulk chemical potentials
@@ -218,7 +222,7 @@ program main
 
         ! Get Mobility Field
         call Mobility(M,MA,MB, EA, EB, c0, local_grid_conc, T, problem)
-
+        
         !Store Q and M from neighbor ranks
         call comms_halo_swaps(Q,Q_halo)
 
