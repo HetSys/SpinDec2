@@ -102,6 +102,8 @@ $(document).ready(function(){initNavTree('parra.html',''); initResizable(); });
 
   <h1 id="spec_parra">Pseudo-Spectral Solver</h1>
   <h2 id="spectralOpenMP">OpenMP</h2>
+    <p> The spectral solver is only parallelised with OpenMP, as the fftw library which is used to perform the 
+  fast and inverse fast fourier transforms, already handles the parallelisation with MPI.</p> 
 
 </div><!--header-->
 <div class="contents">
