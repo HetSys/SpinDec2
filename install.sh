@@ -281,7 +281,7 @@ ascii_art () {
     echo -E '          %% |'
     echo -E '          \__|'
     echo
-    echo -e ' Modelling Spinoidal Decomposition Using a Phase Field Approach'
+    echo -e ' Modelling Spinoidal Decomposition'
     echo -e ' _________________________________________________________________\n'
 }
 
