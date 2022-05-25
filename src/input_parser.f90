@@ -505,7 +505,7 @@ contains
                     exit
                 end if
 
-                if (eb < 0) then
+                if (stab > 0) then
                     print *, "stabilization_term must be <= 0.&
                     & Please check you input file and try again"
                     err = -1
