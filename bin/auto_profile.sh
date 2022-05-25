@@ -1,6 +1,6 @@
 #!/bin/bash
 # Automate testing in parallel for SpinDec
-# Usage: ./auto_profile <dir_name>
+# Usage: ./auto_profile <dir_name> <problem_type>
 
 trap "exit" INT
 
@@ -22,8 +22,8 @@ prepare_profile () {
 }
 
 # Check if user supplied directory to perform computations in
-if [[ -z $1 ]]; then
-    echo "Directory argument not specified"
+if [[ -z $1 || -z $2 ]]; then
+    echo "Required argument(s) not specified"
     exit 1
 fi
 
@@ -39,7 +39,7 @@ module load GCC/7.3.0-2.30 OpenMPI/3.1.1 netCDF-Fortran/4.4.4 FFTW/3.3.8
 mkdir "$1" && cd "$1" || exit 1
 
 # Create input file to use
-echo 'Concentration_max = 0.9
+echo "Concentration_max = 0.9
 Concentration_min = 0.1
 Domain_x_size = 600
 Domain_y_size = 600
@@ -57,8 +57,8 @@ Exitation_A = 0.1
 Exitation_B = 0.2
 Temperature_min = 800
 Temperature_max = 1000
-Problem = "Constant"
-Stabilization_Term = -1' > input.txt
+Problem = "$2"
+Stabilization_Term = -1" > input.txt
 
 # Create test dirs
 mkdir omp mpi hybrid_mpi_4 hybrid_mpi_16
