@@ -10,7 +10,7 @@ contains
 
     subroutine input_test()
 
-        integer:: nx, ny, cint, random_seed, err, i, count, ncerr, use_input, current_time
+        integer:: nx, ny, cint, random_seed, err, i, count, ncerr, use_input, current_time,singl,write_freq
         character(len = 128):: cpi, cpo, problem
         real(kind = real64):: c_min, c_max, m1, m2, k, bfe, t, delta_t, df_tol, ea, eb, tmax, tmin, stab
         real(kind = real64), dimension(:), allocatable:: coeffs
@@ -20,7 +20,7 @@ contains
 
         call read_params("../input_test.txt",problem, c_min, c_max, coeffs, nx, &
                          ny, m1, m2, ea, eb, Tmin, Tmax, k, bfe, cint, cpi, cpo, &
-                          t, delta_t, df_tol, stab, random_seed, use_input, err)
+                          t, delta_t, df_tol, stab, random_seed, use_input,singl,write_freq, err)
 
         if (err == -1) then
             print *, "Input test 1 Failed"
@@ -46,12 +46,12 @@ contains
             abs(delta_t-1e-12) < delta_t/1e7 .and. &
             abs(df_tol-2) < df_tol/1e7 .and. &
             Random_seed == 12345356 .and. &
-            problem == "Temp" .and. &
+            problem == "temp" .and. &
             abs(ea-0.1) < 1/1e7 .and. &
             abs(eb-0.2) < 1/1e7 .and. &
             abs(tmin  - 800) < abs(tmin/1e7) .and. &
             abs(tmax  - 1000) < abs(tmax/1e7) .and. &
-            abs(stab-1) < abs(stab/1e7) .and. &
+            abs(stab+1) < abs(stab/1e7) .and. &
             Use_input == 0) then
         else
             print *, "Input test 1 Failed"
@@ -60,7 +60,7 @@ contains
 
         call read_params("../input_test2.txt",problem, c_min, c_max, coeffs, nx, &
                          ny, m1, m2, ea, eb, Tmin, Tmax, k, bfe, cint, cpi, cpo, &
-                          t, delta_t, df_tol, stab, random_seed, use_input, err)
+                          t, delta_t, df_tol, stab, random_seed, use_input,singl,write_freq, err)
 
         if (err == -1) then
             print *, "Input test 2 Failed"
@@ -97,7 +97,7 @@ contains
 
         call read_params("../input_test3.txt",problem, c_min, c_max, coeffs, nx, &
                          ny, m1, m2, ea, eb, Tmin, Tmax, k, bfe, cint, cpi, cpo, &
-                          t, delta_t, df_tol, stab, random_seed, use_input, err)
+                          t, delta_t, df_tol, stab, random_seed, use_input,singl,write_freq, err)
 
         if (err /= -1) then
             print *, "Input test 3 Failed"

@@ -10,7 +10,7 @@ contains
 
     subroutine checkpoint_test()
 
-        integer :: nx, ny, cint, random_seed, err, i, count, ncerr, use_input, current_time
+        integer :: nx, ny, cint, random_seed, err, i, count, ncerr, use_input, current_time,singl,write_freq
         character(len=128) :: cpi, cpo,problem
         real(kind=real64) :: initial_conc,c_max, c_min, m1, m2, k, bfe, t, delta_t, df_tol,ea,eb,tmin,tmax,stab
         real(kind=real64), dimension(:), allocatable :: coeffs
@@ -36,7 +36,7 @@ contains
 
         call read_params("../checkpoint_test.txt",problem, c_min, c_max, coeffs, nx, &
                          ny, m1, m2,ea,eb,Tmin,Tmax, k, bfe, cint, cpi, cpo,&
-                          t, delta_t, df_tol,stab, random_seed, use_input, err)
+                          t, delta_t, df_tol,stab, random_seed, use_input, err,singl,write_freq)
 
         do while (current_time < t / delta_t)
             if (count >= cint) then
