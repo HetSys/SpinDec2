@@ -306,7 +306,7 @@ program main
                 end if
             end if
             if(write_freq > 1 .and. write_freq==write_freq_c) then
-                print*, "Writing at iter", k
+                print*, "Writing timestep at iter", k
                 write_freq_c = 0
                 call write_netcdf_parts(c(:,:,write_count+1:write_count+1), F_tot(k:k),last_write,file_id)
                 last_write = last_write+1
