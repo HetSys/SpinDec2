@@ -40,82 +40,82 @@ subroutine test_rand_seed(seed_in,test_grid_1,test_grid_2,Nx,Ny,C,C_std)
 end subroutine test_rand_seed
 
 
-subroutine test_stdnormal(mean,std)
-    ! subroutine to check that rand_stdnormal
-    ! gives a standard normal distribution
+! subroutine test_stdnormal(mean,std)
+!     ! subroutine to check that rand_stdnormal
+!     ! gives a standard normal distribution
 
-    real(real64), intent(out) :: mean, std
-    integer :: N = 1000 ! sample size
-    real(real64) :: x_i, sum, diff
-    integer :: i ! counter
+!     real(real64), intent(out) :: mean, std
+!     integer :: N = 1000 ! sample size
+!     real(real64) :: x_i, sum, diff
+!     integer :: i ! counter
 
-    sum = 0.0
-    diff = 0.0
+!     sum = 0.0
+!     diff = 0.0
 
-    ! ! Optional - write values to file
-    open (99, file = "stdnormal_test.txt")
-    do i = 1, N
-        call rand_stdnormal(x_i)
-        write(99,*) x_i
-        sum = sum + x_i
-        diff = diff + ((x_i-0.0)**2)
-    end do
-    close(99)
+!     ! ! Optional - write values to file
+!     open (99, file = "stdnormal_test.txt")
+!     do i = 1, N
+!         call rand_stdnormal(x_i)
+!         write(99,*) x_i
+!         sum = sum + x_i
+!         diff = diff + ((x_i-0.0)**2)
+!     end do
+!     close(99)
 
-    ! mean
-    mean = sum/N
-    ! std
-    std = sqrt((diff/N))
+!     ! mean
+!     mean = sum/N
+!     ! std
+!     std = sqrt((diff/N))
 
-    if ((abs(mean-0.0) <= 1e-1) .and. (abs(std-1.0) <= 1e-1)) then
-        print*, "rand_stdnormal passes test"
-    else
-        print*, "rand_stdnormal doesn not pass test"
-        ! print*, "mean ", mean
-        ! print*, "std ", std
-    end if
+!     if ((abs(mean-0.0) <= 1e-1) .and. (abs(std-1.0) <= 1e-1)) then
+!         print*, "rand_stdnormal passes test"
+!     else
+!         print*, "rand_stdnormal doesn not pass test"
+!         ! print*, "mean ", mean
+!         ! print*, "std ", std
+!     end if
 
-end subroutine test_stdnormal
+! end subroutine test_stdnormal
 
 
-subroutine test_rand_normal(mean,std,mean_0,std_0)
-    ! subroutine to check that rand_normal
-    ! gives a standard normal distribution
-    ! given a mean and standard deviation
+! subroutine test_rand_normal(mean,std,mean_0,std_0)
+!     ! subroutine to check that rand_normal
+!     ! gives a standard normal distribution
+!     ! given a mean and standard deviation
 
-    real(real64), intent(in) :: mean_0, std_0
-    real(real64), intent(out) :: mean, std
-    integer :: N = 1000 ! sample size
-    real(real64) :: x_i, sum, diff
-    integer :: i ! counter
+!     real(real64), intent(in) :: mean_0, std_0
+!     real(real64), intent(out) :: mean, std
+!     integer :: N = 1000 ! sample size
+!     real(real64) :: x_i, sum, diff
+!     integer :: i ! counter
 
-    sum = 0.0
-    diff = 0.0
+!     sum = 0.0
+!     diff = 0.0
 
-    ! Optional - write values to file
-    open (99, file = "normal_test.txt")
-    do i = 1, N
-        call rand_normal(x_i,mean_0,std_0)
-        write(99,*) x_i
-        sum = sum + x_i
-        diff = diff + ((x_i-mean_0)**2)
-    end do
-    close(99)
+!     ! Optional - write values to file
+!     open (99, file = "normal_test.txt")
+!     do i = 1, N
+!         call rand_normal(x_i,mean_0,std_0)
+!         write(99,*) x_i
+!         sum = sum + x_i
+!         diff = diff + ((x_i-mean_0)**2)
+!     end do
+!     close(99)
 
-    ! mean
-    mean = sum/N
-    ! std
-    std = sqrt(diff/N)
+!     ! mean
+!     mean = sum/N
+!     ! std
+!     std = sqrt(diff/N)
 
-    if ((abs(mean-mean_0) <= 1e-3) .and. (abs(std-std_0) <= 1e-3)) then
-        print*, "rand_normal passes test"
-    else
-        print*, "rand_normal doesn not pass test"
-        ! print*, "mean ", mean
-        ! print*, "std ", std
-    end if
+!     if ((abs(mean-mean_0) <= 1e-3) .and. (abs(std-std_0) <= 1e-3)) then
+!         print*, "rand_normal passes test"
+!     else
+!         print*, "rand_normal doesn not pass test"
+!         ! print*, "mean ", mean
+!         ! print*, "std ", std
+!     end if
 
-end subroutine test_rand_normal
+! end subroutine test_rand_normal
 
 
 subroutine test_grid_init(grid,Nx,Ny,C_mean,C_std,mean,std)

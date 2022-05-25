@@ -62,16 +62,16 @@ contains
 
         end do
 
-        if (cpi /= "") then
-            call read_checkpoint_in(datas, mu,Tg, ftot, cpi, problem,initial_conc, coeffs, nx, &
-                                    ny, m1, m2, k, bfe, cint, cpo, t, delta_t, df_tol, current_time, &
-                                    random_seed, use_input, ncerr)
-            if (ncerr /= nf90_noerr) then
-                print *, "There was an error reading the checkpoint file."
-                print *, "Checkpoint test failed"
-                stop
-            end if
-        end if
+        ! if (cpi /= "") then
+        !     call read_checkpoint_in(datas, mu,Tg, ftot, cpi, problem,initial_conc, coeffs, nx, &
+        !                             ny, m1, m2, k, bfe, cint, cpo, t, delta_t, df_tol, current_time, &
+        !                             random_seed, use_input, ncerr)
+        !     if (ncerr /= nf90_noerr) then
+        !         print *, "There was an error reading the checkpoint file."
+        !         print *, "Checkpoint test failed"
+        !         stop
+        !     end if
+        ! end if
 
         if (current_time == 50000 .and. &
             abs(mu(1, 1) - 100001) < mu(1, 1) / 1e7 .and. &
