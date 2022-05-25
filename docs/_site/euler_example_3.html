@@ -90,26 +90,61 @@ $(document).ready(function(){initNavTree('euler_example_3.html',''); initResizab
 </div>
 
 <div class="header">
-  <div class="headertitle"><div class="title"></div></div>
+  <div class="headertitle"><div class="title">Example - Running Serial With Temperature Dependent Mobility</div></div>
   <!-- start footer part -->
     
 </div><!--header-->
 
+<p>To run the code with a temperature mobility field, the problem variable in your input.txt file needs to be set to "temp".
+You must also make sure you set the variables <code markup="tt" class=" language-none">excitation_a</code> and <code markup="tt" class=" language-none">excitation_b</code> to the values you want to simulate, as well as 
+the maximum and minimum temperture of the grid via the inputs <code markup="tt" class=" language-none">temperature_max</code> and <code markup="tt" class=" language-none">temperature_min</code> 
+repectively. 
+For a quick example of how to run the code, we will run SpinDec2 in "temp" mode for excitation values that set the atomic mobilities of the two sepcies to four for the average 
+grid temperature. This is done using the formulas shown in <a href="mobility.html">mobility</a>. This is so that we generate a similar input to that of the example done for "nontemp" mode,
+as we would expect the results to be similar for a temperature grid that doesnt vary laregly.</p>
+<pre><samp>
+  concentration_max = 0.6
+  concentration_min = 0.4
+  domain_x_size = 128
+  domain_y_size = 128
+  mobility_a = 1
+  mobility_b = 1
+  free_energy_gradient_parameter = 0.0001
+  bulk_free_energy = 1
+  checkpointing_interval = 5000
+  checkpoint_output_file = "out.cp"
+  kcheckpoint_input_file = "out.cp"
+  max_time = 4e-3
+  time_step = 1e-7
+  df_tolerance = 2.0
+  random_seed = 1234
+  use_input = 0
+  excitation_a = 86565
+  excitation_b = 86565
+  temperature_min = 950
+  temperature_max = 1050
+  problem = "temp"
+  stabilization_term = 0
+  write_frequency = 1
+  single_precision = 0
+</samp></pre>
 
-  <h1 id="userdocs">User Documentation</h1>
+<p>The input file shows all the inputs that the user must specify. However,
+  only the excitation and temperature parameters will affect how \(M\) is calculated for this case. 
+</p>
 
-  <h2 id="getstarted">Getting Started</h2>
+<p>The results from the above input file are shown below, and you should expect similar results
+  if you try it yourself: </p>
+<center>
+<p> <img src="user_examples/Temp/snapshot_temp_46_start.png"  width="300" height="300">
+   <img src="user_examples/Temp/snapshot_temp_46_quarter.png"  width="300" height="300"> 
+   <img src="user_examples/Temp/snapshot_temp_46_end.png"  width="300" height="300"> 
+   <img src="user_examples/Temp/Free_energy_temp_46.png"  width="300" height="300"> 
+  </center>
+<p>
+  If we compare to the previous example in <a href="euler_example_2.html">Serial Example 2</a>, we can see that these results do indeed match as expected.
+</p>
 
-  <h2 id="examples">Eaxmples</h2>
-  <p>Below are some simple examples of how to use SpinDec2 for the various cases of methods and Mobilities.</p>
-
-
-  <ul>
-    <li>Euler - constant M - Mobility is taken to be constant everywhere at all times, <a href="euler_example_1.html">Euler Example 1</a>.</li>
-    <li>Euler - M = M(c) - Mobility is dependent on the order paramter c over time, <a href="euler_example_2.html">Euler Example 2</a>.</li>
-    <li>Euler - M = M(c,T) The atomic mobilities are defined in terms of local tempeartures, <a href="euler_example_3.html">Euler Example 3</a>.</li>
-    <li>Pseudo-Spectral Method,  <a href="PS_example.html">Pseudo-Spectral Example </a>.</li>
-  </ul> 
 
   <div class="contents">
 </div><!-- contents -->

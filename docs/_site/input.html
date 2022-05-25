@@ -164,15 +164,15 @@ $(document).ready(function(){initNavTree('input.html',''); initResizable(); });
   </ul>
   <br>
 <ul> 
-  <li><p><code markup="tt" class=" language-none"> Use_input = value (int) </code>  \( \rightarrow \) Overwrites checkpoint meta data when set to one.</p></li>
+  <li><p><code markup="tt" class=" language-none"> use_input = value (int) </code>  \( \rightarrow \) Overwrites checkpoint meta data when set to one.</p></li>
   </ul>
   <br>
 <ul> 
-  <li><p><code markup="tt" class=" language-none"> Excitation_A = value (real) </code>  \( \rightarrow \) Excitation energy of species A, \(E_A\), (for temperature dependent mobility).</p></li>
+  <li><p><code markup="tt" class=" language-none"> excitation_A = value (real) </code>  \( \rightarrow \) Excitation energy of species A, \(E_A\), (for temperature dependent mobility).</p></li>
   </ul>
   <br>
 <ul> 
-  <li><p><code markup="tt" class=" language-none"> Excitation_B = value (real) </code>  \( \rightarrow \) Excitation energy of species B, \(E_B\), (for temperature dependent mobility).</p></li>
+  <li><p><code markup="tt" class=" language-none"> excitation_B = value (real) </code>  \( \rightarrow \) Excitation energy of species B, \(E_B\), (for temperature dependent mobility).</p></li>
   </ul>
   <br>
 <ul> 
@@ -184,41 +184,52 @@ $(document).ready(function(){initNavTree('input.html',''); initResizable(); });
   </ul>
   <br>
 <ul> 
-  <li><p><code markup="tt" class=" language-none"> Problem = "value" (str) </code>  \( \rightarrow \) Defines which mobility definition to use either <code markup="tt" class=" language-none"> "Constant"</code>;, <code markup="tt" class=" language-none"> "NonTemp"</code>;, <code markup="tt" class=" language-none"> "Temp"</code>, and for spectral methods <code markup="tt" class=" language-none"> "spectral"</code></p></li>
+  <li><p><code markup="tt" class=" language-none"> problem = "value" (str) </code>  \( \rightarrow \) Defines which mobility definition to use either <code markup="tt" class=" language-none"> "constant"</code>;, <code markup="tt" class=" language-none"> "nontemp"</code>;, <code markup="tt" class=" language-none"> "temp"</code>, and for spectral methods <code markup="tt" class=" language-none"> "spectral"</code></p></li>
   </ul>
   <br>
 <ul> 
-  <li><p><code markup="tt" class=" language-none">  Stabilization_Term = value (int) </code>  \( \rightarrow \) Controls the stability of spectral method solver (must be negative).</p></li>
+  <li><p><code markup="tt" class=" language-none">  stabilization_term = value (int) </code>  \( \rightarrow \) Controls the stability of spectral method solver (must be negative).</p></li>
   </ul>
   <br>
+  <ul> 
+    <li><p><code markup="tt" class=" language-none">  write_frequency  = value (int) </code>  \( \rightarrow \) Controls the rate at which frames are written. If set to 1, then every frame is written, if 10 then
+    every ten frames are written etc. If set to 0 then only the last frame is written.</p></li>
+    </ul>
+    <br>
+    <ul> 
+      <li><p><code markup="tt" class=" language-none">  single_precision = value (int) </code>  \( \rightarrow \) Controls if data is written in single precision (value = 1) or not (value = 0). Writing in single precision will speed up the writing process.</p></li>
+      </ul>
+      <br>
 <p>An example of <code markup="tt" class=" language-none"> input.txt</code> that can be used in SpinDec2 is shown below:</p>
 
 
 <samp><pre>  
   
-Concentration_min = 0.3
-Concentration_max = 0.9
-Domain_x_size = 500
-Domain_y_size = 500
-Mobility_A = 4
-Mobility_B = 4
-free_energy_gradient_parameter = 0.00005
-Bulk_free_energy = 1.7
-Checkpointing_interval = 5000
-Checkpoint_output_file = "Out.cp"
-Checkpoint_input_file = "Out.cp"
+concentration_max = 0.9
+concentration_min = 0.1
+domain_x_size = 60
+domain_y_size = 60
+mobility_a = 4
+mobility_b = 4
+free_energy_gradient_parameter = 0.0001
+bulk_free_energy = 1
 f(c) = 5,0,0,1,-2,1
-Max_time = 1e-1
-time_step = 1e-4
-dF_tolerance = 2.0
-Random_seed = 12345356
-Use_input = 0
-Exitation_A = 0.1
-Exitation_B = 0.2
-Temperature_min = 800
-Temperature_max = 1000
-Problem = "Spectral"
-Stabilization_Term = -1
+checkpoint_interval = 5000
+checkpoint_output_file = "Out.cp"
+checkpoint_input_file = "Out.cp"
+max_time = 1e-6
+time_step = 1e-10
+df_tolerance = 2.0
+random_seed = -1
+use_input = 0
+excitation_a = 10000
+excitation_b = 20000
+temperature_min = 8
+temperature_max = 10
+problem = "constant"
+stabilization_term = -1
+write_frequency = 1000
+single_precision = 1
 
 
 </samp></pre>

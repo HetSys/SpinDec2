@@ -24,7 +24,7 @@
 */
 var NAVTREE =
 [
-  [ "SpinDec2", "index.html", [
+  ["Developer Documentation", "index.html", [
     [ "Theory", "index.html",[
     [ "Introduction", "index.html#introduction", null ],
     [ "Spinodal decomposition", "index.html#spinodaldecomp", null ],
@@ -34,6 +34,7 @@ var NAVTREE =
     ]],
     [ "Solvers", "solver.html", [
       [ "Input File", "input.html", null],
+      [ "Check-Pointing", "checkpointing.html", null],
       [ "Explicit Finite-Differences", "solver.html", null],
       [ "Pseudo-Spectral", "spectral.html", null ],
       [ "Parallelism", "parra.html", null ],
@@ -41,6 +42,8 @@ var NAVTREE =
     [ "Files", "files.html", [
       [ "File List", "files.html", "files_dup" ],
     ] ],
+    ["Visualise", "visualise.html", null ],
+  ]],
     [ "User Documentation", "user.html", [
       ["Getting Started", "user.html#getsterted", null ],
       [ "Input File", "input.html", null],
@@ -48,15 +51,14 @@ var NAVTREE =
         ["Serial Example 1", "euler_example_1.html", null ],
         ["Serial Example 2", "euler_example_2.html", null ],
         ["Serial Example 3", "euler_example_3.html", null ],
-        ["Parallel Example", "parra_example.html", null ],
-        ["Checkpointing Example", "cp_example.html", null ],
         ["Pseudo-Spectral Example", "PS_example.html", null],
         ["50/50 Split Example", "test_example.html", null],
       ]],
       ["Visualise", "visualise.html", null ],
     ]],
-  ] ],
 ];
+
+
 
 var NAVTREEINDEX =
 [

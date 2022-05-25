@@ -90,7 +90,7 @@ $(document).ready(function(){initNavTree('mobility.html',''); initResizable(); }
 </div>
 
 <div class="header">
-  <div class="headertitle"><div class="title"></div></div>
+  <div class="headertitle"><div class="title">Mobility</div></div>
   <!-- start footer part -->
     
 </div><!--header-->
@@ -108,9 +108,9 @@ $(document).ready(function(){initNavTree('mobility.html',''); initResizable(); }
 <p> In SpinDec2, the user can set which definition of mobility they would like to use using the problem string input.
 </p>
 <ul>
-    <li>"Constant" - Mobility is taken to be constant everywhere at all times</li>
-    <li>"NonTemp" - Mobility is dependent on the order paramter c over time</li>
-    <li>"Temp" - The atomic mobilities are defined in terms of local tempeartures</li>
+    <li>"constant" - Mobility is taken to be constant everywhere at all times</li>
+    <li>"nontemp" - Mobility is dependent on the order paramter c over time</li>
+    <li>"temp" - The atomic mobilities are defined in terms of local tempeartures</li>
   </ul> 
 
   <h1 id="constantM">Constant Mobility</h1>
@@ -138,15 +138,15 @@ $(document).ready(function(){initNavTree('mobility.html',''); initResizable(); }
     $$    \frac{\partial c}{\partial t} = \nabla \cdot (M \nabla Q) = M \left( \frac{\partial^2 Q}{\partial x^2} + \frac{\partial^2 Q}{\partial y^2}\right) + \left( \frac{\partial M}{\partial x}\frac{\partial Q}{\partial x} + \frac{\partial M}{\partial y}\frac{\partial Q}{\partial y} \right).$$
 </bold>
 <p>The model can further evolved by considering how to define the atomic mobilities. In SpinDec2, the user can chose wheter they want to use consatnt values for 
-    \(M_A\) and \(M_B\), by initialsing the problem string to "NonTemp", or to make the atomic mobilities dependent on a local value of tempertaure which remains constant 
+    \(M_A\) and \(M_B\), by initialsing the problem string to "nontemp", or to make the atomic mobilities dependent on a local value of tempertaure which remains constant 
     through out (i.e doesnt evolve via conction of difussion equation).
 </p>
 
 <h2 id="tempM">Temperature dependcey</h2>
 <p>
-    If the user sets the problem string to "Temp", the atomic mobilities \(M_A\) and \(M_B\) are no longer consatnt and are dependent on a temperture initilased from the 
-    input.txt file. This is done by setting tempertaure_min and temperture_max to some value from which the grid points are set from samples of a unifrom distribution
-    \(\mathcal{U}(\text{temperture_min}, \text{temperture_max})\). The formula used to define the atomic mobilities in this case is taken from Y. H. Wang et al., J. Appl. 12 85102 (2019):
+    If the user sets the problem string to "temp", the atomic mobilities \(M_A\) and \(M_B\) are no longer constant and are dependent on a temperature initialised from the 
+    input.txt file. This is done by setting the minimum and maximum temperature,  from which the grid points are selected from samples of a uniform distribution defined by these bounds.
+ The formula used to define the atomic mobilities, in this case, is taken from Y. H. Wang et al., J. Appl. 12 85102 (2019):
 
 </p>
 <bold>

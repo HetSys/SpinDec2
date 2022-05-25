@@ -90,23 +90,23 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 </div>
 
 <div class="header">
-  <div class="headertitle"><div class="title"></div></div>
+  <div class="headertitle"><div class="title">SpinDec2 Developer and User Documentation</div></div>
   <!-- start footer part -->
 <h1 id="introduction">Introduction</h1>
 <p>This software solves the Cahn-Hilliard equation using either finite differnces and explicit time integration, or via spectral methods using fast fourier transforms. 
-  SpinDec2 also has the capability of alterning the definition of the chemical mobility of the system to be dependent on the tempearture or concentration fields or both. 
-  The definition for these mobility fields are described by the Darkens equation and Boltzmann statistics, and are outlined in Y. H. Wang et al., J. Appl. 12 85102 (2019)). 
-  SpinDec2 has also been parralleised using OpenMP and MPI to optimise the code to run with incresed efficincey and uses the netcdf package to write the output and checkpoint files.</p>
+  SpinDec2 also can alter the definition of the chemical mobility of the system to be dependent on the temperature or concentration fields or both. 
+  The Darkens equation describes these mobility fields and Boltzmann statistics and is outlined in Y. H. Wang et al., J. Appl. 12 85102 (2019)). 
+  SpinDec2 has also been parallelised using OpenMP and MPI to optimise the code to run with increased efficiency and uses the NetCDF package to write the output and checkpoint files.</p>
 
   <h2 id="spinodaldecomp">Spinodal decomposition of a Binary-Alloy system</h2>
 <p>Spinodal decomposition is the mechanism in which a single thermodynamic phase seprates into two without nucleation.
-   This is often observed in binary alloy systems where a mixture of two metal species seperate into two coexisting phases. 
-<p>In a binary alloy system there are two species, one which we label \(A\) and the other \(B\), each with respective concentrations \(c_A\) and \(c_B\). 
+   This is often observed in binary alloy systems where a mixture of two metal species separate into two coexisting phases. 
+<p>In a binary alloy system, there are two species, one which we label \(A\) and the other \(B\), each with respective concentrations \(c_A\) and \(c_B\). 
   To simplify the calculations, it is often best to define these concentrations in terms of an order parameter, which we will call \(c\), where:</p>
   <body>$$c_A = c \,\, ; \,\, c_B = 1-c$$</body>
 
   <p>where the unit of c is defined as atomic fraction in this code thus \(c_B\) is defined such that mass is conserved, \(c_A + c_B = 1\).</p>
-  <p>The time evoloution of a binary alloy system is commonly modelled using the Cahn-Hilliard equation, which is a non-linear parabolic partial differntial equation:</p>
+  <p>The time evolution of a binary alloy system is commonly modelled using the Cahn-Hilliard equation, which is a non-linear parabolic partial differential equation:</p>
 
    <body>
     $$\frac{\partial c}{\partial t} =  \nabla \cdot \left(M \nabla \frac{\delta F}{\delta c} \right),$$
@@ -114,11 +114,11 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 
     <p>where \(M\) is the <a href="mobility.html">diffusive mobility</a> and \( \frac{\delta F}{\delta c}\) is known as the  <a href="euler.html#totalchemQ">total chemical potential</a>.</p>
 
-  <p>The total chemical potential is defined as the functional derivative (Euler-Lagrange Equation) of the total free energy of the system. Free energies in the presencse of small fluctuactions in
-    the order parameter can be evaluated using the Ginzburg and Landau approximations, in which the free energy can be approximated as an expansion of the order paramter gradient \(\nabla c\). 
+  <p>The total chemical potential is defined as the functional derivative (Euler-Lagrange Equation) of the total free energy of the system. Free energies in small fluctuations in
+    the order parameter can be evaluated using the Ginzburg and Landau approximations. The free energy can be approximated as expanding the order parameter gradient \(\nabla c\). 
     Given that we are interested in exploring regions towards the minima of the free energy, the lowest order term in the expansion is quadratic given by \(\kappa (\nabla c)^2\), where \(\kappa\)
-    is a parameter that contols the strength of this term. This term also carries physical meaning, as it links to the interfacial tension between the \(A\) rich and \(B\) rich phases, in 
-    which the strength of this interfcial tension being proportional to \(\sqrt{\kappa}\). The Cahn-Hilliard free energy is therefore defined by the integral
+    is a parameter that controls the strength of this term. This term also carries physical meaning, as it links to the interfacial tension between the \(A\) rich and \(B\) rich phases, in 
+    which the strength of this interfacial tension is proportional to \(\sqrt{\kappa}\). The Cahn-Hilliard free energy is therefore defined by the integral
   </p>
 
   <body>
