@@ -92,13 +92,73 @@ $(document).ready(function(){initNavTree('parra.html',''); initResizable(); });
 <div class="header">
   <div class="headertitle"><div class="title">Parallelism</div></div>
   <!-- start footer part -->
-  <h1 id="fwdeuler_parra">Serial Solver</h1>
-  <h2 id="fwdeulerOpenMP">OpenMP</h2>
+  <h1 id="fwdeuler_parra">Serial Solver Implementation</h1>
+  <h2 id="fwdeulerOpenMP">Loop Parallelisation using OpenMP</h2>
   OpenMP multi-threading is be used for each domain created by MPI to accelerate the grid loops, calculating the bulk chemical potential and total chemical potential. 
-  <h2 id="fwdeulerMPI">MPI</h2>
-  <p>MPI parallelism is used for domain decomposition.
-       A Cartesian topology is implemented using the appropriate communicator to establish a 2D Cartesian coordinate system for the grid.
-       The global and local grids are initialised such that the use of domain composition is optional and is determined by the user.</p>
+  <h2 id="fwdeulerMPI">Domain Decomposistion using MPI</h2>
+  <p>A Cartesian topology is used to split the concentration, total chemical potential, and mobilities grids into subdomains depending on the number of MPI processes requested by the user. To implement periodic boundary conditions (PBCs) "halo" arrays were set up such that boundary values can be efficiently communicated between the different MPI processes. The implementation of the Cartesian topology is illustrated in the figure below for a grid split over 4 MPI processes, where each process executes the relevant calculations on a subdomain. Once the necessary calculations for a subdomain are complete to advance the local concentration grids in time, the global grid can be collected on a single process, and the halos are updated to carry out the next timestep in parallel. 
+       </p>
+
+       <p style="text-align:center;"><img src="grid_halo.png" alt="Domain Decomposistion" class="center"> </p>
+
+        <h2 id="fwdeulerMPI">Parallel Performance Metrics</h2>
+
+        <P>The performance of the parallelised code was evaluated using three metrics, namely: the speed up, \(\psi\) (left); parallel efficiency, \(\epsilon\); and Karp-Flatt metric, \(e\). The figure below shows the three performance measures for a 1200x1200 grid test case and the "constant mobilities" problem run for \(1e^{-4}\) timesteps and an output write frequency of 500 frames (inputs provided below).</P>
+
+<p>The results show that the best performance is obtained when the code is run using a combination of MPI and OpenMP, which gives the largest speed up of the parallelisation strategies tested. For MPI/OpenMP, the number of processes is given as:</p>
+
+<center>
+  <p>no. of processes = no. of MPI processes \(\times\) no. of OpenMP threads . </p>
+</center>
+
+<p>
+  For the test case presented the optimal performance is obtained for 4 MPI processes with 4 OpenMP threads for each i.e. 16 processes. Using OpenMP without MPI results in a decrease in performance as the number of OpenMP threads is increased and is therefore not recommended.
+</p>
+
+<p>
+  For all parallelisation strategies, a decrease in the parallel efficiency with increasing the number of processes is observed, as parallel overheads (e.g. inter-processors communication) become more prominent. This is also reflected in the Karp-Flatt metric, which increases with increasing the number of processes, indicating that the parallel code is limited by such overheads rather than unparallelised work. The Karp-Flatt metric for the OpenMP case exceeds 1.0 (the theoretical upper bound for this metric) due to the resulting increase in the execution time with increasing the number of OpenMP threads.
+</p>
+
+<p>To obtain the optimal performance of the code on a given system architecture, such tests are recommended.</p>
+
+<body>
+  $$ \psi = \frac{\text{serial code execution time}}{\text{parallel code execution time}} ,$$
+</body>
+
+<body>
+  $$ \epsilon = \frac{\text{serial code execution time}}{p \times \text{parallel code execution time}} ,$$
+</body>
+
+<body>
+  $$ e = \frac{\frac{1}{\epsilon} - \frac{1}{p}}{1 - \frac{1}{p}} .$$
+</body>
+
+<pre><samp>
+concentration_max = 0.9
+concentration_min = 0.1
+domain_x_size = 1200
+domain_y_size = 1200
+mobility_a = 4
+mobility_b = 4
+free_energy_gradient_parameter = 0.0001
+bulk_free_energy = 1
+checkpoint_interval = 1000
+write_frequency = 500
+max_time = 1e-6
+time_step = 1e-10
+random_seed = 12345356
+use_input = 0
+excitation_a = 0.1
+excitation_b = 0.2
+temperature_min = 900
+temperature_max = 1000
+problem = constant
+stabilization_term = 0
+</samp></pre>
+
+<p style="text-align:center;"><img src="metrics.png" alt="Domain Decomposistion"  width="1450" 
+  height="500" class="center"> </p>
+       
 
   <h1 id="spec_parra">Pseudo-Spectral Solver</h1>
   <h2 id="spectralOpenMP">OpenMP</h2>

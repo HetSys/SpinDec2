@@ -45,10 +45,10 @@ var NAVTREE =
     ] ],
     ["Visualise", "visualise.html", null ],
   ]],
-    [ "User Documentation", "user.html", [
+    [ "User Documentation and Tutorial", "user.html", [
       ["Getting Started", "user.html#getsterted", null ],
       [ "Input File", "input.html", null],
-      ["Examples", "user.html#examples",[
+      ["Tutorial", "user.html#examples",[
         ["Serial Example 1", "euler_example_1.html", null ],
         ["Serial Example 2", "euler_example_2.html", null ],
         ["Serial Example 3", "euler_example_3.html", null ],
