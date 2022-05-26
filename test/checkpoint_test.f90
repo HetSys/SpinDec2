@@ -41,13 +41,13 @@ contains
         close (13)
         call read_params("../checkpoint_test.txt",problem, c_min, c_max, coeffs, nx, &
                          ny, m1, m2,ea,eb,Tmin,Tmax, k, bfe, cint, cpi, cpo,&
-                          t, delta_t, df_tol,stab, random_seed, use_input, err,singl,wf)
+                          t, delta_t,stab, random_seed, use_input, err,singl,wf)
 
         do while (current_time < t / delta_t)
             if (count >= cint) then
                 call write_checkpoint_file(datas,Tg, ftot,problem, coeffs, cpo, initial_conc &
                                            , nx, ny, m1, m2, k, bfe, Cint, t, delta_t, current_time,&
-                                            df_tol, random_seed,lastw,wf,wfc,singl,wc,stab, ncerr)
+                                            random_seed,lastw,wf,wfc,singl,wc,stab, ncerr)
                 if (ncerr /= nf90_noerr) then
                     print *, "There was an error writing the checkpoint file."
                     print *, "Checkpoint test failed"
@@ -69,7 +69,7 @@ contains
 
          if (cpi /= "") then
              call read_checkpoint_metadata(cpi, problem,initial_conc, coeffs, nx, &
-                                     ny, m1, m2, k, bfe, cint, cpo, t, delta_t, df_tol, current_time, &
+                                     ny, m1, m2, k, bfe, cint, cpo, t, delta_t, current_time, &
                                      random_seed, use_input,lastw,wf,wfc,singl,wc,stab, ncerr)
              if (ncerr /= nf90_noerr) then
                  print *, "There was an error reading the checkpoint metadata."

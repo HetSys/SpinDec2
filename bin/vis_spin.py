@@ -11,7 +11,7 @@ import argparse
 
 # import matplotlib
 # import mpl_toolkits
-# import scipy 
+# import scipy
 
 # print(NC.__version__)
 # print(matplotlib.__version__)
@@ -68,7 +68,7 @@ def bulk_energy_extrema(coeffs):
     max_pos = np.array([])
 
     df_dc = np.zeros(len(c))
-        
+
     for i in range(len(c)):
 
         df_dc = mu(c[i], coeffs)
@@ -178,7 +178,7 @@ class Vis_CH:
 
             print(string)
 
-        
+
         if (self.N_t>1):
 
             # Number of frames for the aniamtion
@@ -186,7 +186,7 @@ class Vis_CH:
 
             print(len(self.time))
 
-            if len(self.time) < self.nframes:
+            if self.N_t < self.nframes:
                 self.modulo = 1
             else:
                 self.modulo = int(self.N_t/self.nframes)
@@ -217,9 +217,9 @@ class Vis_CH:
 
         print(self.frame)
 
-        
 
-    
+
+
     #function that plots an animation of both c and F (and its moving average) on the same figure
     def dual_animation(self, save_plot = False, both = False):
 
@@ -232,7 +232,7 @@ class Vis_CH:
         if len(self.minima > 0):
             vmin = np.min(self.minima)
             vmax = np.max(self.minima)
-        
+
         if len(self.minima == 0):
 
             vmin = np.min(self.c_plot[-1])
@@ -274,7 +274,7 @@ class Vis_CH:
             if (save_plot):
                 fig.suptitle('Time = '+str(self.time_anim[i]), fontsize = 20)
             return [pos1, line, line_av,]
-    
+
         anim = animation.FuncAnimation(fig = fig, func = animate, init_func = init, frames = len(self.c_plot), repeat = False, interval=1,blit=True)
 
         if (save_plot):
@@ -290,14 +290,14 @@ class Vis_CH:
         else:
             plt.show()
 
-       
+
 
 
     #function that plots an animation of both c and F (and its moving average) on the same figure
     def F_animation(self, save_plot = False, both = False):
 
         fig, ax = plt.subplots()
-        
+
         line, = ax.plot([], [], '-', label = r'Sim Data', color = 'black')
         if self.N_t>1:
             line_av, = ax.plot([], [], '--', label = r'Moving Average ($t_{period}$ = ' + str(self.N_t // self.av_period) + r' s)', color = 'red')
@@ -322,19 +322,19 @@ class Vis_CH:
         anim_traj = animation.FuncAnimation(fig = fig, func = animate, init_func = init, frames = len(self.c_plot), repeat = False, interval=1,blit=True)
 
         if (save_plot):
-        
+
             FFwriter = animation.FFMpegWriter(fps = self.frame)
             anim_traj.save('Free_Energy_Animation.mp4', writer = FFwriter)
 
         if (both):
-        
+
             FFwriter = animation.FFMpegWriter(fps = self.frame)
             anim_traj.save('Free_Energy_Animation.mp4', writer = FFwriter)
             plt.show()
-               
+
         else:
             plt.show()
-    
+
     #function that plots an animation of c
     def grid_animation(self, save_plot = False, both = False):
 
@@ -346,7 +346,7 @@ class Vis_CH:
         if len(self.minima > 0):
             vmin = np.min(self.minima)
             vmax = np.max(self.minima)
-        
+
         if len(self.minima == 0):
 
             vmin = np.min(self.c_plot[-1])
@@ -355,7 +355,7 @@ class Vis_CH:
         if vmax - vmin < 1e-1:
             vmin = np.min(self.c_plot[-1])
             vmax = np.max(self.c_plot[-1])
-        
+
         pos1 = ax.imshow(np.zeros(shape=(self.N_y, self.N_x)), vmin=vmin, vmax=vmax, origin='lower')
         div = make_axes_locatable(ax)
         cax = div.append_axes('right', '5%', '5%')
@@ -376,7 +376,7 @@ class Vis_CH:
             if (save_plot):
                 fig.suptitle('Time = '+str(self.time_anim[i]), fontsize = 20)
             return [pos1]
-    
+
         anim = animation.FuncAnimation(fig = fig, func = animate, init_func = init, frames = len(self.c_plot), repeat = False, interval=1,blit=True)
 
         if (save_plot):
@@ -424,10 +424,11 @@ class Vis_CH:
 
     #Function that plots F (and its moving average)
     def F_plot(self, save_plot = False, both = False):
+        times = np.linspace(0,self.t_end,self.N_t)
         fig, ax = plt.subplots()
-        ax.plot(self.time[::self.N_t],self.F_tot, scaley=True, scalex=True, color="blue", label = r'CH Data')
+        ax.plot(times,self.F_tot, scaley=True, scalex=True, color="blue", label = r'CH Data')
         if self.N_t>1:
-            ax.plot(self.time[::self.N_t],self.F_av, scaley=True, scalex=True, color="red", label = r'Moving Average ($t_{period}$ = ' + str(self.N_t // self.av_period) + r' s)')
+            ax.plot(times,self.F_av, scaley=True, scalex=True, color="red", label = r'Moving Average ($t_{period}$ = ' + str(self.N_t // self.av_period) + r' s)')
         ax.set_xlabel(r'Time (s)')
         ax.set_ylabel(r"Total Free Energy - $F(t)$")
         ax.set_ylim(0.9*self.F_tot.min(), 1.1*self.F_tot.max())
@@ -442,7 +443,7 @@ class Vis_CH:
         else:
             plt.show()
 
-   
+
     #function thats plots the initial bulk free energy and the trajectory of the
     #averge bulk free energy over time in c c-f(c) space
     def bulk_energy_traj(self, save_plot = False, both = False):
@@ -450,7 +451,7 @@ class Vis_CH:
             if (self.N_x == self.N_y):
                 if (self.N_x == 64 or self.N_x == 128 or self.N_x == 256):
 
-            
+
                     self.c_av = np.zeros((len(self.c_plot), 16))
                     self.f_b_av = np.zeros((len(self.c_plot), 16))
 
@@ -467,16 +468,16 @@ class Vis_CH:
                         for grid in c_split_x :
                             c_split_y = np.array_split(grid,4,axis=1)
                             c_grid += c_split_y
-                
+
                         for j in range(16):
                             av = np.average(c_grid[j])
                             self.c_av[i,j] = av
                             self.f_b_av[i,j] = bulk_energy(av, self.coeffs)
 
-                
+
                     fig, axs = plt.subplots(4, 4, figsize=(20,20))
 
-                    y_maxima = np.array([]) 
+                    y_maxima = np.array([])
                     y_minima = np.array([])
 
                     for i in range(len(self.minima)):
@@ -485,7 +486,7 @@ class Vis_CH:
                     for i in range(len(self.maxima)):
                         y_maxima = np.append(y_maxima, bulk_energy(self.maxima[i], self.coeffs))
 
-          
+
                     count = 0
                     for i in range(4):
                         for j in range(4):
@@ -504,7 +505,7 @@ class Vis_CH:
 
                             axs[i,j].set_ylim(0.95*y_minima.min(), 1.20*y_maxima.max())
 
-                
+
                     if (save_plot):
                         plt.savefig('Bulk_Energy_Traj.png', bbox_inches='tight')
                     if (both):
@@ -513,7 +514,7 @@ class Vis_CH:
                     else:
                         plt.show()
 
-            
+
                 else:
                     print('Function Terminated, Error = Size: Plotting Routine (bulk_energy_traj) can only be used for sqaure grids of size (64,64) ; (128, 128) or (256, 256)')
                     return None
@@ -577,4 +578,3 @@ if (res_CH.N_t == 1):
     res_CH.grid_snapshot(snapshot=0, save_plot=save, both = both)
     if save:
         print('Saved Grid Snapshot')
-

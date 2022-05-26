@@ -20,7 +20,7 @@ contains
 
         call read_params("../input_test.txt",problem, c_min, c_max, coeffs, nx, &
                          ny, m1, m2, ea, eb, Tmin, Tmax, k, bfe, cint, cpi, cpo, &
-                          t, delta_t, df_tol, stab, random_seed, use_input,singl,write_freq, err)
+                          t, delta_t, stab, random_seed, use_input,singl,write_freq, err)
 
         if (err == -1) then
             print *, "Input test 1 Failed"
@@ -44,7 +44,6 @@ contains
             abs(coeffs(4) - 2.4) < coeffs(4) / 1e7 .and. &
             abs(t-1e-7) < t/1e7 .and. &
             abs(delta_t-1e-12) < delta_t/1e7 .and. &
-            abs(df_tol-2) < df_tol/1e7 .and. &
             Random_seed == 12345356 .and. &
             problem == "temp" .and. &
             abs(ea-0.1) < 1/1e7 .and. &
@@ -60,7 +59,7 @@ contains
 
         call read_params("../input_test2.txt",problem, c_min, c_max, coeffs, nx, &
                          ny, m1, m2, ea, eb, Tmin, Tmax, k, bfe, cint, cpi, cpo, &
-                          t, delta_t, df_tol, stab, random_seed, use_input,singl,write_freq, err)
+                          t, delta_t, stab, random_seed, use_input,singl,write_freq, err)
 
         if (err == -1) then
             print *, "Input test 2 Failed"
@@ -86,7 +85,6 @@ contains
             abs(coeffs(5) - 1.7) < abs(coeffs(5) / 1e7) .and. &
             abs(t+1) < abs(t/1e7) .and. &
             abs(delta_t+1) < abs(delta_t/1e7) .and. &
-            abs(df_tol+1) < abs(df_tol/1e7) .and. &
             Random_seed == -1 .and. &
             Use_input == 0) then
 
@@ -97,7 +95,7 @@ contains
 
         call read_params("../input_test3.txt",problem, c_min, c_max, coeffs, nx, &
                          ny, m1, m2, ea, eb, Tmin, Tmax, k, bfe, cint, cpi, cpo, &
-                          t, delta_t, df_tol, stab, random_seed, use_input,singl,write_freq, err)
+                          t, delta_t, stab, random_seed, use_input,singl,write_freq, err)
 
         if (err /= -1) then
             print *, "Input test 3 Failed"

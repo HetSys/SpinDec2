@@ -36,7 +36,7 @@ contains
     !! @param ierr A flag that checks if an error occured in writing
     subroutine write_checkpoint_file(arr3dim,temp2dim, arr1dim,prob, coeffs, cpo, &
                                      initial_conc, nx, ny, m1, m2, k, bfe, Cint, t, time_step, current_iter, &
-                                     df_tol, random_seed,lastw,write_freq,write_freq_c,singl,write_count, stab,ierr)
+                                     random_seed,lastw,write_freq,write_freq_c,singl,write_count, stab,ierr)
 
 
         real(kind=real64), intent(IN), dimension(:, :, :) :: arr3dim
@@ -46,7 +46,7 @@ contains
         integer, intent(in) :: nx, ny, cint, random_seed, current_iter,lastw,&
                                 write_freq,write_freq_c,singl,write_count
         real(kind=real64), intent(in) :: initial_conc, m1, m2, k, bfe, t, &
-                                         time_step, df_tol,stab
+                                         time_step,stab
         !TYPE(run_data_type), INTENT(IN) :: run_data
         character(len=*), intent(in) :: cpo,prob
         character(LEN=1), dimension(7) :: dims = (/"x", "y", "t", "c", "f","n","m"/)
@@ -177,11 +177,6 @@ contains
             return
         end if
 
-        ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(12)), df_tol)
-        if (ierr /= nf90_noerr) then
-            print *, trim(nf90_strerror(ierr))
-            return
-        end if
 
         ierr = nf90_put_att(file_id, NF90_GLOBAL, trim(comp_names(13)), random_seed)
         if (ierr /= nf90_noerr) then
@@ -307,7 +302,7 @@ contains
     !! @param ierr A flag that checks if an error occured in reading
     !! @param stab A stabilization term that allows for bigger timesteps at the const of inital accuracy (spectral)
     subroutine read_checkpoint_metadata(fn, prob,initial_conc, &
-                                   coeffs, Nx, Ny, M1, M2, k, bfe, Cint, cpo, t, delta_t, df_tol, &
+                                   coeffs, Nx, Ny, M1, M2, k, bfe, Cint, cpo, t, delta_t, &
                                   current_iter, random_seed, use_input,&
                                   lastw,write_freq,write_freq_c,singl,write_count,stab, ierr)
 
@@ -316,7 +311,7 @@ contains
         character(len=*), intent(inout) :: cpo,prob
         character(len=*), intent(in) :: fn
         real(kind=real64), intent(inout) :: initial_conc, m1, m2, k, bfe, &
-                                            t, delta_t, df_tol,stab
+                                            t, delta_t,stab
         integer, intent(inout) :: current_iter,lastw
         real(kind=real64), intent(inout), dimension(:), allocatable :: coeffs
         character(LEN=1), dimension(7) :: dims = (/"x", "y", "t", "c", "f","n","m"/)
@@ -428,12 +423,6 @@ contains
             end if
 
             ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(10)), delta_t)
-            if (ierr /= nf90_noerr) then
-                print *, trim(nf90_strerror(ierr))
-                return
-            end if
-
-            ierr = nf90_get_att(file_id, NF90_GLOBAL, trim(comp_names(12)), df_tol)
             if (ierr /= nf90_noerr) then
                 print *, trim(nf90_strerror(ierr))
                 return

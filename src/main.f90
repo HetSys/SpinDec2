@@ -36,7 +36,7 @@ program main
     real(real64) :: EA, EB ! exciation energy
     real(real64) :: local_F,global_F
     real(real64) :: stab !Stabilization_Term
-    real(real64) :: bfe, df_tol!Placeholder (These were in the input file but df_tol hasn't been used in any code)
+    real(real64) :: bfe!Placeholder (These were in the input file but df_tol hasn't been used in any code)
     integer :: Nx, Ny, Nt, Nc,no_threads,write_num,write_freq_c,last_write
     integer :: k, count,thread ,write_count,write_prev,write_next! counters
     integer :: cint, random_seed, err, use_input, current_iter, ncerr,singl, write_freq !checkpointing_interval, random seed,error var
@@ -58,7 +58,7 @@ program main
     ! Only run files in test for now
     call read_params("input.txt",problem, c_min, c_max, a, nx, &
                      ny, ma, mb,ea,eb,T_min,T_max, kappa, bfe, cint, &
-                     cpi, cpo, t_end, dt, df_tol,stab, random_seed, use_input,singl,write_freq,err)
+                     cpi, cpo, t_end, dt,stab, random_seed, use_input,singl,write_freq,err)
 
     if (err == -1) then
         print *, "There was an issue with the input file please check and try again"
@@ -90,7 +90,7 @@ program main
     if (cpi /= "") then
         call read_checkpoint_metadata(cpi,problem, c0, a, nx, &
                                 ny, ma, mb, kappa, bfe, cint, cpo, t_end, dt, &
-                                df_tol, current_iter, random_seed, use_input, &
+                                current_iter, random_seed, use_input, &
                                 last_write,write_freq,write_freq_c,singl&
                                 ,write_count,stab, ncerr)
         if (ncerr /= nf90_noerr) then
@@ -334,7 +334,7 @@ program main
         if (my_rank == 0) then
             if (count >= cint) then
                 call write_checkpoint_file(c, T,F_tot,problem, a, cpo, c0, &
-                                           nx, ny, ma, mb, kappa, bfe, Cint, t_end, dt, k, df_tol, &
+                                           nx, ny, ma, mb, kappa, bfe, Cint, t_end, dt, k, &
                                            random_seed, last_write,write_freq,write_freq_c,singl&
                                            ,write_count,stab,ncerr)
 

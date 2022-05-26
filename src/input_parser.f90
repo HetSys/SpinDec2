@@ -103,7 +103,7 @@ contains
     !! @param singl A flag that tells the code to save in single single precision
     !! @param err A flag that checks if an error occured in reading
     subroutine read_params(fn,prob, conc_min, conc_max, coeffs, Nx, Ny, M1, M2,EA,EB,temp_min,temp_max, k, bfe, &
-                           Cint, cpi, cpo, t, delta_t, df_tol,stab, random_seed, use_input,singl,write_freq ,err)
+                           Cint, cpi, cpo, t, delta_t,stab, random_seed, use_input,singl,write_freq ,err)
 
         integer, parameter :: infile = 15
         character(len=128) :: name, var
@@ -113,7 +113,7 @@ contains
         integer, intent(out) :: err
         character(len=128), intent(out) :: cpi, cpo,prob
         real(kind=real64), intent(out) :: conc_min, conc_max, m1, m2, k, bfe, t, &
-                                            delta_t, df_tol,ea,eb,temp_max,temp_min,stab
+                                            delta_t,ea,eb,temp_max,temp_min,stab
         real(kind=real64), intent(out), dimension(:), allocatable :: coeffs
         logical :: f_exists
         integer :: req, req2, cofs,treq,sreq
@@ -131,7 +131,6 @@ contains
         cpi = ""
         cpo = "checkpoint.cpf"
         use_input = 0
-        df_tol = -1
         ea = -1
         eb = -1
         temp_max = -1
@@ -365,22 +364,6 @@ contains
 
                 if (delta_t < 0) then
                     print *, "time_step must be >= 0.&
-                    & Please check you input file and try again"
-                    err = -1
-                end if
-
-            else if (name == "df_tolerance") then
-                read (var, *, iostat=ierr) df_tol
-
-                if (ierr /= 0) then
-                    print *, "An error occured reading df_tolerance. &
-                    &Please check input file and try again"
-                    err = -1
-                    exit
-                end if
-
-                if (df_tol < 0) then
-                    print *, "df_tolerance must be >= 0.&
                     & Please check you input file and try again"
                     err = -1
                 end if
