@@ -22,7 +22,7 @@ This project models spinoidal decomposition of a binary alloy system and has the
  
 * Pseudo-Spectral solver with constant mobility
 
-For full documentation, please see the wiki: https://hetsys.github.io/SpinDec2/
+For full documentation, please refer to the wiki: https://hetsys.github.io/SpinDec2/
 
 The following is an example end state using the explicit Eulerian solver with an initial concentration range of 0.31 to 0.32:
 
@@ -45,6 +45,10 @@ Prior to installation, please ensure that the following dependencies are install
 * fortran
   * netCDF
   * fftw
+
+This has been tested on HPC systems, and is known to work with the following dependency versions:
+* GCC/7.3.0-2.30  OpenMPI/3.1.1 netCDF-Fortran/4.4.4 FFTW/3.3.8
+* GCC/10.3.0 OpenMPI/4.1.1 netCDF-Fortran/4.5.3 FFTW/3.3.9
 
 ## Download
 To download the repository, clone the repository somewhere in your filesystem:
