@@ -1,12 +1,14 @@
+#!/usr/bin/env python3
+
 import os.path
 import numpy as np
 from matplotlib import pyplot as plt
 
 # Set Problem
-problem = "Constant Mobilities"
+problem = "Spectral"
 
 # Timings file to read
-input_file = "constant_timings.txt"
+input_file = "spectral_timings.txt"
 
 def read_timings():
     # Check if timings.txt file exists
