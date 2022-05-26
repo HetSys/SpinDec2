@@ -99,6 +99,60 @@ $(document).ready(function(){initNavTree('visualise.html',''); initResizable(); 
     
 </div><!--header-->
 
+<h2>arg parser</h2>
+
+<p>In SpinDec2, you can control the visulisation file via the command line by the use of an arg parser. To view all the possible command line options 
+  type in <code>vis_spin.py -h</code> into the command line which displays:
+</p>
+
+<pre><samp>
+  usage: vis_spin.py [-h] [-sn] [-fr] (-s | -d | -b)
+
+Visulise spinodal decomposistion in SpinDec2
+
+optional arguments:
+  -h, --help      show this help message and exit
+  -sn, --snap    Option to select snapshot of grid to plot
+  -fr, --frame   Option to set number of frames when saving to mp4
+  -s, --save      Save plots only
+  -d, --display   View plots only
+  -b, --both      Does both the save and view options
+
+</samp></pre>
+
+<p>Below is a list of the above options and what they control within <code>vis_spin.py</code>.</p>
+<ul>
+<li><p><code markup="tt" class=" language-none"> -h, --help </code>  \( \rightarrow \) Displays the help for the arg parser.</p></li>
+</ul>
+<br>
+<ul>
+<li><p><code markup="tt" class=" language-none"> -sn, --snap </code>  \( \rightarrow \) OPTIONAL (DEFAULT = -1): Passed along sie an integer just after (e.g -sn 2). The integer sets the 
+time iteration from which a grid snapshot is displayed, (if the <code>-d, --display</code> flag is used) or saved, (if the <code>-s, --save</code> flag is used) or both (if the <code>-b, --both</code> flag is used).</p></li>
+</ul>
+<br>
+<ul>
+<li><p><code markup="tt" class=" language-none"> -fr, --frame </code>  \( \rightarrow \) OPTIONAL (DEFAULT = 50): Sets the frame rate when saving animations to a mp4 file when the <code>-s, --save ; -d, --display</code> flags are also used.</p></li>
+</ul>
+<br>
+<ul>
+
+<h4>At least one of the flags are required to get run the python file:</h4>
+
+<li><p><code markup="tt" class=" language-none"> -s, --save </code>  \( \rightarrow \) REQUIRED: Saves all plots to current working directory without displaying.</p></li>
+</ul>
+<br>
+<ul>
+<li><p><code markup="tt" class=" language-none"> -d, --display </code>  \( \rightarrow \) REQUIRED: Dipslays all plots without saving to current working directory.</p></li>
+</ul>
+<br>
+<ul>
+<li><p><code markup="tt" class=" language-none"> -d, --display </code>  \( \rightarrow \) REQUIRED: Dipslays and saves to current working directory.</p></li>
+</ul>
+<br>
+
+
+
+<h2>Plotting Functions</h2>
 
   <p>In SpinDec2, a various range of plotting routines are given in the <code>vis_spin.py</code> file. Multiple plots and animations can be made and are stored in the <code>Vis_CH</code> class. 
     There are numerous functions within the class are described below:</p>
@@ -112,7 +166,7 @@ $(document).ready(function(){initNavTree('visualise.html',''); initResizable(); 
     </code></pre>
   </body>
  
-  <p>The Read and setup function takes in the NetCDF, reads it, and then setups up the system by adding the full-time output concentration field to the class and the total free energy time series. These can be accessed by doing <code>class_name.c\</code> and <code>class_name.F_tot\</code> respectively. All other metadata, such as grid size, timestep, atomic mobilities etc., are also stored in the class and are printed to the terminal if verbose = True (default). 
+  <p>The Read and setup function takes in the NetCDF, reads it, and then up the system by adding the full-time output concentration field to the class and the total free energy time series. These can be accessed by doing <code>class_name.c\</code> and <code>class_name.F_tot\</code> respectively. All other metadata, such as grid size, timestep, atomic mobilities etc., are also stored in the class and are printed to the terminal if verbose = True (default). 
     As large amounts of time iterations are typically performed, we also reduce the amount of concentration grid frames we show in the animations by taking roughly 300 evenly spaced frames (300 is the default) to speed up the animation. These 300 frames are stored as <code>class_name.c_plot\</code> for concentration and <code>class_name.F_anim\</code> for the total free energy. </p>
   <body>
     <pre><code class="python">
@@ -141,7 +195,7 @@ $(document).ready(function(){initNavTree('visualise.html',''); initResizable(); 
     </code></pre>
   </body>
 
-  <p>Snapshot of the concentration grid at a certain time. The snapshot argument controls this, an integer mapping to the time iteration you want to view, i.e. plots <code>self.c[snapshot]\</code>. The default snapshot value is set to -1 to display the final result.</p>
+  <p>Snapshot of the concentration grid at a particular time. The snapshot argument controls this, an integer mapping to the time iteration you want to view, i.e. plots <code>self.c[snapshot]\</code>. The default snapshot value is set to -1 to display the final result.</p>
 
   <body>
     <pre><code class="python">
@@ -167,29 +221,11 @@ $(document).ready(function(){initNavTree('visualise.html',''); initResizable(); 
 
   <p>In all the plotting functions, the default option is to save all the plots, where pictures are saved as PNG files and animations are saved as an mp4 file using the FFMpeg writer, which can be installed from the terminal by typing <code>sudo apt install ffmpeg</code>. </p>
 
-  <p>All that is left to do is to call the class in the python file (which is defaulted as <code>res_CH\</code>, then call the plotting functions you want to visualise, an example is shown below:</p>
-  <body>
-    <pre><code class="python">
-# Create a class name
-res_CH = Vis_CH(file = 'CH_output.nc', av_period=10)
-
-# Must call the read and set up function before the plotters
-res_CH.read_and_setup(verbose=True)
-
-# Then add any of the plots you want to save and create
-res_CH.F_animation()
-
-res_CH.grid_animation()
-
-res_CH.grid_snapshot()
-
-res_CH.F_plot()
-
-res_CH.bulk_energy_traj()
-
-res_CH.dual_animation()
-    </code></pre>
-  </body>
+  <p>All that is left to do is to call the class in the python file (which is defaulted as <code>res_CH\</code>, then call the plotting functions you want to visualise. In the <code>vis_spin.py</code>
+  All the plotting definitions are initialised and must be commented out or removed from the file by the user if they wish not to view or save that figure.</p>
+  
+ 
+  
 
   
 

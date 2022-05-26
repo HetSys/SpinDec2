@@ -39,6 +39,7 @@ var NAVTREE =
       [ "Pseudo-Spectral", "spectral.html", null ],
       [ "Parallelism", "parra.html", null ],
     ]],
+    ["Validation - 50/50 Split", "test_example.html", null],
     [ "Files", "files.html", [
       [ "File List", "files.html", "files_dup" ],
     ] ],
@@ -52,8 +53,8 @@ var NAVTREE =
         ["Serial Example 2", "euler_example_2.html", null ],
         ["Serial Example 3", "euler_example_3.html", null ],
         ["Pseudo-Spectral Example", "PS_example.html", null],
-        ["50/50 Split Example", "test_example.html", null],
       ]],
+      ["Validation - 50/50 Split", "test_example.html", null],
       ["Visualise", "visualise.html", null ],
     ]],
 ];

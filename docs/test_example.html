@@ -95,7 +95,18 @@ $(document).ready(function(){initNavTree('test_example.html',''); initResizable(
 <div class="contents">
   <h1 id="testexample"> 50/50 Split Example</h1>
 
+<p>As a validation test case, a 64x64 concentration grid was initialised such that it is split into two subdo-
+  mains each consisting of purely element A (c=1.0) or B (c=0.0).The final concentration grid is shown
+  below. At the boundary between the two subdomains, mixing occurs and the concentration devi-
+  ates slightly from that corresponding to the pure elements. The implementation of periodic boundary
+  conditions (PBCs) is also demonstrated, where the concentrations at the edges of the grid (at x=0 and
+  x=64) exhibit the same mixing behaviour as the boundary between the pure elements at the centre of
+  the grid. This confirms the continuity and periodicity of the domain considered as should be expected
+  under PBCs.</p>
 
+  <center>
+    <p> <img src="50_50.png"  width="600" height="600"></p>
+      </center>
 
 
 </table>
