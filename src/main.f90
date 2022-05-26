@@ -76,7 +76,7 @@ program main
         last_write=1
     end if
 
-    if(problem == "Spectral") then
+    if(problem == "spectral") then
         !call omp_set_num_threads(no_threads)
         if(p > 1) then
             if(my_rank == 0) then
@@ -267,7 +267,7 @@ program main
         call comms_halo_swaps(M,M_halo)
 
         ! Get new concentrations for current timesteps
-        if(problem /= "Spectral") then
+        if(problem /= "spectral") then
             call time_evolution_new(local_grid_conc,c_new,M,Q,dx,dy,dt,grid_domain_size,grid_domain_size,Q_halo,M_halo)
 
             ! set grid to c_new
