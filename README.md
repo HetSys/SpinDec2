@@ -20,7 +20,9 @@ This project models spinoidal decomposition of a binary alloy system and has the
   * A non-constant diffusive mobility field using the Darkens equation
   * Temperature dependent atomic mobilities
  
-* Pseudo-Spectral solver with constant mobility 
+* Pseudo-Spectral solver with constant mobility
+
+For full documentation, please see the wiki: https://hetsys.github.io/SpinDec2/
 
 The following is an example end state using the explicit Eulerian solver with an initial concentration range of 0.31 to 0.32:
 
