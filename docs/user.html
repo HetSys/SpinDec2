@@ -149,8 +149,8 @@ $(document).ready(function(){initNavTree('user.html',''); initResizable(); });
     <p><code>$ ./install.sh -Cc</code> or <code>$ ./install.sh --compile=confirm</code></p>
     <h3 id="running-the-code">Running the code</h3>
     <p>After compilation of the code, the binaries will be stored in the sub-directory <code>/bin</code> from the repository home. To execute the code, it is highly recommended to use the approach of creating a directory per calculation. This directory should contain an input file called <code>input.txt</code> of which the syntax is discussed further <a href="input.html">here</a>. Firstly the desired number of OpenMP threads needs to be specified. Then the computation can be run in the directory where the input file is located:</p>
-    <p><code>$ export OMP_NUM_THREADS=n</code>
-    <code>$ mpirun -np n spindec</code></p>
+    <p><code>$ export OMP_NUM_THREADS=n</code></p> 
+    <p><code>$ mpirun -np n spindec</code></p>
     <p>where <code>n</code> is the number of processors to run with. If it is desired to only run with a single MPI thread, it is possible to call <code>spindec</code> simply like so (after specifiying OpenMP threads):</p>
     <p><code>$ spindec</code></p>
     <p>This uses the parameters provided in the input file to run the simulation and evolve the concentration grid over a the number of time steps requested.</p>
@@ -164,9 +164,9 @@ $(document).ready(function(){initNavTree('user.html',''); initResizable(); });
     <h4 id="running">Running</h4>
     <p>Unit tests can be automatically run from the install script. To use this feature, specify the argument with one of several mandatory arugments</p>
     <ul>
-    <li><code>$ ./install.sh -tc</code> / <code>$ ./install.sh --test=compile</code>: compile the tests</li>
-    <li><code>$ ./install.sh -tr</code> / <code>$ ./install.sh --test=run</code>: run the tests</li>
-    <li><code>$ ./install.sh -tb</code> / <code>$ ./install.sh --test=both</code>: both compile and run the tests</li>
+    <li><code>$ ./install.sh -tc</code> or <code>$ ./install.sh --test=compile</code> compile the tests</li>
+    <li><code>$ ./install.sh -tr</code> or <code>$ ./install.sh --test=run</code> run the tests</li>
+    <li><code>$ ./install.sh -tb</code> or <code>$ ./install.sh --test=both</code> both compile and run the tests</li>
     </ul>
     <h4 id="cleaning">Cleaning</h4>
     <p>To clean all the test binaries:</p>
