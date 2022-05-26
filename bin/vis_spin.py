@@ -88,7 +88,6 @@ def bulk_energy_extrema(coeffs):
 parser = argparse.ArgumentParser(description='Visulise spinodal decomposistion in SpinDec2')
 
 parser.add_argument('-sn', '--snap', type=int, default=-1, metavar = '',help='Option to select snapshot of grid to plot')
-parser.add_argument('-fr', '--frame', type=int, default=-1, metavar = '',help='Option to set number of frames when saving to mp4')
 
 plots = parser.add_mutually_exclusive_group(required=True)
 
@@ -142,7 +141,7 @@ class Vis_CH:
 
 
         #time array
-        self.time = np.arange(self.t_end//self.dt + 1) * self.dt
+        self.time = np.linspace(0, self.t_end, self.N_t)
 
          #moving average of F
         if (self.N_t>1):
@@ -208,14 +207,6 @@ class Vis_CH:
         # For the bounds of the plots
         self.minima, self.maxima  = bulk_energy_extrema(self.coeffs)
 
-        # For saving to Mp4
-
-        if args.frame:
-            self.frame = args.frame
-        else:
-            self.frame = 50
-
-        print(self.frame)
 
 
 
@@ -279,11 +270,11 @@ class Vis_CH:
 
         if (save_plot):
 
-            FFwriter = animation.FFMpegWriter(fps = self.frame)
+            FFwriter = animation.FFMpegWriter(fps = 50)
             anim.save('Dual_Animation.mp4', writer = FFwriter)
 
         if (both):
-            FFwriter = animation.FFMpegWriter(fps = self.frame)
+            FFwriter = animation.FFMpegWriter(fps = 50)
             anim.save('Dual_Animation.mp4', writer = FFwriter)
             plt.show()
 
@@ -323,12 +314,12 @@ class Vis_CH:
 
         if (save_plot):
 
-            FFwriter = animation.FFMpegWriter(fps = self.frame)
+            FFwriter = animation.FFMpegWriter(fps = 50)
             anim_traj.save('Free_Energy_Animation.mp4', writer = FFwriter)
 
         if (both):
 
-            FFwriter = animation.FFMpegWriter(fps = self.frame)
+            FFwriter = animation.FFMpegWriter(fps = 50)
             anim_traj.save('Free_Energy_Animation.mp4', writer = FFwriter)
             plt.show()
 
@@ -381,11 +372,11 @@ class Vis_CH:
 
         if (save_plot):
 
-            FFwriter = animation.FFMpegWriter(fps = self.frame)
+            FFwriter = animation.FFMpegWriter(fps = 50)
             anim.save('Grid_Animation.mp4', writer = FFwriter)
 
         if (both):
-            FFwriter = animation.FFMpegWriter(fps = self.frame)
+            FFwriter = animation.FFMpegWriter(fps = 50)
             anim.save('Grid_Animation.mp4', writer = FFwriter)
             plt.show()
 
