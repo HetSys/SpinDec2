@@ -12,22 +12,6 @@ compile () {
     ### Compilation ###
     if [[ "$1" == "d" ]] || [[ "$1" == "debug" ]]; then
         comp_line="mpif90 -fopenmp -O2 -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
-
-    # elif [[ "$1" == "p" ]] || [[ "$1" == "profile" ]]; then
-    #     read -p 'Profile with OpenMP? [y/n] ' omp_profile
-
-        # while true; do
-        #     if [[ "$omp_profile" =~ ^[Yy]$ ]]; then
-        #         comp_line="mpif90 -fopenmp -pg"
-        #         break
-        #     elif [[ "$omp_profile" =~ ^[Nn]$ ]]; then
-        #         comp_line="mpif90 -pg"
-        #         break
-        #     else
-        #         echo -e '\nNot a valid option'
-        #     fi
-        # done
-
     elif [[ -z "$1" ]]; then
         comp_line="mpif90 -fopenmp -O2"
     else
@@ -50,6 +34,11 @@ compile () {
 
     # Add program files from src
     prog_files=(src/*.f90)
+
+    # Move comms to first item in array
+    comms="src/comms.f90"
+    prog_files=('' "${prog_files[@]}")
+    prog_files[0]="$comms"
 
     # Move grid to first item in array
     grid="src/grid.f90"
@@ -182,10 +171,11 @@ unit_test_compile () {
     # Only the debug compile line from above to be used
     comp_line="mpif90 -fopenmp -O2 -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
 
-    fftw_dir=$(find /usr/include/ -maxdepth 1 -name "fftw*" -type d)
+    fftw_dir=$(find /usr/include/ -name "*fftw*")
 
     if [[ "$fftw_dir" == *"fftw3"* ]]; then
        echo "Found fftw3 library in /usr/include/"
+       echo
     elif [[ "$fftw_dir" == "" ]]; then
        echo "Required fftw3 library not found"
        echo "Ensure this is installed before attempting compilation"
@@ -197,9 +187,14 @@ unit_test_compile () {
     test_files=(test/*.f90)
     src_files=(src/*.f90)
 
+    # Move comms to first item in array
+    comms="src/comms.f90"
+    src_files=('' "${src_files[@]}")
+    src_files[0]="$comms"
+
     # Move grid to first item in array
     grid="src/grid.f90"
-    src_files=('' "${prog_files[@]}")
+    src_files=('' "${src_files[@]}")
     src_files[0]="$grid"
 
     # Move test main to last item in array
@@ -219,6 +214,8 @@ unit_test_compile () {
     # NetCDF flags
     flibs="$(nf-config --flibs) -lfftw3_omp -lfftw3 -lm -I/usr/include"
     fflags=$(nf-config --fflags)
+
+    echo $src_files
 
     # C H O N K Y  compilation
     echo "Compile line:"
@@ -284,7 +281,7 @@ ascii_art () {
     echo -E '          %% |'
     echo -E '          \__|'
     echo
-    echo -e ' Modelling Spinoidal Decomposition Using a Phase Field Approach'
+    echo -e ' Modelling Spinoidal Decomposition'
     echo -e ' _________________________________________________________________\n'
 }
 
@@ -298,8 +295,7 @@ help_message () {
     echo "options:"
     echo "  -h, --help              show this help message and exit"
     echo "  -c, --compile ARGS      compile the code with optional debug or profile option"
-    echo "                          optional arguments: [ none | o/openmp | d/debug ]"
-    echo "                          (default=none)"
+    echo "                          optional arguments: [ none | d/debug ] (default=none)"
     echo
     echo "  -C, --clean ARGS        remove compiled binaries from repository"
     echo "                          optional arguments: [ none | c/confirm ] (default=none)"

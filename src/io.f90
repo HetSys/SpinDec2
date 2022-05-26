@@ -1,7 +1,8 @@
 module io
-
+    !use comms
     use iso_fortran_env
     use netcdf
+    use mpi
 
     implicit none
 
@@ -122,8 +123,19 @@ contains
 
     end subroutine write_netcdf
 
-
-    subroutine write_netcdf_parts_setup(c, F_tot, a, Nc, Nx, Ny, Nt, dt, c0, MA, MB, kappa)
+    !> Subroutine to setup the netcdf file
+    !!@param c : order parameter field over all time
+    !!@param F_tot : total free energy over time
+    !!@param a : polynomial coefficients for f(c)
+    !!@param Nc : number of coefficients
+    !!@params Nx, Ny, Nt : number of  discretizations  in x, y and time
+    !!@param dt : forward Euler time-step
+    !!@param c0 : Initialaverage concentration
+    !!@params MA, MB : Atomic mobilities of species A and B
+    !!@param kappa : gradient term coefficient
+    !! @param t_end Final time to run simulation till
+    !! @param file_id The file id for the file
+    subroutine write_netcdf_parts_setup(c, F_tot, a, Nc, Nx, Ny, Nt, dt, c0, MA, MB, kappa,t_end,file_id)
 
         integer, intent(in) :: Nx, Ny, Nt, Nc
         real(kind=real64), dimension(Nx, Ny, Nt), intent(in) :: c
@@ -137,18 +149,21 @@ contains
         character(len=*), dimension(3), parameter :: c_dims = (/"c_x", "c_y", "c_t"/)
         character(len=*), parameter :: F_tot_dims = "F_t", a_dims = "a_i"
         character(len=*), parameter :: filename = 'CH_output.nc'
-        real(kind=real64), intent(in) :: dt, MA, MB, kappa, c0
-        integer :: k, file_id
+        real(kind=real64), intent(in) :: dt, MA, MB, kappa, c0,t_end
+        integer :: k
+        integer, intent(out) :: file_id
 
         !define size of arrays
         size_c = shape(c)
         size_c(3) = NF90_UNLIMITED
         !print*, NF90_UNLIMITED
-        size_F_tot = size(F_tot)
+        !print*, Nt
+        size_F_tot = Nt
         size_a = size(a)
 
         !Create the file, overwriting if it exists
-        call check(nf90_create(filename, NF90_CLOBBER, file_id))
+
+        call check(nf90_create(filename,IOR(NF90_NETCDF4,NF90_CLOBBER), file_id))
 
         !write in the dimensions for the variables
         do k = 1, 3
@@ -164,9 +179,9 @@ contains
         call check(nf90_def_var(file_id, "F_tot", NF90_DOUBLE, F_tot_dim_ids, F_tot_var_id))
         call check(nf90_def_var(file_id, "coeffs", NF90_DOUBLE, a_dim_ids, a_var_id))
         print *, "Variable types defined"
-
+        call check(nf90_def_var_chunking(file_id,c_var_id,0,(/size_c(1),size_c(2),size_c(3)/)))
         ! Setting up meta variables of simulation
-
+        !call check(nf90_var_par_access(file_id,c_var_id,NF90_COLLECTIVE))
         !Time step
         call check(nf90_put_att(file_id, NF90_GLOBAL, "dt", dt))
 
@@ -189,34 +204,34 @@ contains
         !initial average concentration
         call check(nf90_put_att(file_id, NF90_GLOBAL, "c0", c0))
 
+        call check(nf90_put_att(file_id, NF90_GLOBAL, "t_end", t_end))
+
         !Finish defining metadata
         call check(nf90_enddef(file_id))
 
         call check(nf90_put_var(file_id, a_var_id, a))
 
         !close the file
-        call check(nf90_close(file_id))
-
+        !call check(nf90_close(file_id))
+        call close_netcdf(file_id)
         print *, "Sucessfully setup netcdf file"
 
     end subroutine write_netcdf_parts_setup
 
-
-    subroutine write_netcdf_parts(c, F_tot,PT)
-        real(kind=real64), dimension(:, :), intent(in) :: c
-        real(kind=real64), intent(in) :: F_tot
+    !> Subroutine to write data to the file
+    !!@param c : order parameter field over all time
+    !!@param F_tot : total free energy over time
+    !! @param PT The previous writing interation
+    !! @param file_id The file id for the file
+    subroutine write_netcdf_parts(c, F_tot,PT,file_id)
+        real(kind=real64), dimension(:, :,:), intent(in) :: c
+        real(kind=real64),dimension(:), intent(in) :: F_tot
         character(len=*), parameter :: filename = 'CH_output.nc'
-        integer :: k, file_id,ierr
+        integer :: k ,ierr
         integer, dimension(2) :: var_ids
         integer,intent(in) :: PT
-
-
-
-
-
-        !Create the file, overwriting if it exists
-        call check(nf90_open(filename, NF90_WRITE, file_id))
-
+        integer, intent(inout) :: file_id
+        call open_netcdf(file_id)
 
         ierr = nf90_inq_varid(file_id, "F_tot", var_ids(2))
         if (ierr /= nf90_noerr) then
@@ -240,12 +255,27 @@ contains
             print *, trim(nf90_strerror(ierr))
             return
         end if
+        call close_netcdf(file_id)
 
-
-        call check(nf90_close(file_id))
 
         !print *, "Sucessfully written netcdf file"
 
     end subroutine write_netcdf_parts
+
+
+    !> Subroutine to close the file
+    !! @param file_id The file id for the file
+    subroutine close_netcdf(file_id)
+        integer, intent(in) :: file_id
+        call check(nf90_close(file_id))
+    end subroutine close_netcdf
+    !> Subroutine to open the file
+    !! @param file_id The file id for the file
+    subroutine open_netcdf(file_id)
+        integer, intent(out) :: file_id
+        character(len=*), parameter :: filename = 'CH_output.nc'
+        call check(nf90_open(filename,IOR(NF90_NETCDF4,NF90_WRITE), file_id))
+    end subroutine open_netcdf
+
 
 end module io

@@ -2,6 +2,7 @@ module test_derivatives
 
     use iso_fortran_env
     use cahn_hilliard
+    use grid
 
     implicit none
 
@@ -15,6 +16,7 @@ module test_derivatives
         real(real64) :: dx_inv, lh_bound, rh_bound
         real(kind=real64), dimension(Nx, Ny) :: test_in,test_out
         real(kind=real64), dimension(Nx, Ny) :: dQx, dMx, dQy, dMy
+        real(kind=real64), dimension(Nx, 4) :: Q_halo, M_halo
         real(kind=real64), dimension(Nx) :: x
         logical :: res = .true.
         real(real64) :: L
@@ -41,8 +43,13 @@ module test_derivatives
 
             end do
         end do
+
+        Q_halo(:, right) = test_in(1,:)
+        Q_halo(:, left) = test_in(Nx, :)
+        Q_halo(:, up) = test_in(:,Ny)
+        Q_halo(:, down) = test_in(:,1)
     
-        call dQ_dx(dQx,test_in,dx,Nx,Ny)
+        call dQ_dx(dQx,test_in,dx,Nx,Ny,Q_halo)
 
         ! test internal, should be the same as analytic
 
@@ -90,14 +97,15 @@ module test_derivatives
         end do
 
         if (res) then
-            print *, 'dQ_dx PBC test succeded'
+            print *, 'dQ_dx PBC test succeeded'
         else
             print *, 'dQ_dx PBC test Failed'
         end if
 
         ! dM/dx tests
+        M_halo(:,:) = Q_halo(:,:)
 
-        call dM_dx(dMx,test_in,dx,Nx,Ny)
+        call dM_dx(dMx,test_in,dx,Nx,Ny,M_halo)
 
         ! test internal, should be the same as analytic
 
@@ -145,7 +153,7 @@ module test_derivatives
         end do
 
         if (res) then
-            print *, 'dM_dx PBC test succeded'
+            print *, 'dM_dx PBC test succeeded'
         else
             print *, 'dM_dx PBC test Failed'
         end if
@@ -153,8 +161,8 @@ module test_derivatives
         !test y derivatives if the grid give zero everywhere
         dy = dx
 
-        call dQ_dy(dQy,test_in,dy,Nx,Ny)
-        call dM_dy(dMy,test_in,dy,Nx,Ny)
+        call dQ_dy(dQy,test_in,dy,Nx,Ny,Q_halo)
+        call dM_dy(dMy,test_in,dy,Nx,Ny,M_halo)
 
         res = .true.
 
@@ -188,6 +196,7 @@ module test_derivatives
         real(real64) :: dy_inv, top_bound, bottom_bound
         real(kind=real64), dimension(Nx, Ny) :: test_in,test_out
         real(kind=real64), dimension(Nx, Ny) :: dQy, dMy, dQx, dMx
+        real(kind=real64), dimension(Nx, 4) :: Q_halo, M_halo
         real(kind=real64), dimension(Ny) :: y
         logical :: res = .true.
         real(real64) :: L
@@ -214,8 +223,13 @@ module test_derivatives
 
             end do
         end do
+
+        Q_halo(:, right) = test_in(1,:)
+        Q_halo(:, left) = test_in(Nx, :)
+        Q_halo(:, up) = test_in(:,Ny)
+        Q_halo(:, down) = test_in(:,1)
     
-        call dQ_dy(dQy,test_in,dy,Nx,Ny)
+        call dQ_dy(dQy,test_in,dy,Nx,Ny,Q_halo)
 
         ! test internal, should be the same as analytic
 
@@ -263,14 +277,15 @@ module test_derivatives
         end do
 
         if (res) then
-            print *, 'dQ_dy PBC test succeded'
+            print *, 'dQ_dy PBC test succeeded'
         else
             print *, 'dQ_dy PBC test Failed'
         end if
 
         ! dM/dx tests
+        M_halo(:,:) = Q_halo(:,:)
 
-        call dM_dy(dMy,test_in,dy,Nx,Ny)
+        call dM_dy(dMy,test_in,dy,Nx,Ny,M_halo)
 
         ! test internal, should be the same as analytic
 
@@ -318,7 +333,7 @@ module test_derivatives
         end do
 
         if (res) then
-            print *, 'dM_dy PBC test succeded'
+            print *, 'dM_dy PBC test succeeded'
         else
             print *, 'dM_dy PBC test Failed'
         end if
@@ -326,8 +341,8 @@ module test_derivatives
         !test y derivatives if the grid give zero everywhere
         dx = dy
 
-        call dQ_dx(dQx,test_in,dx,Nx,Ny)
-        call dM_dx(dMx,test_in,dx,Nx,Ny)
+        call dQ_dx(dQx,test_in,dx,Nx,Ny,Q_halo)
+        call dM_dx(dMx,test_in,dx,Nx,Ny,M_halo)
 
         res = .true.
 

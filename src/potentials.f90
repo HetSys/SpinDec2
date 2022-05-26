@@ -1,3 +1,5 @@
+!> Potentials module contains routines to 
+!! calculate bulk and total chemical potentials
 module potentials
 
     use iso_fortran_env
@@ -7,15 +9,16 @@ module potentials
 
 contains
 
-    ! Subroutine to calculate bulk chemical potential
-    ! @param mu: 2D grid to store bulk chemical potentials
-    ! @param c: 2D concentration grid
-    ! @param a: 1D array storing coefficients provided by user
+    !> Subroutine to calculate bulk chemical potential.
+    !! @param mu 2D grid to store bulk chemical potentials
+    !! @param c 2D concentration grid
+    !! @param a 1D array storing coefficients for bulk free energy
     subroutine bulk_potential(mu, c, a)
 
         real(real64) :: mu(:, :)
         real(real64), intent(in) :: c(:, :)
         real(real64), intent(in) :: a(:)
+        real(real64) :: val
         integer :: nx, ny, n, i, j, k
 
         !Get mu grid size and number of user input coefficients
@@ -30,21 +33,25 @@ contains
         !$omp parallel do default(shared) private(j,i,k)
         do j = 1, ny
             do i = 1, nx
+                val = 1.0_real64
                 do k = 1, n - 1
-                    mu(i, j) = mu(i, j) + k * a(k + 1) * c(i, j)**(k - 1)
+                    mu(i, j) = mu(i, j) + k * a(k + 1) * val!c(i, j)**(k - 1)
+                    val = val *c(i,j)
                 end do
             end do
         end do
+        !$omp end parallel do
 
     end subroutine bulk_potential
 
-    ! Subroutine to calculate total chemical potential
-    ! @param Q: 2D grid to store total chemical potential
-    ! @param mu: 2D grid containing bulk chemical potential
-    ! @param c: 2D concentration grid
-    ! @param dx: spatial grid spacing in x-direction
-    ! @param dy: spatial grid spacing in y-direction
-    ! @param Kappa: Free energy gradient paramater
+    !> Subroutine to calculate total chemical potential.
+    !! @param Q 2D grid to store total chemical potential
+    !! @param mu 2D grid containing bulk chemical potential
+    !! @param c 2D concentration grid
+    !! @param dx Spatial grid spacing in x-direction
+    !! @param dy Spatial grid spacing in y-direction
+    !! @param Kappa Free energy gradient paramater
+    !! @param conc_halo Concentration halo storing neighbour rank boundary data
     subroutine total_potential(Q, mu, c, dx, dy, Kappa,conc_halo)
 
         real(real64), intent(in) :: mu(:,:)
@@ -89,33 +96,27 @@ contains
 
         ! Boundary nodes
         ! Top - j = 1
+        !$omp parallel do default(shared) private(i,lap_x,lap_y)
         do i = 2, nx - 1
             lap_y = (c(i, 2) - 2.0 * c(i, 1) + conc_halo(i, up)) * dy2
             lap_x = (c(i + 1, 1) - 2.0 * c(i, 1) + c(i - 1, 1)) * dx2
             Q(i, 1) = mu(i, 1) - Kappa * (lap_x + lap_y)
-        end do
-
-        ! Bottom - j = ny
-        do i = 2, nx - 1
             lap_y = (conc_halo(i, down) - 2.0 * c(i, ny) + c(i, ny - 1)) * dy2
             lap_x = (c(i + 1, ny) - 2.0 * c(i, ny) + c(i - 1, ny)) * dx2
             Q(i, ny) = mu(i, ny) - Kappa * (lap_x + lap_y)
         end do
-
+        !$omp end parallel do
         ! LHS - i = 1
+        !$omp parallel do default(shared) private(j,lap_x,lap_y)
         do j = 2, ny - 1
             lap_y = (c(1, j + 1) - 2.0 * c(1, j) + c(1, j - 1)) * dy2
             lap_x = (c(2, j) - 2.0 * c(1, j) + conc_halo(j, left)) * dx2
             Q(1, j) = mu(1,j) - Kappa * (lap_x + lap_y)
-        end do
-
-        ! RHS - i = nx
-        do j = 2, ny - 1
             lap_y = (c(nx, j + 1) - 2.0 * c(nx, j) + c(nx, j - 1)) * dy2
             lap_x = (conc_halo(j,right) - 2.0 * c(nx, j) + c(nx - 1, j)) * dx2
             Q(nx, j) = mu(nx, j) - Kappa * (lap_x + lap_y)
         end do
-
+        !$omp end parallel do
         ! Bulk (non-boundary) nodes
         !$omp parallel do default(shared) private(j,i,lap_x,lap_y)
         do i = 2, nx - 1

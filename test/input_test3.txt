@@ -1,6 +1,6 @@
-Initial_concentration = 0.7
-Concentration_std = 0.1
-Domain_x_size = 50
+initial_concentration = 0.7
+concentration_std = 0.1
+domain_x_size = 50
 free_energy_gradient_parameter = 1.6
-Bulk_free_energy = 1.7
-Checkpointing_interval = 50000
+bulk_free_energy = 1.7
+checkpointing_interval = 50000
