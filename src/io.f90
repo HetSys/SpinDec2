@@ -123,7 +123,18 @@ contains
 
     end subroutine write_netcdf
 
-
+    !> Subroutine to setup the netcdf file
+    !!@param c : order parameter field over all time
+    !!@param F_tot : total free energy over time
+    !!@param a : polynomial coefficients for f(c)
+    !!@param Nc : number of coefficients
+    !!@params Nx, Ny, Nt : number of  discretizations  in x, y and time
+    !!@param dt : forward Euler time-step
+    !!@param c0 : Initialaverage concentration
+    !!@params MA, MB : Atomic mobilities of species A and B
+    !!@param kappa : gradient term coefficient
+    !! @param t_end Final time to run simulation till
+    !! @param file_id The file id for the file
     subroutine write_netcdf_parts_setup(c, F_tot, a, Nc, Nx, Ny, Nt, dt, c0, MA, MB, kappa,t_end,file_id)
 
         integer, intent(in) :: Nx, Ny, Nt, Nc
@@ -207,7 +218,11 @@ contains
 
     end subroutine write_netcdf_parts_setup
 
-
+    !> Subroutine to write data to the file
+    !!@param c : order parameter field over all time
+    !!@param F_tot : total free energy over time
+    !! @param PT The previous writing interation
+    !! @param file_id The file id for the file
     subroutine write_netcdf_parts(c, F_tot,PT,file_id)
         real(kind=real64), dimension(:, :,:), intent(in) :: c
         real(kind=real64),dimension(:), intent(in) :: F_tot
@@ -248,12 +263,14 @@ contains
     end subroutine write_netcdf_parts
 
 
-
+    !> Subroutine to close the file
+    !! @param file_id The file id for the file
     subroutine close_netcdf(file_id)
         integer, intent(in) :: file_id
         call check(nf90_close(file_id))
     end subroutine close_netcdf
-
+    !> Subroutine to open the file
+    !! @param file_id The file id for the file
     subroutine open_netcdf(file_id)
         integer, intent(out) :: file_id
         character(len=*), parameter :: filename = 'CH_output.nc'

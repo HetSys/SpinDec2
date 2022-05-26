@@ -9,9 +9,11 @@ module input_params
 contains
 
 
-
+    !> Function to read the polynomial coefficients from the input file
+    !! @param var The data after f(c) =  in the input file
+    !! @param err A flag that indicates if an error occured
+    !! @param coeffs An array containing the coefficients
     function read_poly(var, err) result(coeffs)
-        ! A function that reads a string of comma seperated values into an array
 
         character(*), intent(in) :: var
         integer, intent(inout) :: err
@@ -74,6 +76,32 @@ contains
 
     end function read_poly
 
+    !> Subroutine to read the input file
+    !! @param prob Problem that will be computed (spectral, constant, nontemp, temp)
+    !! @param coeffs Coefficients of the polynomial used for bulk potential
+    !! @param cpo Name of the checkpoint out file
+    !! @param cpi Name of the checkpoint in file
+    !! @param conc_max Maximum concentration in intial grid
+    !! @param conc_min Minimum concentration in intial grid
+    !! @param temp_min Minimum temperature in intial grid
+    !! @param temp_max Maximum concentration in intial grid
+    !! @param EA excitation energy for first speices
+    !! @param EB excitation energy for second speices
+    !! @param nx X dimension of the grid
+    !! @param ny Y dimension of the grid
+    !! @param m1 Mobility of the first species
+    !! @param m2 Mobility of the second species
+    !! @param k The charecteristic lengthscale of transition region
+    !! @param bfe Bulk free energy paramter
+    !! @param Cint Checkpoint interval
+    !! @param t Final time to run simulation till
+    !! @param delta_t Time step
+    !! @param stab The stabilization term for use with spectral
+    !! @param random_seed Seed used for the simulation
+    !! @param use_input A flag the tells the code to use the input data rather than the checkpoint metadata (use at own risk)
+    !! @param write_freq The frequency at which frames are written
+    !! @param singl A flag that tells the code to save in single single precision
+    !! @param err A flag that checks if an error occured in reading
     subroutine read_params(fn,prob, conc_min, conc_max, coeffs, Nx, Ny, M1, M2,EA,EB,temp_min,temp_max, k, bfe, &
                            Cint, cpi, cpo, t, delta_t, df_tol,stab, random_seed, use_input,singl,write_freq ,err)
 

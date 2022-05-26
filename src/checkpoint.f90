@@ -9,6 +9,31 @@ module checkpointing
 
 contains
 
+    !> Subroutine to write a checkpoint file
+    !! @param arr3dim The 3 dimentional array to write, usually concentration grid
+    !! @param temp2dim The 2 dimensional array to write, usually the temperature grid
+    !! @param arr1dim The 1 dimensional array to write, usually the free energy over time
+    !! @param prob Problem that will be computed (spectral, constant, nontemp, temp)
+    !! @param coeffs Coefficients of the polynomial used for bulk potential
+    !! @param cpo Name of the checkpoint out file
+    !! @param initial_conc Initial average concentration of the grid
+    !! @param nx X dimension of the grid
+    !! @param ny Y dimension of the grid
+    !! @param m1 Mobility of the first species
+    !! @param m2 Mobility of the second species
+    !! @param k The charecteristic lengthscale of transition region
+    !! @param bfe Bulk free energy paramter
+    !! @param Cint Checkpoint interval
+    !! @param t Final time to run simulation till
+    !! @param time_step Time step
+    !! @param current_iter The interation at which the checkpoint was written
+    !! @param random_seed Seed used for the simulation
+    !! @param lastw The interation where the output was last written
+    !! @param write_freq The frequency at which frames are written
+    !! @param write_freq_c A counter that is saved so the calculation can continue
+    !! @param write_count A counter that is saved so the calculation can continue
+    !! @param singl A flag that tells the code to save in single single precision
+    !! @param ierr A flag that checks if an error occured in writing
     subroutine write_checkpoint_file(arr3dim, arr2dim,temp2dim, arr1dim,prob, coeffs, cpo, &
                                      initial_conc, nx, ny, m1, m2, k, bfe, Cint, t, time_step, current_iter, &
                                      df_tol, random_seed,lastw,write_freq,write_freq_c,singl,write_count, ierr)
@@ -260,6 +285,31 @@ contains
 
     end subroutine write_checkpoint_file
 
+
+    !> Subroutine to read metadata from a checkpoint file
+    !! @param prob Problem that will be computed (spectral, constant, nontemp, temp)
+    !! @param coeffs Coefficients of the polynomial used for bulk potential
+    !! @param cpo Name of the checkpoint out file
+    !! @param initial_conc Initial average concentration of the grid
+    !! @param nx X dimension of the grid
+    !! @param ny Y dimension of the grid
+    !! @param m1 Mobility of the first species
+    !! @param m2 Mobility of the second species
+    !! @param k The charecteristic lengthscale of transition region
+    !! @param bfe Bulk free energy paramter
+    !! @param Cint Checkpoint interval
+    !! @param t Final time to run simulation till
+    !! @param time_step Time step
+    !! @param current_iter The interation at which the checkpoint was written
+    !! @param random_seed Seed used for the simulation
+    !! @param lastw The interation where the output was last written
+    !! @param write_freq The frequency at which frames are written
+    !! @param write_freq_c A counter that is saved so the calculation can continue
+    !! @param write_count A counter that is saved so the calculation can continue
+    !! @param singl A flag that tells the code to save in single single precision
+    !! @param fn Name of the file to read from
+    !! @param use_input This is a flag that indicated is the input should override the checkpoint metadata
+    !! @param ierr A flag that checks if an error occured in reading
     subroutine read_checkpoint_metadata(fn, prob,initial_conc, &
                                    coeffs, Nx, Ny, M1, M2, k, bfe, Cint, cpo, t, delta_t, df_tol, &
                                   current_iter, random_seed, use_input,&
@@ -459,7 +509,13 @@ contains
         print *, "Reading checkpoint metadata successful"
 
     end subroutine read_checkpoint_metadata
-
+    !> Subroutine to read data from a checkpoint file
+    !! @param arr3dim The 3 dimentional array to write, usually concentration grid
+    !! @param temp2dim The 2 dimensional array to write, usually the temperature grid
+    !! @param arr1dim The 1 dimensional array to write, usually the free energy over time
+    !! @param fn Name of the file to read from
+    !! @param use_input This is a flag that indicated is the input should override the checkpoint metadata
+    !! @param ierr A flag that checks if an error occured in reading
     subroutine read_checkpoint_data(arr3dim, arr2dim,temp2dim, arr1dim, fn,use_input, ierr)
 
         integer, intent(in) :: use_input

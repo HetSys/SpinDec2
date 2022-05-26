@@ -12,7 +12,16 @@ module spectral
     implicit none
 
 contains
-
+    !> Subroutine to calculate a interation using the spectral method
+    !! @param c_in The concentration grid at current time step
+    !! @param c_prev The concentration grid at previous time step
+    !! @param a An array containing the coefficients
+    !! @param dt Time step
+    !! @param M The average mobility as calulated by Draken's equation
+    !! @param k The charecteristic lengthscale of transition regions
+    !! @param c_out The concentration grid at the next time step
+    !! @param init A flag for when the iteration is called at the first time step
+    !! @param stab A stabilization term that allows for bigger timesteps at the const of inital accuracy
     subroutine spectral_method_iter(c_in, c_prev_in,a,dt,M,k, c_out,init,stab)
         real(kind=real64) ,dimension(:,:), intent(in):: c_in,c_prev_in
         real(kind=real64) ,dimension(:,:), intent(inout):: c_out
