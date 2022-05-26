@@ -95,7 +95,57 @@ $(document).ready(function(){initNavTree('spectral.html',''); initResizable(); }
 
  
   <h1 id="timeint">Pseudo-Spectral Cahn-Hilliard Solver</h1>
+  <p>The basis of using Pseudo-spectral methods is to use fast Fourier transforms to simplify the calculation of 
+  derivatives in partial differential equations. In the spectral method, the solution \(c\), is expanded
+  in a suitable set of basis functions, for example plane waves:
 
+  <body>
+    $$ c(x,y,t) = N \sum_{ij} \alpha_{ij}(t)\exp{i(k_i x + k_j y)}  $$
+  </body>
+
+  <p>where N is some normalisation constant.</p>
+  
+  If we take the Cahn-Hilliard equation:</p>
+  <body>
+    $$ \frac{\partial c}{\partial t} = M\left(\nabla^2 \mu -\kappa \nabla^4 c \right)$$
+  </body>
+
+  <p>the derivatives which are generally estimated via finite differences simply become factors of the wavenumbers, \(k_i, k_j\),
+    such that the Cahn Hilliard equation is now be taken to be:</p>
+
+    <body>
+      $$ \frac{\partial \tilde{c}}{\partial t} = M\left(-k^2 \tilde{\mu} -\kappa k^4 \tilde{c} \right)$$
+    </body>
+
+    <p>where \(k^2 = (k_i^2 + k_j^2)\) and \(\tilde{c}, \tilde{\mu}\), are the fourier transforms of concentartion and bulk chemical potential resoectively.</p>
+
+    <p>However, an issue does occur when discretising the above equation. As bulk chemical 
+      potential depends on the concentration grid. We can only estimate this at the current time step and not the next such that:
+    </p>
+
+    <body>
+      $$ \frac{\tilde{c}^{k+1}_{i,j} - \tilde{c}^{k}_{i,j}}{\Delta t} = M\left(-k^2 \tilde{\mu}^{k}_{i,j} -\kappa k^4 \tilde{c}^{k+1}_{i,j}\right)$$,
+    </body>
+
+    In which the next iteration can be estimated by rearranging the above eqaution:
+    <body>
+      $$ \tilde{c}^{k+1}_{i,j}  = \frac{\tilde{c}^{k}_{i,j} - M\Delta t k^2 \tilde{\mu}^{k}_{i,j}}{1 + M \kappa \Delta t k^4}$$.
+    </body>
+    <p>After this only one thing is left to do, and that is to perform the inverse fourier transform on \(\tilde{c}\) to get back to the real concentartion grid.</p>
+
+    <p>This method above is rudimentary and isn't the most accurate and stable way of discretising the problem.
+      In SpinDec2, we use the work of <a href="https://doi.org/10.1016/j.jcp.2019.109141">Zhang et al.</a> to implement a 
+      more accurate and stable method of solving the above Cahn-Hilliard using Fourier transforms.
+    </p>
+    <p>The paper discusses using more reliable time discretisation methods for the time derivative and alternative ways to handle the non-linear chemical potential term.
+      Specifically, the non-linear term is discretised to include a stability term \(A\), which allows for larger time steps to be simulated:
+    </p>
+
+    <body>
+      $$ \tilde{\mu}^{k}_{ij} \rightarrow 2 \tilde{\mu}^{k}_{ij} - \tilde{\mu}^{k-1}_{ij} + \Delta t A \left(\tilde{c}^{k+1}_{ij} - 2\tilde{c}^{k}_{ij} + \tilde{c}^{k-1}_{ij}\right) $$.
+    </body>
+
+    <p>This stability term can be controlled in SpinDec2 using the <code> stabilization_term </code> variable in <a href="input.html">input.txt</a> .</p>
 </div><!--header-->
 <div class="contents">
 </div><!-- contents -->

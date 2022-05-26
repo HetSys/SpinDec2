@@ -100,59 +100,59 @@ $(document).ready(function(){initNavTree('visualise.html',''); initResizable(); 
 </div><!--header-->
 
 
-  <p>In SpinDec2, a various range of plotting routines are given in the plotter.py file. Multiple plots and animations can be made and are stored in the \(Vis\_CH\) class. 
+  <p>In SpinDec2, a various range of plotting routines are given in the <code>vis_spin.py</code> file. Multiple plots and animations can be made and are stored in the <code>Vis_CH</code> class. 
     There are numerous functions within the class are described below:</p>
 
 
-    <p>Initialisation function for the class. Requires the name of the output netcdf file (default name is \(CH\_output.nc\) in SpinDec2), as well as the time average
-       period for plotting the free energy (default is \(av\_period\) = 10).</p>
+    <p>Initialisation function for the class. Requires the name of the output netcdf file (default name is <code>CH_output.nc</code> in SpinDec2), as well as the time average
+       period for plotting the free energy (default is <code>av_period = 10</code>.</p>
   <body>
     <pre><code class="python">
-      def __init__(self,filename,av_period, save_plot=True):
+      def __init__():
     </code></pre>
   </body>
  
-  <p>The Read and setup function takes in the NetCDF, reads it, and then setups up the system by adding the full-time output concentration field to the class and the total free energy time series. These can be accessed by doing \(class\_name.c\) and  \(class\_name.F\_tot\) respectively. All other metadata, such as grid size, timestep, atomic mobilities etc., are also stored in the class and are printed to the terminal if verbose = True (default). 
-    As large amounts of time iterations are typically performed, we also reduce the amount of concentration grid frames we show in the animations by taking roughly 300 evenly spaced frames (300 is the default) to speed up the animation. These 300 frames are stored as \(self.c\_plot\) for concentration and \(self.F\_anim\) for the total free energy. </p>
+  <p>The Read and setup function takes in the NetCDF, reads it, and then setups up the system by adding the full-time output concentration field to the class and the total free energy time series. These can be accessed by doing <code>class_name.c\</code> and <code>class_name.F_tot\</code> respectively. All other metadata, such as grid size, timestep, atomic mobilities etc., are also stored in the class and are printed to the terminal if verbose = True (default). 
+    As large amounts of time iterations are typically performed, we also reduce the amount of concentration grid frames we show in the animations by taking roughly 300 evenly spaced frames (300 is the default) to speed up the animation. These 300 frames are stored as <code>class_name.c_plot\</code> for concentration and <code>class_name.F_anim\</code> for the total free energy. </p>
   <body>
     <pre><code class="python">
-      def read_and_setup(self.filename,verbose=True, save_plot=True):
+      def read_and_setup():
     </code></pre>
   </body>
 
   <p>The dual animation function plots a dual animation of the concentration field and free energy side by side. This may interest the user to observe when equilibrium is achieved in the system (i.e. when phase separation has occurred).</p>
   <body>
     <pre><code class="python">
-      def dual_animation(self, save_plot=True):
+      def dual_animation():
     </code></pre>
   </body>
 
-  <p>ree energy animation over time if the user doesn't want the animated grid.</p>
+  <p>Free energy animation over time if the user doesn't want the animated grid.</p>
   <body>
     <pre><code class="python">
-      def F_animation(self, save_plot=True):
+      def F_animation():
     </code></pre>
   </body>
 
   <p>Concentration grid animation over time for if the user doesn't want the animated free energy curve.</p>
   <body>
     <pre><code class="python">
-      def grid_animation(self, save_plot=True):
+      def grid_animation():
     </code></pre>
   </body>
 
-  <p>Snapshot of the concentration grid at a certain time. The snapshot argument controls this, an integer mapping to the time iteration you want to view, i.e. plots \(self.c[snapshot]\). The default snapshot value is set to -1 to display the final result.</p>
+  <p>Snapshot of the concentration grid at a certain time. The snapshot argument controls this, an integer mapping to the time iteration you want to view, i.e. plots <code>self.c[snapshot]\</code>. The default snapshot value is set to -1 to display the final result.</p>
 
   <body>
     <pre><code class="python">
-      def grid_snapshot(self, snapshot = -1, save_plot=True):
+      def grid_snapshot():
     </code></pre>
   </body>
 
   <p>Free energy plot (not animated) overall time if the user doesn't want the free energy animated.</p>
   <body>
     <pre><code class="python">
-      def F_plot(self, save_plot=True):
+      def F_plot(self, ):
     </code></pre>
   </body>
 
@@ -161,13 +161,13 @@ $(document).ready(function(){initNavTree('visualise.html',''); initResizable(); 
   </p>
   <body>
     <pre><code class="python">
-      def bulk_energy_traj(self, save_plot=True):
+      def bulk_energy_traj():
     </code></pre>
   </body>
 
-  <p>In all the plotting functions, the default option is to save all the plots, where pictures are saved as PNG files and animations are saved as an mp4 file using the FFMpeg writer, which can be installed from the terminal by typing "sudo apt install ffmpeg". If the user wants to observe the plot without saving, then set the \(save\_plot\)$ argument to false. </p>
+  <p>In all the plotting functions, the default option is to save all the plots, where pictures are saved as PNG files and animations are saved as an mp4 file using the FFMpeg writer, which can be installed from the terminal by typing <code>sudo apt install ffmpeg</code>. </p>
 
-  <p>All that is left to do is to call the class in the python file (which is defaulted as \(res\_CH\)), then call the plotting functions you want to visualise, an example is shown below:</p>
+  <p>All that is left to do is to call the class in the python file (which is defaulted as <code>res_CH\</code>, then call the plotting functions you want to visualise, an example is shown below:</p>
   <body>
     <pre><code class="python">
 # Create a class name
@@ -177,17 +177,17 @@ res_CH = Vis_CH(file = 'CH_output.nc', av_period=10)
 res_CH.read_and_setup(verbose=True)
 
 # Then add any of the plots you want to save and create
-res_CH.F_animation(save_plot=True)
+res_CH.F_animation()
 
-res_CH.grid_animation(save_plot=True)
+res_CH.grid_animation()
 
-res_CH.grid_snapshot(snapshot=-1, save_plot=True)
+res_CH.grid_snapshot()
 
-res_CH.F_plot(save_plot=True)
+res_CH.F_plot()
 
-res_CH.bulk_energy_traj(save_plot=True)
+res_CH.bulk_energy_traj()
 
-res_CH.dual_animation(save_plot=True)
+res_CH.dual_animation()
     </code></pre>
   </body>
 
