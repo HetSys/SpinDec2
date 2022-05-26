@@ -94,7 +94,8 @@ $(document).ready(function(){initNavTree('parra.html',''); initResizable(); });
   <!-- start footer part -->
   <h1 id="fwdeuler_parra">Serial Solver Implementation</h1>
   <h2 id="fwdeulerOpenMP">Loop Parallelisation using OpenMP</h2>
-  OpenMP multi-threading is be used for each domain created by MPI to accelerate the grid loops, calculating the bulk chemical potential and total chemical potential. 
+  <p>OpenMP multi-threading is be used for each domain created by MPI to accelerate the grid loops, calculating the bulk chemical potential and total chemical potential.
+  The workload of the loops within each solver is shared by a team of parallel threads forked from the master thread. Each thread is allocated a distinct set of iterations which it executes independently. However, only the master thread makes the MPI calls within each MPI domain. </p>
   <h2 id="fwdeulerMPI">Domain Decomposistion using MPI</h2>
   <p>A Cartesian topology is used to split the concentration, total chemical potential, and mobilities grids into subdomains depending on the number of MPI processes requested by the user. To implement periodic boundary conditions (PBCs) "halo" arrays were set up such that boundary values can be efficiently communicated between the different MPI processes. The implementation of the Cartesian topology is illustrated in the figure below for a grid split over 4 MPI processes, where each process executes the relevant calculations on a subdomain. Once the necessary calculations for a subdomain are complete to advance the local concentration grids in time, the global grid can be collected on a single process, and the halos are updated to carry out the next timestep in parallel. 
        </p>
