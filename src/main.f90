@@ -19,7 +19,7 @@ program main
 
     real(real64), dimension(:, :, :), allocatable :: c_check ! conc. grid
     !real(real64), dimension(:, :), allocatable :: c_new, c_out ! new conc. grid
-    real(real64), dimension(:, :), allocatable :: mu_check ,phold  ! bulk chem. pot.
+    real(real64), dimension(:, :), allocatable :: mu_check   ! bulk chem. pot.
     real(real64), dimension(:, :), allocatable :: Q_check    ! total chem. pot.
     real(real64), dimension(:, :), allocatable :: M_check    ! Mobility field
     real(real64), dimension(:, :), allocatable :: T_check ! Temp
@@ -92,7 +92,7 @@ program main
                                 ny, ma, mb, kappa, bfe, cint, cpo, t_end, dt, &
                                 df_tol, current_iter, random_seed, use_input, &
                                 last_write,write_freq,write_freq_c,singl&
-                                ,write_count, ncerr)
+                                ,write_count,stab, ncerr)
         if (ncerr /= nf90_noerr) then
             print *, "There was an error reading the checkpoint file."
             call comms_finalise()
@@ -176,13 +176,9 @@ program main
 
     ! Start calculations
 
-    if(.not. allocated(phold)) then
-        allocate(phold(1,1))
-        phold = 1
-    end if
 
     if (cpi /= "") then
-        call read_checkpoint_data(c, phold, T,F_tot, cpi,use_input,ncerr)
+        call read_checkpoint_data(c, T,F_tot, cpi,use_input,ncerr)
         if (ncerr /= nf90_noerr) then
             print *, "There was an error reading the checkpoint file."
             call comms_finalise()
@@ -337,10 +333,10 @@ program main
 
         if (my_rank == 0) then
             if (count >= cint) then
-                call write_checkpoint_file(c, phold, T,F_tot,problem, a, cpo, c0, &
+                call write_checkpoint_file(c, T,F_tot,problem, a, cpo, c0, &
                                            nx, ny, ma, mb, kappa, bfe, Cint, t_end, dt, k, df_tol, &
                                            random_seed, last_write,write_freq,write_freq_c,singl&
-                                           ,write_count,ncerr)
+                                           ,write_count,stab,ncerr)
 
                 if (ncerr /= nf90_noerr) then
                     print *, "There was an error writing the checkpoint file."
@@ -379,7 +375,6 @@ program main
     ! Deallocate local and global grids
     call local_grid_deallocate(my_rank)
     call global_grid_deallocate(my_rank)
-    deallocate(phold)
 
     t2 = MPI_Wtime()
 

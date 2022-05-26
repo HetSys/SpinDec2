@@ -45,9 +45,9 @@ contains
 
         do while (current_time < t / delta_t)
             if (count >= cint) then
-                call write_checkpoint_file(datas, mu,Tg, ftot,problem, coeffs, cpo, initial_conc &
+                call write_checkpoint_file(datas,Tg, ftot,problem, coeffs, cpo, initial_conc &
                                            , nx, ny, m1, m2, k, bfe, Cint, t, delta_t, current_time,&
-                                            df_tol, random_seed,lastw,wf,wfc,singl,wc, ncerr)
+                                            df_tol, random_seed,lastw,wf,wfc,singl,wc,stab, ncerr)
                 if (ncerr /= nf90_noerr) then
                     print *, "There was an error writing the checkpoint file."
                     print *, "Checkpoint test failed"
@@ -58,7 +58,7 @@ contains
             count = count + 1
             current_time = current_time + 1
             datas(1, 1, 1) = datas(1, 1, 1) + 1
-            mu(1, 1) = mu(1, 1) + 2
+            !mu(1, 1) = mu(1, 1) + 2
             ftot(1) = ftot(1) + 3
             Tg(1,1) = Tg(1,1)+4
             if (current_time == 50023) then
@@ -70,14 +70,14 @@ contains
          if (cpi /= "") then
              call read_checkpoint_metadata(cpi, problem,initial_conc, coeffs, nx, &
                                      ny, m1, m2, k, bfe, cint, cpo, t, delta_t, df_tol, current_time, &
-                                     random_seed, use_input,lastw,wf,wfc,singl,wc, ncerr)
+                                     random_seed, use_input,lastw,wf,wfc,singl,wc,stab, ncerr)
              if (ncerr /= nf90_noerr) then
                  print *, "There was an error reading the checkpoint metadata."
                  print *, "Checkpoint test failed"
                  stop
              end if
 
-             call read_checkpoint_data(datas, mu,Tg, ftot, cpi, use_input, ncerr)
+             call read_checkpoint_data(datas,Tg, ftot, cpi, use_input, ncerr)
              if (ncerr /= nf90_noerr) then
                  print *, "There was an error reading the checkpoint data."
                  print *, "Checkpoint test failed"
@@ -86,7 +86,6 @@ contains
          end if
 
         if (current_time == 50000 .and. &
-            abs(mu(1, 1) - 100001) < mu(1, 1) / 1e7 .and. &
             abs(ftot(1) - 150001) < ftot(1) / 1e7 .and. &
             abs(local_grid_conc(1,1) - 50001) < local_grid_conc(1,1) / 1e7 .and. &
             abs(Tg(1, 1) - 200001) < Tg(1, 1) / 1e7) then
