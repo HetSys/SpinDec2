@@ -1,13 +1,19 @@
+!Temp_max < temp_min
 module input_params
 
     use iso_fortran_env
 
     implicit none
 
+
 contains
 
+
+    !> Function to read the polynomial coefficients from the input file
+    !! @param var The data after f(c) =  in the input file
+    !! @param err A flag that indicates if an error occured
+    !! @param coeffs An array containing the coefficients
     function read_poly(var, err) result(coeffs)
-        ! A function that reads a string of comma seperated values into an array
 
         character(*), intent(in) :: var
         integer, intent(inout) :: err
@@ -70,33 +76,68 @@ contains
 
     end function read_poly
 
-    subroutine read_params(fn, initial_conc, conc_std, coeffs, Nx, Ny, M1, M2, k, bfe, &
-                           Cint, cpi, cpo, t, delta_t, df_tol, random_seed, use_input, err)
+    !> Subroutine to read the input file
+    !! @param prob Problem that will be computed (spectral, constant, nontemp, temp)
+    !! @param coeffs Coefficients of the polynomial used for bulk potential
+    !! @param cpo Name of the checkpoint out file
+    !! @param cpi Name of the checkpoint in file
+    !! @param conc_max Maximum concentration in intial grid
+    !! @param conc_min Minimum concentration in intial grid
+    !! @param temp_min Minimum temperature in intial grid
+    !! @param temp_max Maximum concentration in intial grid
+    !! @param EA excitation energy for first speices
+    !! @param EB excitation energy for second speices
+    !! @param nx X dimension of the grid
+    !! @param ny Y dimension of the grid
+    !! @param m1 Mobility of the first species
+    !! @param m2 Mobility of the second species
+    !! @param k The charecteristic lengthscale of transition region
+    !! @param bfe Bulk free energy paramter
+    !! @param Cint Checkpoint interval
+    !! @param t Final time to run simulation till
+    !! @param delta_t Time step
+    !! @param stab The stabilization term for use with spectral
+    !! @param random_seed Seed used for the simulation
+    !! @param use_input A flag the tells the code to use the input data rather than the checkpoint metadata (use at own risk)
+    !! @param write_freq The frequency at which frames are written
+    !! @param singl A flag that tells the code to save in single single precision
+    !! @param err A flag that checks if an error occured in reading
+    subroutine read_params(fn,prob, conc_min, conc_max, coeffs, Nx, Ny, M1, M2,EA,EB,temp_min,temp_max, k, bfe, &
+                           Cint, cpi, cpo, t, delta_t,stab, random_seed, use_input,singl,write_freq ,err)
 
         integer, parameter :: infile = 15
         character(len=128) :: name, var
         character(*), intent(in) :: fn
         integer :: read_counter, i, iostat, ierr
-        integer, intent(out) :: nx, ny, cint, random_seed, use_input
+        integer, intent(out) :: nx, ny, cint, random_seed, use_input,singl,write_freq
         integer, intent(out) :: err
-        character(len=128), intent(out) :: cpi, cpo
-        real(kind=real64), intent(out) :: initial_conc, conc_std, m1, m2, k, bfe, t, delta_t, df_tol
+        character(len=128), intent(out) :: cpi, cpo,prob
+        real(kind=real64), intent(out) :: conc_min, conc_max, m1, m2, k, bfe, t, &
+                                            delta_t,ea,eb,temp_max,temp_min,stab
         real(kind=real64), intent(out), dimension(:), allocatable :: coeffs
         logical :: f_exists
-        integer :: req, req2, cofs
+        integer :: req, req2, cofs,treq,sreq
 
         ! Setting deafault values for optional params
         req = 0
         req2 = 0
+        treq = 0
+        sreq = 0
         cofs = 0
         err = 0
         random_seed = -1
         delta_t = -1
         t = -1
         cpi = ""
-        cpo = "Checkpoint.cpf"
+        cpo = "checkpoint.cpf"
         use_input = 0
-        df_tol = -1
+        ea = -1
+        eb = -1
+        temp_max = -1
+        temp_min = -1
+        stab = -1
+        write_freq=1
+        singl = 0
 
         ! reading file
         ! There is a large amount of if statements below to ensure values are
@@ -130,44 +171,25 @@ contains
             var = trim(adjustl(name(read_counter + 1:)))
             name = trim(adjustl(name(:read_counter - 1)))
 
-            if (name == "Initial_concentration") then
+            if (name == "concentration_min") then
                 req = req + 1
-                read (var, *, iostat=ierr) initial_conc
+                read (var, *, iostat=ierr) conc_min
 
                 if (ierr /= 0) then
-                    print *, "An error occured reading Initial_concentration. &
+                    print *, "An error occured reading concentration_min. &
                     &Please check input file and try again"
                     err = -1
                     exit
                 end if
 
-                if (initial_conc < 0) then
-                    print *, "Initial_concentration must be >= 0.&
-                    & Please check you input file and try again"
-                    err = -1
-                end if
-
-                if (initial_conc > 1) then
-                    print *, "Initial concentration must be <= 1.&
-                    & Please check you input file and try again"
-                    err = -1
-                end if
-
-            else if (name == "Concentration_std") then
+            else if (name == "concentration_max") then
                 req = req + 1
-                read (var, *, iostat=ierr) conc_std
-
+                read (var, *, iostat=ierr) conc_max
                 if (ierr /= 0) then
-                    print *, "An error occured reading Concentration_std. &
+                    print *, "An error occured reading concentration_max. &
                     &Please check input file and try again"
                     err = -1
                     exit
-                end if
-
-                if (conc_std < 0) then
-                    print *, "Concentration_std must be >= 0.&
-                     &Please check you input file and try again"
-                    err = -1
                 end if
 
             else if (name == "f(c)") then
@@ -179,70 +201,70 @@ contains
                     deallocate (coeffs)
                 end if
 
-            else if (name == "Domain_x_size") then
+            else if (name == "domain_x_size") then
                 req = req + 1
                 read (var, *, iostat=ierr) nx
 
                 if (ierr /= 0) then
-                    print *, "An error occured reading Domain_x_size. &
+                    print *, "An error occured reading domain_x_size. &
                     &Please check input file and try again"
                     err = -1
                     exit
                 end if
 
                 if (nx < 1) then
-                    print *, "Domain_x_size must be >= 1.&
+                    print *, "domain_x_size must be >= 1.&
                     & Please check you input file and try again"
                     err = -1
                 end if
 
-            else if (name == "Domain_y_size") then
+            else if (name == "domain_y_size") then
                 req = req + 1
                 read (var, *, iostat=ierr) ny
 
                 if (ierr /= 0) then
-                    print *, "An error occured reading Domain_y_size. &
+                    print *, "An error occured reading domain_y_size. &
                     &Please check input file and try again"
                     err = -1
                     exit
                 end if
 
                 if (ny < 1) then
-                    print *, "Domain_y_size must be >= 1.&
+                    print *, "domain_y_size must be >= 1.&
                     & Please check you input file and try again"
                     err = -1
                 end if
 
-            else if (name == "Mobility_1") then
+            else if (name == "mobility_a") then
                 req = req + 1
                 read (var, *, iostat=ierr) m1
 
                 if (ierr /= 0) then
-                    print *, "An error occured reading Mobility_1. &
+                    print *, "An error occured reading mobility_a. &
                     &Please check input file and try again"
                     err = -1
                     exit
                 end if
 
                 if (m1 < 0) then
-                    print *, "Mobility_1 must be >= 0.&
+                    print *, "mobility_a must be >= 0.&
                     & Please check you input file and try again"
                     err = -1
                 end if
 
-            else if (name == "Mobility_2") then
+            else if (name == "mobility_b") then
                 req = req + 1
                 read (var, *, iostat=ierr) m2
 
                 if (ierr /= 0) then
-                    print *, "An error occured reading Mobility_2. &
+                    print *, "An error occured reading mobility_b. &
                     &Please check input file and try again"
                     err = -1
                     exit
                 end if
 
                 if (m2 < 0) then
-                    print *, "Mobility_2 must be >= 0.&
+                    print *, "mobility_b must be >= 0.&
                     & Please check you input file and try again"
                     err = -1
                 end if
@@ -259,39 +281,39 @@ contains
                     exit
                 end if
 
-            else if (name == "Bulk_free_energy") then
+            else if (name == "bulk_free_energy") then
                 req2 = req2 + 1
                 read (var, *, iostat=ierr) bfe
 
                 if (ierr /= 0) then
-                    print *, "An error occured reading Bulk_free_energy. &
+                    print *, "An error occured reading bulk_free_energy. &
                     &Please check input file and try again"
                     err = -1
                     exit
                 end if
 
-            else if (name == "Checkpointing_interval") then
+            else if (name == "checkpoint_interval") then
                 req = req + 1
                 read (var, *, iostat=ierr) cint
 
                 if (ierr /= 0) then
-                    print *, "An error occured reading Checkpointing_interval. &
+                    print *, "An error occured reading checkpoint_interval. &
                     &Please check input file and try again"
                     err = -1
                     exit
                 end if
 
                 if (cint < 1) then
-                    print *, "Checkpointing_interval must be >= 1.&
+                    print *, "checkpoint_interval must be >= 1.&
                     & Please check you input file and try again"
                     err = -1
                 end if
 
-            else if (name == "Checkpoint_input_file") then
+            else if (name == "checkpoint_input_file") then
                 read (var, *, iostat=ierr) cpi
 
                 if (ierr /= 0) then
-                    print *, "An error occured reading Checkpoint_input_file. &
+                    print *, "An error occured reading checkpoint_input_file. &
                     &Please check input file and try again"
                     err = -1
                     exit
@@ -304,28 +326,28 @@ contains
                     err = -1
                 end if
 
-            else if (name == "Checkpoint_output_file") then
+            else if (name == "checkpoint_output_file") then
                 read (var, *, iostat=ierr) cpo
 
                 if (ierr /= 0) then
-                    print *, "An error occured reading Checkpoint_output_file. &
+                    print *, "An error occured reading checkpoint_output_file. &
                     &Please check input file and try again"
                     err = -1
                     exit
                 end if
 
-            else if (name == "Max_time") then
+            else if (name == "max_time") then
                 read (var, *, iostat=ierr) t
 
                 if (ierr /= 0) then
-                    print *, "An error occured reading Max_time. &
+                    print *, "An error occured reading max_time. &
                     &Please check input file and try again"
                     err = -1
                     exit
                 end if
 
                 if (t < 0) then
-                    print *, "Max_time must be >= 0.&
+                    print *, "max_time must be >= 0.&
                     & Please check you input file and try again"
                     err = -1
                 end if
@@ -346,43 +368,52 @@ contains
                     err = -1
                 end if
 
-            else if (name == "dF_tolerance") then
-                read (var, *, iostat=ierr) df_tol
-
-                if (ierr /= 0) then
-                    print *, "An error occured reading dF_tolerance. &
-                    &Please check input file and try again"
-                    err = -1
-                    exit
-                end if
-
-                if (df_tol < 0) then
-                    print *, "dF_tolerance must be >= 0.&
-                    & Please check you input file and try again"
-                    err = -1
-                end if
-
-            else if (name == "Random_seed") then
+            else if (name == "random_seed") then
                 read (var, *, iostat=ierr) random_seed
 
                 if (ierr /= 0) then
-                    print *, "An error occured reading Random_seed. &
+                    print *, "An error occured reading random_seed. &
                     &Please check input file and try again"
                     err = -1
                     exit
                 end if
 
-                if (random_seed < 0) then
-                    print *, "Random_seed must be >= 0.&
+                if (random_seed < -1) then
+                    print *, "random_seed must be >= -1.&
+                    & Please check you input file and try again"
+                    err = -1
+                end if
+            else if (name == "single_precision") then
+                read (var, *, iostat=ierr) singl
+
+                if (ierr /= 0) then
+                    print *, "An error occured reading single_precision. &
+                    &Please check input file and try again"
+                    err = -1
+                    exit
+                end if
+
+            else if (name == "write_frequency") then
+                read (var, *, iostat=ierr) write_freq
+
+                if (ierr /= 0) then
+                    print *, "An error occured reading write_frequency. &
+                    &Please check input file and try again"
+                    err = -1
+                    exit
+                end if
+
+                if (write_freq < 0) then
+                    print *, "write_frequency must be >= 0.&
                     & Please check you input file and try again"
                     err = -1
                 end if
 
-            else if (name == "Use_input") then
+            else if (name == "use_input") then
                 read (var, *, iostat=ierr) use_input
 
                 if (ierr /= 0) then
-                    print *, "An error occured reading Random_seed. &
+                    print *, "An error occured reading use_input. &
                     &Please check input file and try again"
                     err = -1
                     exit
@@ -393,17 +424,119 @@ contains
                     & Please check you input file and try again"
                     err = -1
                 end if
+            else if (name == "excitation_a") then
+                treq = treq + 1
+                read (var, *, iostat=ierr) ea
+
+                if (ierr /= 0) then
+                    print *, "An error occured reading excitation_a. &
+                    &Please check input file and try again"
+                    err = -1
+                    exit
+                end if
+
+                if (ea < 0) then
+                    print *, "excitation_a must be >= 0.&
+                    & Please check you input file and try again"
+                    err = -1
+                end if
+
+            else if (name == "excitation_b") then
+                treq = treq + 1
+                read (var, *, iostat=ierr) eb
+
+                if (ierr /= 0) then
+                    print *, "An error occured reading excitation_b. &
+                    &Please check input file and try again"
+                    err = -1
+                    exit
+                end if
+
+                if (eb < 0) then
+                    print *, "excitation_b must be >= 0.&
+                    & Please check you input file and try again"
+                    err = -1
+                end if
+            else if (name == "temperature_max") then
+                treq = treq + 1
+                read (var, *, iostat=ierr) temp_max
+
+                if (ierr /= 0) then
+                    print *, "An error occured reading temperature_max. &
+                    &Please check input file and try again"
+                    err = -1
+                    exit
+                end if
+
+                if (temp_max < 0) then
+                    print *, "temperature_max must be >= 0.&
+                    & Please check you input file and try again"
+                    err = -1
+                end if
+
+            else if (name == "temperature_min") then
+                treq = treq + 1
+                read (var, *, iostat=ierr) temp_min
+
+                if (ierr /= 0) then
+                    print *, "An error occured reading temperature_min. &
+                    &Please check input file and try again"
+                    err = -1
+                    exit
+                end if
+
+                if (temp_min< 0) then
+                    print *, "temperature_min must be >= 0.&
+                    & Please check you input file and try again"
+                    err = -1
+                end if
+            else if (name == "problem") then
+                req = req +1
+                read (var, *, iostat=ierr) prob
+
+                if (ierr /= 0) then
+                    print *, "An error occured reading problem. &
+                    &Please check input file and try again"
+                    err = -1
+                    exit
+                end if
+
+                if(prob /= "spectral" .and. prob /= "temp" .and. prob /= "constant" .and. prob /= "nontemp") then
+                    print*, "problem must be one of; spectral, temp, constant, nontemp"
+                    err = -1
+                end if
+            else if (name == "stabilization_term") then
+                sreq = sreq +1
+                read (var, *, iostat=ierr) stab
+
+                if (ierr /= 0) then
+                    print *, "An error occured reading stabilization_term. &
+                    &Please check input file and try again"
+                    err = -1
+                    exit
+                end if
+
+                if (stab > 0) then
+                    print *, "stabilization_term must be <= 0.&
+                    & Please check you input file and try again"
+                    err = -1
+                end if
 
             end if
             !print*, name,var
         end do
 
-        if (req < 8) then
+        if (req < 9) then
             err = -1
             print *, "Not all required inputs were found. Plase check an try again."
         else if (req2 == 0) then
             err = -1
             print *, "Not all required inputs were found. Plase check an try again."
+        else
+            if(conc_max < conc_min) then
+                err = -1
+                print*, "concentration_max must be >= concentration_min."
+            end if
         end if
 
         if (req2 == 2) then
@@ -419,6 +552,25 @@ contains
             coeffs(5) = bfe
         end if
 
+        if(prob == "temp") then
+            if(treq < 4) then
+                err  = -1
+                print*, "Not all required inputs found for problem temp"
+            else
+                if(temp_max < temp_min) then
+                    err = -1
+                    print*, "temperature_max must be >= temperature_min."
+                end if
+            end if
+        end if
+
+        if(prob == "spectral") then
+            if(sreq < 1) then
+                err = -1
+                print*, "Not all required inputs found for problem spectral"
+            end if
+        end if
+    close(infile)
     end subroutine read_params
 
 end module input_params

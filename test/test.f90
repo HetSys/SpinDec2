@@ -6,9 +6,11 @@ program main
     use input_tester
     use checkpoint_tester
     use test_potentials
+    use spectral
     use test_free_energy
     use test_derivatives
     use grid_test
+    use OMP_LIB
     use ch_test
 
     implicit none
@@ -16,27 +18,34 @@ program main
     real(real64), dimension(3) :: a_1
     real(real64), dimension(3, 3) :: c_1
     real(real64), dimension(3, 3) :: expected_bulk_1, expected_total_1, expected_fb_1
+    real(real64), dimension(3, 4) :: conc_halo_1
     real(real64) :: dx, dy, kappa, dt
     real(real64), dimension(5) :: a_2
     real(real64), dimension(4, 4) :: c_2
     real(real64), dimension(4, 4) :: expected_bulk_2, expected_total_2, expected_fb_2
+    real(real64), dimension(4, 4) :: conc_halo_2
     real(real64), dimension(3) :: a_3
-    real(real64), dimension(3,3)  :: c_3,expected_bulk_3,expected_total_3
+    real(real64), dimension(3, 3)  :: c_3,expected_bulk_3,expected_total_3
+    real(real64), dimension(3, 4) :: conc_halo_3
     real(real64) :: expected_total_F_1, expected_total_F_2
     integer :: test_num
-    real(real64), dimension(:,:), allocatable :: c_new ! new conc. grid
+    real(real64), dimension(:,:), allocatable :: c_new_1 ! new conc. grid
     real(real64), dimension(:,:), allocatable :: dQ   ! 2nd derivative of Q
     real(real64), dimension(:), allocatable :: a
+    real(real64), dimension(:,:), allocatable :: Q_halo_1
+    real(real64), dimension(:,:), allocatable :: conc_halo_4
     real(real64) :: C_mean, C_std
-    real(real64) :: M ! Mobility
+    real(real64) :: C_min, C_max
+    real(real64) :: M_constant ! Mobility
     integer :: Nx, Ny
     integer :: t_max ! number of timesteps
     real(real64), dimension(:,:), allocatable :: c_grid ! conc. grid
     integer :: seed_in ! seed for random number generator
     ! Testing variables
-    real(real64) :: mean, std
     real(real64), dimension(:,:), allocatable :: Q_test, dQ_expected
-    real(real64), dimension(:,:), allocatable :: c_test, c_expected
+    real(real64), dimension(:,:), allocatable :: c_test, c_expected,c_in,c_in_p,c_out_exp,c_out_1
+    real(kind=real64) ,dimension(:), allocatable:: coeffs
+    real(kind=real64) :: k
     integer :: i,j ! counters
     print*,'########################################################'
     print *, "Starting input testing"
@@ -46,6 +55,8 @@ program main
     print*,'########################################################'
     print *, "Starting checkpoint testing"
     print*,'--------------------------------------------------------'
+    grid_domain_start = 1 ! counters
+
     call checkpoint_test()
 
     print*,'########################################################'
@@ -85,28 +96,45 @@ program main
     !call test_bulk_potential(c_3,a_3,expeceted_bulk_3)
 
     !Test 1 for total potential
+
+    conc_halo_1(:, right) = c_1(1,:)
+    conc_halo_1(:, left) = c_1(3, :)
+    conc_halo_1(:, up) = c_1(:,3)
+    conc_halo_1(:, down) = c_1(:,1)
+
     dx = 1.0
     dy = 1.0
     kappa = 2.0
     expected_total_1 = reshape((/0.0, 12.0, 18.0, 8.0, 20.0, 62.0, -2.0, 10.0, 34.0/), shape(c_1))
     test_num = 1
-    call test_total_potential(expected_bulk_1, c_1, dx, dx, kappa, expected_total_1, test_num,.false.)
+    call test_total_potential(expected_bulk_1, c_1, dx, dy, kappa, conc_halo_1, expected_total_1, test_num,.false.)
 
     !Test 2 for total potential
+    conc_halo_2(:, right) = c_2(1,:)
+    conc_halo_2(:, left) = c_2(4, :)
+    conc_halo_2(:, up) = c_2(:,4)
+    conc_halo_2(:, down) = c_2(:,1)
+
     expected_total_2 = reshape((/-0.4902, 0.1380, 0.7517, 3.1837, 2.4189, 1.8470, 8.0138, -3.0764, -0.8056, 2.3637, &
                                  5.0620, 10.7708, -0.3965, 3.1670, -1.9585, 7.6538/), shape(c_2))
     test_num = 2
-    call test_total_potential(expected_bulk_2, c_2, dx, dx, kappa, expected_total_2, test_num,.false.)
+    call test_total_potential(expected_bulk_2, c_2, dx, dy, kappa, conc_halo_2, expected_total_2, test_num,.false.)
 
     !Test 3(analytical) for total potential
     ! c = x^2 + y^2
     ! laplacian c = 4.0
+
+    conc_halo_3(:, right) = c_3(1,:)
+    conc_halo_3(:, left) = c_3(3, :)
+    conc_halo_3(:, up) = c_3(:,3)
+    conc_halo_3(:, down) = c_3(:,1)
+
     dx = 0.01
     dy = 0.01
     kappa = 2.0
     test_num = 3
     expected_total_3 = expected_bulk_3 - 4.0*kappa
-    call test_total_potential(expected_bulk_3,c_3,dx,dy,kappa,expected_total_3,test_num,.true.)
+    call test_total_potential(expected_bulk_3,c_3,dx,dy,kappa, conc_halo_3, expected_total_3,test_num,.true.)
     !call test_total_potential(mu_3,c_3,dx,dx,kappa,expected_total_3)
 
     print*,'########################################################'
@@ -132,7 +160,7 @@ program main
     test_num = 1
     expected_total_F_1 = 311.71999
 
-    call test_total_free_energy(c_1, expected_fb_1, dx, dy, kappa, expected_total_F_1, test_num)
+    call test_total_free_energy(c_1, expected_fb_1, dx, dy, kappa, conc_halo_1, expected_total_F_1, test_num)
 
     !Test 2 for total free energy
     dx = 0.01
@@ -141,13 +169,13 @@ program main
     test_num = 2
     expected_total_F_2 = 0.939175
 
-    call test_total_free_energy(c_2, expected_fb_2, dx, dy, kappa, expected_total_F_2, test_num)
+    call test_total_free_energy(c_2, expected_fb_2, dx, dy, kappa, conc_halo_2, expected_total_F_2, test_num)
 
     print*,'########################################################'
     print*, "Starting Convergence test for F"
     print*,'--------------------------------------------------------'
 
-    call free_energy_convergence(c_2, expected_fb_2, kappa)
+    call free_energy_convergence(c_2, expected_fb_2, kappa, conc_halo_2)
 
     print*,'########################################################'
     print*, 'Testing First order derivatives - (for Chain rule term)'
@@ -176,7 +204,7 @@ program main
 
     Kappa = 1.6
 
-    M = 1.5
+    M_constant = 1.5
 
     C_mean = 0.7
     C_std = 0.1
@@ -191,6 +219,7 @@ program main
     allocate(dQ(Nx,Ny))
     allocate(Q_test(Nx,Ny))
     allocate(dQ_expected(Nx,Ny))
+    allocate(Q_halo_1(Nx,4))
 
     ! Set test values for Q_test
     do i = 1, Nx
@@ -199,7 +228,12 @@ program main
         end do
     end do
 
-    call test_del_Q(dQ,Q_test,dQ_expected,dx,dy,Nx,Ny)
+    Q_halo_1(:, right) = Q_test(1,:)
+    Q_halo_1(:, left) = Q_test(Nx, :)
+    Q_halo_1(:, up) = Q_test(:,Ny)
+    Q_halo_1(:, down) = Q_test(:,1)
+
+    call test_del_Q(dQ,Q_test,dQ_expected,dx,dy,Nx,Ny,Q_halo_1)
 
     ! Test on time_evolution subroutine
 
@@ -209,7 +243,8 @@ program main
     ! Allocate c_test, c_expected, c_new, Q, and mu
     allocate(c_test(Nx,Ny))
     allocate(c_expected(Nx,Ny))
-    allocate(c_new(Nx,Ny))
+    allocate(c_new_1(Nx,Ny))
+    allocate(conc_halo_4(Nx,4))
 
     ! initialize concentration grid with test values
     c_test = reshape((/0.82600226343913463,0.73763425858679454,0.75563253296536192, &
@@ -220,15 +255,20 @@ program main
                            0.740158839048355,0.738720099275076,0.690382929167892, &
                            0.709132521563533,0.657924059121464,0.803700028541638/),shape(c_expected))
 
-    call test_time_evolution(c_new,c_test,c_expected,Nx,Ny,dx,dy,dt,a,Kappa,M)
-    
+    conc_halo_4(:, right) = c_test(1,:)
+    conc_halo_4(:, left) = c_test(Nx, :)
+    conc_halo_4(:, up) = c_test(:,Ny)
+    conc_halo_4(:, down) = c_test(:,1)
+
+    call test_time_evolution(c_new_1,c_test,c_expected,Nx,Ny,dx,dy,dt,a,Kappa,M_constant,conc_halo_4)
+
 
     print*,'########################################################'
     print*, "Starting grid test"
     print*,'--------------------------------------------------------'
 
-    Nx = 10
-    Ny = 10
+    Nx = 100
+    Ny = 100
 
     dx = 0.01
     dy = 0.01
@@ -238,10 +278,10 @@ program main
 
     Kappa = 1.6
 
-    M = 1.5
+    M_constant = 1.5
 
-    C_mean = 0.7
-    C_std = 0.01
+    C_min = 0.2
+    C_max = 0.7
 
     seed_in = -1
 
@@ -258,14 +298,62 @@ program main
 
     ! TESTS
 
-    call test_grid_init(c_grid,Nx,Ny,C_mean,C_std,mean,std)
+    call test_grid_init(c_grid,Nx,Ny,C_min,C_max)
 
-    call test_rand_normal(mean,std,C_mean,C_std)
+    ! call test_rand_normal(mean,std,C_mean,C_std)
 
-    call test_stdnormal(mean,std)
+    ! call test_stdnormal(mean,std)
+
+    print*,'########################################################'
+    print*, "Starting spectral test"
+    print*,'--------------------------------------------------------'
+
+    allocate(c_in(3,3))
+    allocate(c_in_p(3,3))
+    allocate(c_out_1(3,3))
+    allocate(c_out_exp(3,3))
+    allocate(coeffs(4))
+
+    coeffs = 2
+    c_out_exp = 0
+    c_in = 2
+    c_in(2,2) = 4
+    c_in_p = 2
+    c_in_p(2,2) = 5
+
+    M_constant = 0.1
+    k = 0.1
+    dt = 0.1
+
+
+    call spectral_method_iter(c_in,c_in_p,coeffs,dt,M_constant,k,c_out_1,1,1.0_real64)
+
+    c_out_exp = reshape((/2.0000000000000000,2.0000000000000000,2.0000000000000000,&
+            2.0000000000000000, 4.0000000000000000, 2.0000000000000000, 2.0000000000000000,&
+                    2.0000000000000000 , 2.0000000000000000  /),shape(c_out_exp))
+
+    !print*, c_out_1
+
+    if(maxval(c_out_1-c_out_exp) > 1e-5) then
+        print*, "Test 1 failed"
+    else
+        print*, "Test 1 passed"
+    end if
+
+    call spectral_method_iter(c_in,c_in_p,coeffs,dt,M_constant,k,c_out_1,0,1.0_real64)
+    c_out_exp = reshape((/2.5281427002019132, 2.2612119247891633, 2.4046610797134473,&
+           2.2612119247891638, 0.75621140767929007, 2.2612119247891638, 2.4046610797134473,&
+                   2.2612119247891638, 2.5281427002019132/),shape(c_out_exp))
+
+    if(maxval(c_out_1-c_out_exp) > 1e-5) then
+        print*, "Test 2 failed"
+    else
+        print*, "Test 2 passed"
+    end if
+    !print*, c_out_1
 
     print*,'########################################################'
     print*, 'Tests Complete'
-    
+
 
 end program main

@@ -14,16 +14,35 @@
 ```
 
 # SpinDec2
-Modelling Spinoidal Decomposition Using a Phase Field Approach
+This project models spinoidal decomposition of a binary alloy system and has the following features:
+* Explicit Eulerian approach with either:
+  * A constant diffusive mobility field
+  * A non-constant diffusive mobility field using the Darkens equation
+  * Temperature dependent atomic mobilities
+ 
+* Pseudo-Spectral solver with constant mobility 
 
-[LIST FEATURES HERE]
+The following is an example end state using the explicit Eulerian solver with an initial concentration range of 0.31 to 0.32:
 
-[SHOW SOME PRETTY PICTURES/DIAGRAMS/GRAPHS]
+![constant_end_3132](https://user-images.githubusercontent.com/78127892/170461306-6012d905-60c8-4752-a883-a6a565a6f858.png)
 
 ## Dependencies 
 Prior to installation, please ensure that the following dependencies are installed: 
-- util-linux
-- [WRITE MORE HERE]
+
+* bash
+  * util-linux
+  * getopt
+
+* python
+  * netCDF4
+  * matplotlib
+  * numpy
+  * scipy
+  * argparse
+
+* fortran
+  * netCDF
+  * fftw
 
 ## Download
 To download the repository, clone the repository somewhere in your filesystem:

@@ -69,33 +69,29 @@ module test_free_energy
     !!@param expected : expected result for bulk free energy given a and c
     !!@param test_num : unit test number
     !******************************************************************************
-    subroutine test_total_free_energy(c, f_b, dx, dy, kappa, expected, test_num)
+    subroutine test_total_free_energy(c, f_b, dx, dy, kappa,conc_halo, expected, test_num)
 
 
         real(real64), intent(in) :: c(:, :)
         real(real64), intent(in) :: f_b(:, :)
+        real(real64), intent(in) :: conc_halo(:,:)
         real(real64), intent(in) :: dx, dy, kappa
         real(real64) :: expected
         integer, intent(in) :: test_num
         logical :: res = .true.
-        integer :: nx, ny, i, j
+        integer :: nx, ny
         real(real64) :: F
 
         nx = size(c, 1)
         ny = size(c, 2)
 
-        call total_free_energy(F, c, f_b, dx, dy, kappa)
+        call total_free_energy(F, c, f_b, dx, dy, kappa,conc_halo)
 
         ! Testing if resulting F is equal to expected
         ! within certain tolerance
-        do j = 1, ny
-            do i = 1, nx
-                if (abs(F - expected) > 1e-3) then
-                    res = .false.
-                    exit
-                end if
-            end do
-        end do
+        if (abs(F - expected) > 1e-3) then
+            res = .false.
+        end if
 
         if (res) then
             print *, 'Unit test #', test_num, ' for total free energy succeeded.'
@@ -117,12 +113,13 @@ module test_free_energy
     !******************************************************************************
 
 
-    subroutine free_energy_convergence(c, f_b, kappa)
+    subroutine free_energy_convergence(c, f_b, kappa,conc_halo)
 
         real(real64) :: dx, dy, delta
         real(real64), intent(in) :: kappa
         real(real64), intent(in) :: c(:, :)
         real(real64), intent(in) :: f_b(:, :)
+        real(real64), intent(in) :: conc_halo(:,:)
         real(real64), dimension(0:10) :: F
         logical :: res = .false.
         integer :: i
@@ -132,7 +129,7 @@ module test_free_energy
         dx = 1
         dy = 1
 
-        call total_free_energy(F(0), c, f_b, dx, dy, kappa)
+        call total_free_energy(F(0), c, f_b, dx, dy, kappa,conc_halo)
 
         !observe whether F converges with increasing resoloution in x and y
         do i = 1, 10
@@ -140,7 +137,7 @@ module test_free_energy
             dx = dx/10
             dy = dy/10
 
-            call total_free_energy(F(i), c, f_b, dx, dy, kappa)
+            call total_free_energy(F(i), c, f_b, dx, dy, kappa,conc_halo)
 
             delta = abs(F(i) - F(i-1))
 

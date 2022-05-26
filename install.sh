@@ -1,28 +1,49 @@
-#!/bin/bash 
+#!/bin/bash
 # install.sh
 # Compilation/install script for SpinDec2
 
 # Exit if something fails
 set -e
 
-# Enable recursive globbing 
+# Enable recursive globbing
 # shopt -s globstar
 
 compile () {
     ### Compilation ###
-    # Option for choosing the compiler
     if [[ "$1" == "d" ]] || [[ "$1" == "debug" ]]; then
-        comp_line="gfortran -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
+        comp_line="mpif90 -fopenmp -O2 -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
     elif [[ -z "$1" ]]; then
-        comp_line="gfortran"
+        comp_line="mpif90 -fopenmp -O2"
     else
         echo -e "$1 is not a valid option for -c/--compile\n"
         help_message
         exit 2
     fi
 
-    # Add program files from src 
-    prog_files=(src/*)
+    fftw_dir=$(find /usr/include/ -name "*fftw*")
+
+    if [[ "$fftw_dir" == *"fftw3"* ]]; then
+       echo "Found fftw3 library in /usr/include/"
+       echo
+    elif [[ "$fftw_dir" == "" ]]; then
+       echo "Required fftw3 library not found"
+       echo "Ensure this is installed before attempting compilation"
+       echo "Exiting compilation"
+       exit 1
+    fi
+
+    # Add program files from src
+    prog_files=(src/*.f90)
+
+    # Move comms to first item in array
+    comms="src/comms.f90"
+    prog_files=('' "${prog_files[@]}")
+    prog_files[0]="$comms"
+
+    # Move grid to first item in array
+    grid="src/grid.f90"
+    prog_files=('' "${prog_files[@]}")
+    prog_files[0]="$grid"
 
     # Move main to last item in array
     main="src/main.f90"
@@ -34,9 +55,9 @@ compile () {
     obj_files="bin/*.o"
     compd_file="bin/spindec"
 
-    # NetCDF flags
-    flibs=`nf-config --flibs`
-    fflags=`nf-config --fflags`
+    # flags
+    flibs="$(nf-config --flibs) -lfftw3_omp -lfftw3 -lm -I/usr/include"
+    fflags=$(nf-config --fflags)
 
     # Compile
     echo "Compile line:"
@@ -54,9 +75,11 @@ compile () {
     # $comp_line $fflags ${prog_files[@]} $flibs -J$mod_files -I$mod_files -o $compd_file
 
     # Don't prompt to add to $PATH if debug option specified
-    if [[ "$1" == "d" ]] || [[ "$1" == "debug" ]]; then
+    if [[ "$1" == "d" || "$1" == "debug" ]]; then
         exit 0
     fi
+
+    echo 'Compilation completed successfully'
 
     # Don't prompt to add to $PATH if already in path
     if grep -Fq "SpinDec2/bin" $HOME/.bashrc; then
@@ -69,9 +92,9 @@ compile () {
         echo
         read -p 'Add binary to $PATH? [Y/n] ' confirmation
 
-        if [[ "$confirmation" =~ ^[Yy]$ ]] || [[ "$confirmation" == '' ]]; then
+        if [[ "$confirmation" =~ ^[Yy]$ || "$confirmation" == '' ]]; then
             if [[ "$SHELL" == *"bash"* ]]; then
-                working_dir=`pwd`
+                working_dir=$(pwd)
                 path_var='$PATH'
                 echo '' >> $HOME/.bashrc
                 echo "export PATH=$working_dir/bin/:$path_var" >> $HOME/.bashrc
@@ -97,17 +120,17 @@ clean () {
     bins=("bin/*.mod" "bin/*.o" "bin/*spindec")
 
     # Check for binaries
-    if [[ `ls bin/* | grep -E 'mod|[.]o|spindec'` == '' ]]; then
+    if [[ $(ls bin/* | grep -E 'mod|[.]o|spindec') == '' ]]; then
         echo "No binaries found"
         exit 1
     fi
 
     # Remove globs from $bins if they aren't found
-    for glob in ${bins[@]}; do 
+    for glob in ${bins[@]}; do
         if [[ "$glob" == *'*'* ]]; then
             bins=("${bins[@]/$glob}")
         fi
-    done     
+    done
 
     # Remove binaries
     while true; do
@@ -116,22 +139,22 @@ clean () {
         echo
 
         # Ask for confirmation before removing if option provided
-        if [[ "$1" == "c" ]] || [[ "$1" == "confirm" ]]; then
+        if [[ "$1" == "c" || "$1" == "confirm" ]]; then
             read -p 'Proceed? [Y/n] ' confirmation
         elif [[ -z "$1" ]]; then
             confirmation="y"
-        else 
+        else
             echo -e "$1 is not a valid option for -C/--clean\n"
             help_message
             exit 2
         fi
-      
-        if [[ "$confirmation" =~ ^[Yy]$ ]] || [[ "$confirmation" == '' ]]; then
+
+        if [[ "$confirmation" =~ ^[Yy]$ || "$confirmation" == '' ]]; then
             for file in ${bins[@]}; do
                 rm "$file"
             done
             echo "Cleaned successfully"
-            break 
+            break
         elif [[ "$confirmation" =~ ^[Nn]$ ]]; then
             echo 'Files not removed'
             break
@@ -146,11 +169,33 @@ unit_test_compile () {
     ### Compile unit tests ###
     # Compile line
     # Only the debug compile line from above to be used
-    comp_line="gfortran -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
+    comp_line="mpif90 -fopenmp -O2 -std=f2008 -Wall -fimplicit-none -fcheck=all -Wextra -pedantic -fbacktrace"
+
+    fftw_dir=$(find /usr/include/ -name "*fftw*")
+
+    if [[ "$fftw_dir" == *"fftw3"* ]]; then
+       echo "Found fftw3 library in /usr/include/"
+       echo
+    elif [[ "$fftw_dir" == "" ]]; then
+       echo "Required fftw3 library not found"
+       echo "Ensure this is installed before attempting compilation"
+       echo "Exiting compilation"
+       exit 1
+    fi
 
     # f90 file directories
     test_files=(test/*.f90)
-    src_files=(src/*)
+    src_files=(src/*.f90)
+
+    # Move comms to first item in array
+    comms="src/comms.f90"
+    src_files=('' "${src_files[@]}")
+    src_files[0]="$comms"
+
+    # Move grid to first item in array
+    grid="src/grid.f90"
+    src_files=('' "${src_files[@]}")
+    src_files[0]="$grid"
 
     # Move test main to last item in array
     test_main="test/test.f90"
@@ -167,8 +212,10 @@ unit_test_compile () {
     compd_file="test/test_bin/test_spindec"
 
     # NetCDF flags
-    flibs=`nf-config --flibs`
-    fflags=`nf-config --fflags`
+    flibs="$(nf-config --flibs) -lfftw3_omp -lfftw3 -lm -I/usr/include"
+    fflags=$(nf-config --fflags)
+
+    echo $src_files
 
     # C H O N K Y  compilation
     echo "Compile line:"
@@ -198,7 +245,7 @@ unit_test_clean () {
     bins=("test/test_bin/*.mod" "test/test_bin/*.o" "test/test_bin/*test_spindec")
 
     # Check for binaries
-    if [[ `ls test/test_bin/* | grep -E 'mod|[.]o|test_spindec'` == '' ]]; then
+    if [[ $(ls test/test_bin/* | grep -E 'mod|[.]o|test_spindec') == '' ]]; then
         echo "No binaries found"
         exit 1
     fi
@@ -234,27 +281,27 @@ ascii_art () {
     echo -E '          %% |'
     echo -E '          \__|'
     echo
-    echo -e ' Modelling Spinoidal Decomposition Using a Phase Field Approach'
+    echo -e ' Modelling Spinoidal Decomposition'
     echo -e ' _________________________________________________________________\n'
 }
 
 help_message () {
     echo "usage: spindec [-h]"
-    echo "               [-c DEBUG]"
-    echo "               [-C CONFIRM]"
-    echo "               [-t RUN]"
+    echo "               [-c ARGS]"
+    echo "               [-C ARGS]"
+    echo "               [-t ARGS]"
     echo "               [-T]"
     echo
     echo "options:"
     echo "  -h, --help              show this help message and exit"
-    echo "  -c, --compile DEBUG     compile the code with optional debug option"
-    echo "                          optional DEBUG arguments: [ none | d/debug ] (default=none)"
+    echo "  -c, --compile ARGS      compile the code with optional debug or profile option"
+    echo "                          optional arguments: [ none | d/debug ] (default=none)"
     echo
-    echo "  -C, --clean CONFIRM     remove compiled binaries from repository"
-    echo "                          optional CONFIRM arguments: [ none | c/confirm ] (default=none)"
+    echo "  -C, --clean ARGS        remove compiled binaries from repository"
+    echo "                          optional arguments: [ none | c/confirm ] (default=none)"
     echo
-    echo "  -t, --test RUN          run automated unit tests"
-    echo "                          required RUN arguments: [ c/compile | r/run | b/both ]"
+    echo "  -t, --test ARGS         run automated unit tests"
+    echo "                          required arguments: [ c/compile | r/run | b/both ]"
     echo
     echo "  -T, --test-clean        clean test binaries"
 }
@@ -286,12 +333,12 @@ eval set -- "$options"
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -c | --compile)
-            compile $2
+            compile "$2"
             shift 2
             break
             ;;
         -C | --clean)
-            clean $2
+            clean "$2"
             shift 2
             break
             ;;
@@ -316,7 +363,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         -T | --test-clean)
             unit_test_clean
-            break 
+            break
             ;;
         -h | --help)
             ascii_art

@@ -1,0 +1,35 @@
+ Size of each local processor grid is:         1200  x         1200
+   3.8855651629985908        3.8855651629985908     
+ Dimensions Written
+ Variable types defined
+ Sucessfully setup netcdf file
+ Writing at iter           2
+ Writing at iter         502
+ Writing at iter        1002
+ Writing checkpoint successful at iter        1002
+ Writing at iter        1502
+ Writing at iter        2002
+ Writing checkpoint successful at iter        2002
+ Writing at iter        2502
+ Writing at iter        3002
+ Writing checkpoint successful at iter        3002
+ Writing at iter        3502
+ Writing at iter        4002
+ Writing checkpoint successful at iter        4002
+ Writing at iter        4502
+ Writing at iter        5002
+ Writing checkpoint successful at iter        5002
+ Writing at iter        5502
+ Writing at iter        6002
+ Writing checkpoint successful at iter        6002
+ Writing at iter        6502
+ Writing at iter        7002
+ Writing checkpoint successful at iter        7002
+ Writing at iter        7502
+ Writing at iter        8002
+ Writing checkpoint successful at iter        8002
+ Writing at iter        8502
+ Writing at iter        9002
+ Writing checkpoint successful at iter        9002
+ Writing at iter        9502
+ Calculation took   959.82853233700007      seconds on           1 MPI threads

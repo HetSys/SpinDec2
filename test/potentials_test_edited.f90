@@ -57,12 +57,13 @@ contains
     ! @param dy: spatial grid spacing in y direction used for testing
     ! @param kappa: free energy gradient parameter used for testing
     ! @param expected: expected answer for total chemical potential
-    subroutine test_total_potential(mu, c, dx, dy, Kappa, expected, test_num, analytical)
+    subroutine test_total_potential(mu, c, dx, dy, Kappa, conc_halo, expected, test_num, analytical)
 
         real(real64), allocatable :: Q(:, :)
         real(real64), intent(in) :: c(:, :)
         real(real64), intent(in) :: mu(:, :)
         real(real64), intent(in) :: dx, dy, Kappa
+        real(real64), intent(in) :: conc_halo(:,:)
         real(real64), intent(in) :: expected(:, :)
         integer, intent(in) :: test_num
         logical, intent(in) :: analytical
@@ -73,7 +74,7 @@ contains
         ny = size(c, 2)
 
         allocate (Q(nx, ny))
-        call total_potential(Q, mu, c, dx, dy, Kappa)
+        call total_potential(Q, mu, c, dx, dy, Kappa,conc_halo)
 
         if (analytical) then
         ! check only non-boundary elements

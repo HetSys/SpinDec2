@@ -1,1 +1,14 @@
+# bash
 util-linux
+getopt
+
+# python
+netCDF4
+matplotlib
+numpy
+scipy
+argparse
+
+# fortran
+netCDF
+fftw

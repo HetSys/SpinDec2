@@ -6,11 +6,17 @@ shopt -s globstar
 **.o
 **spindec**
 
-# Program generated
+# modules
+# src/comms.f90
+
+# program generated
 **.cpf
 **.cp
 **.nc
 test/test_bin/*.txt
+
+# Libraries
+fftw*
 
 # others 
 **.tmp
