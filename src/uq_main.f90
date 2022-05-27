@@ -11,7 +11,7 @@ program main
 
     thread =  fftw_init_threads()
 
-    dt_c = 1e-2_real64
+    dt_c = 1e-4_real64
     dt_s = 0_real64
 
     open (unit = number, file = "output.txt")
