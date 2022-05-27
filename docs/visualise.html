@@ -106,14 +106,13 @@ $(document).ready(function(){initNavTree('visualise.html',''); initResizable(); 
 </p>
 
 <pre><samp>
-  usage: vis_spin.py [-h] [-sn] [-fr] (-s | -d | -b)
+  usage: vis_spin.py [-h] [-sn] (-s | -d | -b)
 
 Visulise spinodal decomposistion in SpinDec2
 
 optional arguments:
   -h, --help      show this help message and exit
   -sn, --snap    Option to select snapshot of grid to plot
-  -fr, --frame   Option to set number of frames when saving to mp4
   -s, --save      Save plots only
   -d, --display   View plots only
   -b, --both      Does both the save and view options
@@ -130,11 +129,7 @@ optional arguments:
 time iteration from which a grid snapshot is displayed, (if the <code>-d, --display</code> flag is used) or saved, (if the <code>-s, --save</code> flag is used) or both (if the <code>-b, --both</code> flag is used).</p></li>
 </ul>
 <br>
-<ul>
-<li><p><code markup="tt" class=" language-none"> -fr, --frame </code>  \( \rightarrow \) OPTIONAL (DEFAULT = 50): Sets the frame rate when saving animations to a mp4 file when the <code>-s, --save ; -d, --display</code> flags are also used.</p></li>
-</ul>
-<br>
-<ul>
+
 
 <h4>At least one of the flags are required to get run the python file:</h4>
 
