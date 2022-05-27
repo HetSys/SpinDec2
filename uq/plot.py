@@ -18,9 +18,12 @@ Bs = np.linspace(valf[12],valf[13],int(valf[14]))
 
 count = 0
 
+lins = [Ns,K,stabs,Ms,Bs]
+lins_size = [len(Ns),len(K),len(stabs),len(Ms),len(Bs)]
+dims = ["N","kappa","Stabilisation term","Mobility","Bulk free energy"]
+dimp = dims[np.argmax(lins_size)]
 
-
-
+to_plot = lins[np.argmax(lins_size)]
 
 f = open("output.txt", "r")
 vals = f.read()
@@ -29,24 +32,49 @@ vals = vals.split("\n")
 valsf = []
 count = 0
 all = []
+all2 = []
 for i in Ns:
     Nl = []
+    Nl2 = []
     for j in K:
         Kl = []
+        Kl2 = []
         for s in stabs:
             Sl = []
+            Sl2 = []
             for m in Ms:
                 Ml = []
+                Ml2 = []
                 for b in Bs:
-                    Ml.append(float(vals[count]))
-                    count = count +1
+                    if prob[2:-1] == "Both":
+                        Ml.append(float(vals[count]))
+                        count = count +1
+                        Ml2.append(float(vals[count]))
+                        count = count +1
+                    else:
+                        Ml.append(float(vals[count]))
+                        count = count +1
                 Sl.append(Ml)
+                Sl2.append(Ml2)
             Kl.append(Sl)
+            Kl2.append(Sl2)
         Nl.append(Kl)
+        Nl2.append(Kl2)
     all.append(Nl)
+    all2.append(Nl2)
 
 all = np.array(all)
+all2 = np.array(all2)
 
 
-plt.plot(all[:,0,0,0,0])
+
+
+if prob[2:-1] == "Both":
+    plt.plot(to_plot,np.squeeze(all),label = "Constant")
+    plt.plot(to_plot,np.squeeze(all2),label = "Spectral")
+else:
+    plt.plot(to_plot,np.squeeze(all),label = prob[2:-1])
+plt.legend()
+plt.xlabel(dimp)
+plt.ylabel("Critical time step (s)")
 plt.show()

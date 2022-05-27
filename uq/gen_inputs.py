@@ -22,8 +22,9 @@ for i in Ns:
         for s in stabs:
             for m in Ms:
                 for b in Bs:
-                    f = open("input_"+str(count)+".txt", "w")
-                    f.write("""Concentration_min = 0.1
+                    if prob[2:-1] != "Both":
+                        f = open("input_"+str(count)+".txt", "w")
+                        f.write("""Concentration_min = 0.1
 Concentration_max = 0.9
 Domain_x_size = """+str(i)+"""
 Domain_y_size = """+str(i)+"""
@@ -37,12 +38,61 @@ Temperature_min = 800
 Temperature_max = 1000
 Problem = """+prob+"""
 Stabilization_Term = """+str(s)+"""
-Random_seed = -1
+Random_seed = 123456
 Checkpointing_interval = 5000
 Max_time = 1e-1
 time_step = 1e-4
 dF_tolerance = 2.0
 Use_input = 0
 """)
-                    f.close()
-                    count = count + 1
+                        f.close()
+                        count = count + 1
+                    else:
+                        f = open("input_"+str(count)+".txt", "w")
+                        f.write("""Concentration_min = 0.1
+Concentration_max = 0.9
+Domain_x_size = """+str(i)+"""
+Domain_y_size = """+str(i)+"""
+Mobility_A = """+str(m)+"""
+Mobility_B = """+str(m)+"""
+free_energy_gradient_parameter = """+str(j)+"""
+Bulk_free_energy = """+str(b)+"""
+Exitation_A = 0.1
+Exitation_B = 0.2
+Temperature_min = 800
+Temperature_max = 1000
+Problem = "Constant"
+Stabilization_Term = """+str(s)+"""
+Random_seed = 123456
+Checkpointing_interval = 5000
+Max_time = 1e-1
+time_step = 1e-4
+dF_tolerance = 2.0
+Use_input = 0
+""")
+                        f.close()
+                        count = count + 1
+                        f = open("input_"+str(count)+".txt", "w")
+                        f.write("""Concentration_min = 0.1
+Concentration_max = 0.9
+Domain_x_size = """+str(i)+"""
+Domain_y_size = """+str(i)+"""
+Mobility_A = """+str(m)+"""
+Mobility_B = """+str(m)+"""
+free_energy_gradient_parameter = """+str(j)+"""
+Bulk_free_energy = """+str(b)+"""
+Exitation_A = 0.1
+Exitation_B = 0.2
+Temperature_min = 800
+Temperature_max = 1000
+Problem = "Spectral"
+Stabilization_Term = """+str(s)+"""
+Random_seed = 123456
+Checkpointing_interval = 5000
+Max_time = 1e-1
+time_step = 1e-4
+dF_tolerance = 2.0
+Use_input = 0
+""")
+                        f.close()
+                        count = count + 1
