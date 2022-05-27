@@ -32,7 +32,6 @@ var menudata={children:[
 ]},
 {text:"Solvers",url:"solver.html",children:[
     {text:"Input File",url:"input.html"},
-    {text:"Check-Pointing",url:"checkpointing.html"},
     {text:"Explicit Finite-Differences",url:"solver.html"},
     {text:"Pseudo-Spectral",url:"spectral.html"},
     {text:"Parallelism",url:"parra.html"},
