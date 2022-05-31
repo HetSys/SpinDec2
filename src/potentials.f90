@@ -35,7 +35,7 @@ contains
         !$omp parallel do default(shared) private(j,i,k)
         do j = 1, ny
             do i = 1, nx
-                mu(i, j) = mu(i, j) + R*T(i,j) * (log(c(i,j)) - log(1-c(i,j)))
+                mu(i, j) = mu(i, j) + R*T(i,j) * (log(c(i,j)) - log(1-c(i,j)) + 2)
                 mu(i,j) =  mu(i,j) + 15911 + 3.335*T(i,j) - 2.0*(15911 + 3.335*T(i,j))*c(i,j)
             end do
         end do
