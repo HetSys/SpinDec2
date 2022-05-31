@@ -135,7 +135,7 @@ contains
         if(init == 0) then
             ! $OMP PARALLEL WORKSHARE
             ans(:,:) = (2.0*dt/(3.0+2.0*dt*M*k*k4(:,:)+2*dt*c_A*M*k2(:,:)))*(2.0*M*k2(:,:)*out_bulk(:,:)-M*k2(:,:)*&
-                out_bulk_prev(:,:) + M*k2(:,:)*2*c_a*out(:,:) - M*k2(:,:)*c_a*out_prev(:,:) + (4.0*out(:,:)-out_prev(:,:))/(2.0*dt))
+                out_bulk_prev(:,:) + M*k2(:,:)*2*dt*c_a*out(:,:) - M*k2(:,:)*c_a*dt*out_prev(:,:) + (4.0*out(:,:)-out_prev(:,:))/(2.0*dt))
             ! $OMP END PARALLEL WORKSHARE
         else
             ! $OMP PARALLEL WORKSHARE
