@@ -22,10 +22,11 @@ contains
     !! @param c_out The concentration grid at the next time step
     !! @param init A flag for when the iteration is called at the first time step
     !! @param stab A stabilization term that allows for bigger timesteps at the const of inital accuracy
-    subroutine spectral_method_iter(c_in, c_prev_in,a,dt,M,k, c_out,init,stab)
+    subroutine spectral_method_iter(c_in, c_prev_in, T, a,dt,M,k, c_out,init,stab)
         real(kind=real64) ,dimension(:,:), intent(in):: c_in,c_prev_in
         real(kind=real64) ,dimension(:,:), intent(inout):: c_out
         real(kind=real64) ,dimension(:,:), allocatable:: mu,k2,k4
+        real(real64), intent(in) :: T(:, :)
         real(kind=real64),dimension(:), intent(in) :: a
         real(kind=real64) ,intent(in) :: dt,M,k,stab
         integer :: i,j,init,dim12,dim22,stat,no_threads
@@ -83,7 +84,7 @@ contains
         end if
 
 
-        call bulk_potential(mu, c_in , a)
+        call bulk_potential(mu, c_in, T)
 
         ! $OMP PARALLEL WORKSHARE
         in(:,:) = mu(:,:)
@@ -95,7 +96,7 @@ contains
 
 
         if(init == 0) then
-            call bulk_potential(mu, c_prev_in , a)
+            call bulk_potential(mu, c_prev_in, T)
             ! $OMP PARALLEL WORKSHARE
             in(:,:) = mu(:,:)
             ! $OMP END PARALLEL WORKSHARE

@@ -171,7 +171,6 @@ program main
     ! Initialise global concentration grid
     ! c ~ U(c_min,c_max)
 
-
     call grid_initialise_global(Nx,Ny,Nt,my_rank)
 
     ! Start calculations
@@ -196,13 +195,13 @@ program main
 
     if (cpi == "") then
         !Get initial bulk free energy for current rank using local grid
-        call bulk_free_energy(f_b,local_grid_conc,a)
+        call bulk_free_energy(f_b, local_grid_conc, T)
 
         !Store concentration from neighbor ranks in halo_swaps
         call comms_halo_swaps(local_grid_conc,conc_halo)
 
         ! Calculate Initial F(t)
-        call total_free_energy(local_F, local_grid_conc,f_b, dx, dy, kappa,conc_halo)
+        call total_free_energy(local_F, local_grid_conc, f_b, dx, dy,conc_halo, T)
 
         !Gather total free energy
         call comms_get_global_F(local_F,global_F)
@@ -245,13 +244,13 @@ program main
         end if
         !print*, k
         ! Get bulk chemical potentials
-        call bulk_potential(mu,local_grid_conc, a)
+        call bulk_potential(mu, local_grid_conc, T)
 
         !Store concentration from neighbor ranks in halo_swaps
         call comms_halo_swaps(local_grid_conc,conc_halo)
 
         ! Get total chemical potentials
-        call total_potential(Q, mu,local_grid_conc, dx, dy, Kappa,conc_halo)
+        call total_potential(Q, mu, local_grid_conc, T, dx, dy,conc_halo)
 
 
         ! Get Mobility Field
@@ -278,11 +277,13 @@ program main
         else
 
             if(k == 2) then
-                call spectral_method_iter(c(:, :, write_count),c(:, :,write_count),a,dt,M(1,1),Kappa,c_new,1,stab)
+                ! call spectral_method_iter(c(:, :, write_count),c(:, :,write_count),a,dt,M(1,1),Kappa,c_new,1,stab)
+                call spectral_method_iter(c(:, :, write_count), c(:, :,write_count), T, a,dt,M(1,1),kappa, c_out,1,stab)
                 c(:,:,write_next) = c_new(:,:)
             else
 
-                call spectral_method_iter(c(:, :, write_count),c(:, :,write_prev),a,dt,M(1,1),Kappa,c_new,0,stab)
+                ! call spectral_method_iter(c(:, :, write_count),c(:, :,write_prev),a,dt,M(1,1),Kappa,c_new,0,stab)
+                call spectral_method_iter(c(:, :, write_count), c(:, :,write_count), T, a,dt,M(1,1),kappa, c_out,0,stab)
                 c(:,:,write_next) = c_new(:,:)
 
                 !print*, c_new(:,:)
@@ -299,10 +300,10 @@ program main
 
 
         ! Get Bulk Free Energy over space
-        call bulk_free_energy(f_b,local_grid_conc, a)
+        call bulk_free_energy(f_b, local_grid_conc, T)
 
         ! Calculate F(t)
-        call total_free_energy(local_F, local_grid_conc, f_b, dx, dy, kappa,conc_halo)
+        call total_free_energy(local_F, local_grid_conc, f_b, dx, dy,conc_halo, T)
 
         call comms_get_global_F(local_F,global_F)
 

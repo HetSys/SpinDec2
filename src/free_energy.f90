@@ -13,19 +13,19 @@ contains
     !! @param f_b 2D grid for bulk free energy 
     !! @param c 2D concentration grid - c(x,y)
     !! @param a 1D array storing coefficients provided by user
-    subroutine bulk_free_energy(f_b, c, a)
+    subroutine bulk_free_energy(f_b, c, T)
 
         real(real64), intent(out) :: f_b(:, :)
         real(real64), intent(in) :: c(:, :)
-        real(real64), intent(in) :: a(:)
+        real(real64), intent(in) :: T(:, :)
         integer :: nx, ny, n
         integer :: i, j, k
         real(real64) :: val
+        real(real64), parameter :: R = 8.314
 
         !Get f_b grid size and number of user input coefficients
         Nx = size(c, 1)
         Ny = size(c, 2)
-        n = size(a)
 
         f_b = 0
 
@@ -33,11 +33,8 @@ contains
         !$omp parallel do default(shared) private(j,i,k)
         do j = 1, Ny
             do i = 1, Nx
-                val = 1.0_real64
-                do k = 1, n
-                    f_b(i, j) = f_b(i, j) + a(k) * val
-                    val = val * c(i,j)
-                end do
+                f_b(i, j) = f_b(i, j) + R*T(i,j) * (c(i,j)*log(c(i,j)) + (1.0-c(i,j))*log(1.0 - c(i,j)))
+                f_b(i,j) = f_b(i,j) + 15911 + 3.335*T(i,j) * c(i,j) *(1.0-c(i,j))
             end do
         end do
         !$omp end parallel do
@@ -52,21 +49,33 @@ contains
     !! @param dy Spatial step size in y
     !! @param kappa Free energy gradient paramater
     !! @param conc_halo Concentration halo storing neighbour rank boundary data
-    subroutine total_free_energy(F, c, f_b, dx, dy, kappa,conc_halo)
+    subroutine total_free_energy(F, c, f_b, dx, dy,conc_halo, T)
 
         real(real64), intent(in) :: c(:,:)
         real(real64), intent(in) :: conc_halo(:,:)
+        real(real64), intent(in) :: T(:,:)
         real(real64) :: f_b(:,:)
         integer :: nx, ny
         integer :: i, j
         real(real64), intent(out) :: F
         real(real64) :: dx, dy, dx2, dy2
-        real(real64) :: kappa
+        real(real64), dimension(:, :), allocatable ::  kappa
         real(real64) :: P, grad_x, grad_y
+        real(real64), parameter :: r_0 = 3.012e-10
 
         !Get mu grid size and number of user input coefficients
         nx = size(c, 1)
         ny = size(c, 2)
+
+        allocate(kappa(nx, ny))
+
+        do j = 1, ny
+            do i = 1, nx
+
+                kappa(i,j) = 0.5*r_0*r_0*c(i,j)*(1.0-c(i,j))*15911 + 3.335*T(i,j)
+            
+            end do
+        end do
 
         F = 0.0
         ! Pre-compute 1.0/(dx^2) and 1.0/(dy^2)
@@ -79,25 +88,25 @@ contains
         grad_x = (c(2, 1) -  conc_halo(1, left)) * dx2
         grad_y = (c(1, 2) -  conc_halo(1, up)) * dy2
         P = grad_x*grad_x + grad_y*grad_y
-        F = F + (f_b(1, 1) + 0.5 * kappa * P ) * dx * dy
+        F = F + (f_b(1, 1) + 0.5 * kappa(1,1) * P ) * dx * dy
 
         ! Bottom-left
         grad_x = (c(2, ny) - conc_halo(ny,left)) * dx2
         grad_y = (conc_halo(1, down) - c(1,ny - 1)) * dy2
         P = grad_x*grad_x + grad_y*grad_y
-        F = F + (f_b(1, ny) + 0.5 * kappa * P ) * dx * dy
+        F = F + (f_b(1, ny) + 0.5 * kappa(1,ny) * P ) * dx * dy
 
         ! Bottom-right
         grad_x = (conc_halo(ny, right) - c(nx-1, ny)) * dx2
         grad_y = (conc_halo(nx, down) - c(nx, ny-1)) * dy2
         P = grad_x*grad_x + grad_y*grad_y
-        F = F + (f_b(nx, ny) + 0.5 * kappa * P ) * dx * dy
+        F = F + (f_b(nx, ny) + 0.5 * kappa(nx,ny) * P ) * dx * dy
 
         ! Top-right
         grad_x = (conc_halo(1, right) - c(nx - 1,1)) * dx2
         grad_y = (c(nx,2) - conc_halo(nx, up)) * dy2
         P = grad_x*grad_x + grad_y*grad_y
-        F = F + (f_b(nx, 1) + 0.5 * kappa * P ) * dx * dy
+        F = F + (f_b(nx, 1) + 0.5 * kappa(nx,1) * P ) * dx * dy
 
         ! Boundary nodes
         ! Top - j = 1
@@ -106,11 +115,11 @@ contains
             grad_y = (c(i, 2) - conc_halo(i,up)) * dy2
             grad_x = (c(i + 1, 1) - c(i - 1, 1)) * dx2
             P = grad_x*grad_x + grad_y*grad_y
-            F = F + (f_b(i, 1) + 0.5 * kappa * P ) * dx * dy
+            F = F + (f_b(i, 1) + 0.5 * kappa(i,1) * P ) * dx * dy
             grad_y = (conc_halo(i, down) - c(i, ny - 1)) * dy2
             grad_x = (c(i + 1, ny) - c(i - 1, ny)) * dx2
             P = grad_x*grad_x + grad_y*grad_y
-            F = F + (f_b(i, ny) + 0.5 * kappa * P ) * dx * dy
+            F = F + (f_b(i, ny) + 0.5 * kappa(i,ny) * P ) * dx * dy
         end do
         !$omp end parallel do
         ! Left - i = 1
@@ -119,11 +128,11 @@ contains
             grad_y = (c(1, j + 1) - c(1, j - 1)) * dy2
             grad_x = (c(2, j) - conc_halo(j,left)) * dx2
             P = grad_x*grad_x + grad_y*grad_y
-            F = F + (f_b(1, j) + 0.5 * kappa * P ) * dx * dy
+            F = F + (f_b(1, j) + 0.5 * kappa(1,j) * P ) * dx * dy
             grad_y = (c(nx, j + 1) - c(nx, j - 1)) * dy2
             grad_x = (conc_halo(j,right) - c(nx - 1, j)) * dx2
             P = grad_x*grad_x + grad_y*grad_y
-            F = F + (f_b(nx, j) + 0.5 * kappa * P ) * dx * dy
+            F = F + (f_b(nx, j) + 0.5 * kappa(nx,j) * P ) * dx * dy
         end do
         !$omp end parallel do
         ! Bulk (non-boundary) nodes
@@ -133,7 +142,7 @@ contains
                 grad_y = (c(i, j + 1) -  c(i, j - 1)) * dy2
                 grad_x = (c(i + 1, j) -  c(i - 1, j)) * dx2
                 P = grad_x*grad_x + grad_y*grad_y
-                F = F + (f_b(i, j) + 0.5 * kappa * P ) * dx * dy
+                F = F + (f_b(i, j) + 0.5 * kappa(i,j) * P ) * dx * dy
             end do
         end do
         !$omp end parallel do
