@@ -1,4 +1,4 @@
-! Code adapted from PX425 - Assignment 4 (2021) By Dr. David Quigley
+! Adapted from code originally written by Dr. David Quigley
 
 program main
 

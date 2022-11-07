@@ -1,7 +1,5 @@
 !> Comms module contains all routines which interact
-!! with MPI libraries. Derived from PX425 Assignment 3
-!! of Term 2 in 2021-2022
-!! Original code created by D.Quigley - November 2012      
+!! Original code created by D.Quigley - November 2012
 module comms
 
     use iso_fortran_env, dp => real64
